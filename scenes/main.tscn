@@ -1,9 +1,59 @@
-[gd_scene load_steps=2 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=10 format=3 uid="uid://dpnrjriihffnj"]
+
+[ext_resource type="Script" uid="uid://uauoj3dn61up" path="res://scenes/main.gd" id="1_o5qli"]
+[ext_resource type="Script" uid="uid://c8s6vydob56xi" path="res://lives/conway3d.gd" id="2_0wfyh"]
+
+[sub_resource type="Resource" id="Resource_sugp2"]
+script = ExtResource("2_0wfyh")
+stable_start = 6
+stable_end = 10
+birth_start = 9
+birth_end = 9
+metadata/_custom_type_script = "uid://c8s6vydob56xi"
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0wfyh"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_sugp2"]
+sky_material = SubResource("ProceduralSkyMaterial_0wfyh")
+
+[sub_resource type="Environment" id="Environment_jyhfs"]
+background_mode = 2
+sky = SubResource("Sky_sugp2")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wfyh"]
+albedo_color = Color(0.6496686, 0.40608382, 0.15865174, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_sgp6g"]
+material = SubResource("StandardMaterial3D_0wfyh")
 size = Vector2(900, 900)
 
-[node name="Main" type="Node3D"]
+[sub_resource type="BoxMesh" id="BoxMesh_tbgi4"]
+
+[node name="Main" type="Node3D" node_paths=PackedStringArray("draw_parent")]
+script = ExtResource("1_o5qli")
+life = SubResource("Resource_sugp2")
+living_initially_chance = 0.4
+draw_parent = NodePath("Meshes")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_jyhfs")
 
 [node name="Plane" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_sgp6g")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.96384466, 0.26646456, 0, -0.26646456, 0.96384466, 0, 24.189705, 34.045147)
+
+[node name="Meshes" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Meshes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.50404036, 0)
+mesh = SubResource("BoxMesh_tbgi4")
