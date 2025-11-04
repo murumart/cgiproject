@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=13 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="Script" uid="uid://uauoj3dn61up" path="res://scenes/main.gd" id="1_o5qli"]
 [ext_resource type="Script" uid="uid://c8s6vydob56xi" path="res://lives/conway3d.gd" id="2_0wfyh"]
@@ -10,6 +10,18 @@ stable_end = 10
 birth_start = 9
 birth_end = 9
 metadata/_custom_type_script = "uid://c8s6vydob56xi"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sugp2"]
+albedo_color = Color(1, 0.4745098, 0.3882353, 1)
+roughness = 0.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jyhfs"]
+albedo_color = Color(0.6117647, 1, 0.44705883, 1)
+roughness = 0.36
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tbgi4"]
+albedo_color = Color(0.5294118, 0.33333334, 0.1764706, 1)
+roughness = 0.98
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0wfyh"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -38,6 +50,7 @@ script = ExtResource("1_o5qli")
 life = SubResource("Resource_sugp2")
 living_initially_chance = 0.4
 draw_parent = NodePath("Meshes")
+cell_materials = Array[Material]([SubResource("StandardMaterial3D_sugp2"), SubResource("StandardMaterial3D_jyhfs"), SubResource("StandardMaterial3D_tbgi4")])
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
