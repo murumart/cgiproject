@@ -1,42 +1,6 @@
 class_name Conway3DLife extends Life
 
-static var NEIGHBORS: PackedVector3Array = [
-	Vector3(-1, -1, -1),
-	Vector3( 0, -1, -1),
-	Vector3( 1, -1, -1),
-
-	Vector3(-1,  0, -1),
-	Vector3( 0,  0, -1),
-	Vector3( 1,  0, -1),
-
-	Vector3(-1,  1, -1),
-	Vector3( 0,  1, -1),
-	Vector3( 1,  1, -1),
-
-	Vector3(-1, -1,  0),
-	Vector3( 0, -1,  0),
-	Vector3( 1, -1,  0),
-
-	Vector3(-1,  0,  0),
-	#Vector3( 0,  0,  0), # position of current cell
-	Vector3( 1,  0,  0),
-
-	Vector3(-1,  1,  0),
-	Vector3( 0,  1,  0),
-	Vector3( 1,  1,  0),
-
-	Vector3(-1, -1,  1),
-	Vector3( 0, -1,  1),
-	Vector3( 1, -1,  1),
-
-	Vector3(-1,  0,  1),
-	Vector3( 0,  0,  1),
-	Vector3( 1,  0,  1),
-
-	Vector3(-1,  1,  1),
-	Vector3( 0,  1,  1),
-	Vector3( 1,  1,  1),
-]
+@export_range(0, 1) var living_initially_chance: float = 0.05
 
 @export_range(0, 26) var stable_start: int
 @export_range(0, 26) var stable_end: int
@@ -60,6 +24,12 @@ func get_neighbor_count(
 		var cell := cells[ix3d(nx, ny, nz, size)]
 		if cell == type: count += 1
 	return count
+
+
+func init(cells: PackedByteArray, size: int) -> void:
+	cells.resize(size * size * size) # is in 3D
+	for i in cells.size():
+		cells[i] = 1 if randf() <= living_initially_chance else 0
 
 
 func generation(old: PackedByteArray, size: int) -> PackedByteArray:

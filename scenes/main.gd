@@ -1,7 +1,6 @@
 extends Node3D
 
 @export var life: Life
-@export_range(0, 1) var living_initially_chance: float = 0.05
 @export_range(16, 64) var board_size: int = 32
 @export var draw_parent: Node3D
 @export var cell_materials: Array[Material]
@@ -11,15 +10,14 @@ var _cells: PackedByteArray
 
 func _ready() -> void:
 	_cells = PackedByteArray()
-	_cells.resize(board_size * board_size * board_size * 4) # is in 3D
-	for i in _cells.size():
-		_cells[i] = 1 if randf() <= living_initially_chance else 0
+	life.init(_cells, board_size)
+	print(_cells)
 
 	_draw_life()
 
 
 func _process(_delta: float) -> void:
-	_simulate()
+	#_simulate()
 	_draw_life()
 
 	set_process(false)
