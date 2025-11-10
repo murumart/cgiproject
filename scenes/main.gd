@@ -4,8 +4,14 @@ extends Node3D
 @export_range(8, 64) var board_size: int = 32
 @export var draw_parent: Node3D
 @export var cell_materials: Array[Material]
+@export var auto_process := false
 
 var _cells: PackedByteArray
+
+var thread := Thread.new()
+var mutex := Mutex.new()
+var semaphore := Semaphore.new()
+
 
 
 func _ready() -> void:
@@ -14,23 +20,48 @@ func _ready() -> void:
 
 	_draw_life()
 
+	thread.start(_simulate_thread)
+	_simulated = true
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		semaphore.post()
+		thread.wait_to_finish()
+
 
 func _process(_delta: float) -> void:
-
-
-	#set_process(false)
-	#var tw := create_tween()
-	#tw.tween_interval(0.15)
-	#tw.tween_callback(set_process.bind(true))
-	if Input.is_action_just_pressed(&"ui_left"):
-		print(":=")
-		_simulate()
-		_draw_life()
+	if auto_process:
+		#_simulate()
+		#_draw_life()
+		#set_process(false)
+		#var tw := create_tween()
+		#tw.tween_interval(0.15)
+		#tw.tween_callback(set_process.bind(true))
+		if _simulated:
+			print("aaa")
+			semaphore.post()
+			_draw_life()
+			_simulated = false
+	else:
+		if Input.is_action_just_pressed(&"ui_accept"):
+			print(":=")
+			_simulate()
+			_draw_life()
 
 
 func _simulate() -> void:
 	var newc := life.generation(PackedByteArray(_cells), board_size)
 	_cells = newc
+	_simulated = true
+
+
+var _simulated := false
+func _simulate_thread() -> void:
+	while true:
+		semaphore.wait()
+		_simulate()
+
 
 
 var _boxes: Dictionary[int, MeshInstance3D]

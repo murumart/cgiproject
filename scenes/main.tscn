@@ -1,7 +1,8 @@
-[gd_scene load_steps=21 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=22 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="Script" uid="uid://uauoj3dn61up" path="res://scenes/main.gd" id="1_o5qli"]
 [ext_resource type="Script" uid="uid://c0wpmlv3h3v1y" path="res://lives/stupit_tree.gd" id="2_0wfyh"]
+[ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 
 [sub_resource type="Resource" id="Resource_sugp2"]
 script = ExtResource("2_0wfyh")
@@ -94,6 +95,7 @@ script = ExtResource("1_o5qli")
 life = SubResource("Resource_sugp2")
 draw_parent = NodePath("Meshes")
 cell_materials = Array[Material]([SubResource("StandardMaterial3D_sugp2"), SubResource("StandardMaterial3D_jyhfs"), SubResource("StandardMaterial3D_tbgi4")])
+auto_process = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
@@ -107,6 +109,7 @@ mesh = SubResource("PlaneMesh_sgp6g")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.96384466, 0.26646456, 0, -0.26646456, 0.96384466, 0, 24.189705, 34.045147)
+script = ExtResource("3_sugp2")
 
 [node name="Meshes" type="Node3D" parent="."]
 

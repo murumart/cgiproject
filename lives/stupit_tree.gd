@@ -80,30 +80,24 @@ class TreeCell:
 				Vector4(0, -1, 0, 0.05),
 				Vector4(0, -2, 0, 0.02),
 				Vector4(0, -3, 0, 0.01),
-				Vector4(  0,  0,  1, 0.08),
-				Vector4(  0,  0, -1, 0.08),
-				Vector4(  1,  0,  0, 0.08),
-				Vector4( -1,  0,  0, 0.08),
+				#Vector4(  0,  0,  1, 0.08),
+				#Vector4(  0,  0, -1, 0.08),
+				#Vector4(  1,  0,  0, 0.08),
+				#Vector4( -1,  0,  0, 0.08),
 			]
 			elif ct == CELL_BARK: return [
-				Vector4(0, 0, 0, 0.1)
+				Vector4(0, 0, 0, 0.05)
 			]
 			elif ct == CELL_LEAF: return [
 				Vector4(0, 0, 0, 0.1),
-				Vector4(  0,  6,  1, 0.008),
-				Vector4(  0,  7, -1, 0.012),
-				Vector4(  1,  8,  0, 0.014),
-				Vector4( -1,  10,  0, 0.016),
-				Vector4( -1,  11,  0, 0.018),
-				Vector4( -1,  12,  0, 0.020),
 			]
 		elif tyyp == CELL_BARK:
 			if ct == CELL_FLESH: return [
 				Vector4( 0,  0,  0, -9),
-				Vector4( 1,  0,  0, 0.35),
-				Vector4(-1,  0,  0, 0.35),
-				Vector4( 0,  0,  1, 0.35),
-				Vector4( 0,  0, -1, 0.35),
+				Vector4( 1,  0,  0, 0.55),
+				Vector4(-1,  0,  0, 0.55),
+				Vector4( 0,  0,  1, 0.55),
+				Vector4( 0,  0, -1, 0.55),
 			]
 			elif ct == CELL_BARK: return []
 			elif ct == CELL_LEAF: return []
@@ -144,14 +138,15 @@ class TreeCell:
 				Vector4(-1, 0,  0, 0.25),
 				Vector4( 0, 0,  1, 0.25),
 				Vector4( 0, 0, -1, 0.25),
-				Vector4( 2, 0,  0, 0.01),
-				Vector4(-2, 0,  0, 0.01),
-				Vector4( 0, 0,  2, 0.01),
-				Vector4( 0, 0, -2, 0.01),
-				Vector4(0, 1, 0, -5),
-				Vector4(0, 2, 0, -4),
-				Vector4(0, 3, 0, -3),
-				Vector4(0, 4, 0, -2),
+				Vector4( 2, 0,  0, 0.05),
+				Vector4(-2, 0,  0, 0.05),
+				Vector4( 0, 0,  2, 0.05),
+				Vector4( 0, 0, -2, 0.05),
+				Vector4(0, 1, 0, 0),
+				Vector4(0, 2, 0, -4 + 1),
+				Vector4(0, 3, 0, -3 + 1),
+				Vector4(0, 4, 0, -2 + 1),
+				Vector4(0, 5, 0, -1 + 1),
 			]
 		assert(false, "What type is this +?? ?? ?? ?? ? ?? ? ? ? ? ? ???? ?? ? ?? ? ??")
 		return []
@@ -205,7 +200,7 @@ func init(cells: PackedByteArray, size: int) -> void:
 func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 	var layer_length := size * size * size
 
-	print("SEED GENERATION: ", old.size(), old)
+	#print("SEED GENERATION: ", old.size(), old)
 
 	var cells: PackedByteArray = []; cells.resize(layer_length)
 	var energy: PackedByteArray = []; energy.resize(layer_length)
@@ -235,7 +230,7 @@ func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 	allcells.append_array(energy)
 	allcells.append_array(water)
 	allcells.append_array(hp)
-	print("ALL CELLS AFTER GENERATION: ", allcells)
+	#print("ALL CELLS AFTER GENERATION: ", allcells)
 
 	return allcells
 
