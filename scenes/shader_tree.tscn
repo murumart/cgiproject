@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://2ejp5vltoxvt"]
+
+[ext_resource type="Script" uid="uid://50kxd2tdbay5" path="res://scenes/shader_tree.gd" id="1_exli6"]
+
+[node name="ShaderTree" type="Node3D"]
+script = ExtResource("1_exli6")
