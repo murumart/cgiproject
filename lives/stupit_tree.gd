@@ -72,7 +72,7 @@ class TreeCell:
 						tc[Vector3i(x, y, z)] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
 		return tc
 
-
+	# returns a value of the current cell based on the surrounding cells
 	static func get_kernel(tyyp: int, ct: int) -> PackedVector4Array:
 		if tyyp == CELL_FLESH:
 			if ct == CELL_FLESH: return [
