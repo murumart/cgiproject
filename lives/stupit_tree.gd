@@ -1,10 +1,157 @@
 class_name StupitTreeLife extends Life
 
 enum {
+	CELL_NONE,
 	CELL_FLESH,
 	CELL_LEAF,
 	CELL_BARK,
+	CELL_MAX
 }
+
+const NAMES: PackedStringArray = ["NONE", "FLESH", "LEAF", "BARK", "MAX"]
+
+class TreeCell:
+
+	static var NULL := new(0, 0, 0, 0)
+
+	var type: int
+	var energy: int # aka CELL_FLESH
+	var water: int # aka CELL_LEAF
+	var hp: int # aka CELL_BARK :)
+
+
+	func get_k_value(ix: int) -> int:
+		match ix:
+			CELL_FLESH: return energy
+			CELL_LEAF: return water
+			CELL_BARK: return hp
+			_: assert(false, "invalid cell typ asdadsadadadsadsdsdad"); return -1
+
+
+	func set_k_value(ix: int, to: int) -> void:
+		match ix:
+			CELL_FLESH: energy = to
+			CELL_LEAF: water = to
+			CELL_BARK: hp = to
+			_: assert(false, "invalid cell typ asdadsadadadsadsdsdad")
+
+
+	func get_highest_k_value() -> int:
+		if energy == water and water == hp and hp == 0:
+			return CELL_NONE
+		if energy > water:
+			if energy > hp: return CELL_FLESH
+			else: return CELL_BARK
+		else:
+			if water > hp: return CELL_LEAF
+			else: return CELL_BARK
+
+
+	func _init(type_: int, energy_: int, water_: int, hp_: int) -> void:
+		type = type_
+		energy = energy_
+		water = water_
+		hp = hp_
+
+
+	static func from_bytes(
+		oldcells: PackedByteArray,
+		oldenergy: PackedByteArray,
+		oldwater: PackedByteArray,
+		oldhp: PackedByteArray,
+		size: int,
+	) -> Dictionary[Vector3i, TreeCell]:
+		var tc: Dictionary[Vector3i, TreeCell]
+		for y in size:
+			for x in size:
+				for z in size:
+					var i := Life.ix3d(x, y, z, size)
+					if oldcells[i] == 0:
+						tc[Vector3i(x, y, z)] = NULL
+					else:
+						tc[Vector3i(x, y, z)] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
+		return tc
+
+
+	static func get_kernel(tyyp: int, ct: int) -> PackedVector4Array:
+		if tyyp == CELL_FLESH:
+			if ct == CELL_FLESH: return [
+				Vector4(0, 0, 0, 1.0),
+				Vector4(0, -1, 0, 0.75),
+			]
+			elif ct == CELL_BARK: return [
+				Vector4(0, 0, 0, 0.1)
+			]
+			elif ct == CELL_LEAF: return [
+				Vector4(0, 0, 0, 0.2)
+			]
+		elif tyyp == CELL_BARK:
+			if ct == CELL_FLESH: return [
+				Vector4( 0,  0,  0, -4),
+				Vector4( 1,  0,  0, 0.35),
+				Vector4(-1,  0,  0, 0.35),
+				Vector4( 0,  0,  1, 0.35),
+				Vector4( 0,  0, -1, 0.35),
+				Vector4( 1,  0,  -1, 0.15),
+				Vector4(-1,  0,   1, 0.15),
+				Vector4( 1,  0,   1, 0.15),
+				Vector4( -1,  0, -1, 0.15),
+			]
+			elif ct == CELL_BARK: return []
+			elif ct == CELL_LEAF: return []
+		elif tyyp == CELL_LEAF:
+			if ct == CELL_FLESH: return [
+				Vector4( 0,  0,  0,  -7),
+				Vector4( 0, -1,  0, 0.3),
+				Vector4( 1, -1,  0, 0.3),
+				Vector4(-1, -1,  0, 0.3),
+				Vector4( 0, -1,  1, 0.3),
+				Vector4( 0, -1, -1, 0.3),
+				Vector4(0, 1, 0, -7),
+				Vector4(0, 2, 0, -6),
+				Vector4(0, 3, 0, -5),
+				Vector4(0, 4, 0, -4),
+				Vector4(0, 5, 0, -3),
+				Vector4(0, 6, 0, -2),
+				Vector4(0, 7, 0, -1),
+				Vector4(0, 8, 0, -1),
+				Vector4(0, 9, 0, -1),
+				Vector4(0, 10, 0, -1),
+			]
+			elif ct == CELL_BARK: return [
+				Vector4( 0,  0,  0,  -7),
+				Vector4(0, 1, 0, -7),
+				Vector4(0, 2, 0, -6),
+				Vector4(0, 3, 0, -5),
+				Vector4(0, 4, 0, -4),
+				Vector4(0, 5, 0, -3),
+				Vector4(0, 6, 0, -2),
+				Vector4(0, 7, 0, -1),
+				Vector4(0, 8, 0, -1),
+				Vector4(0, 9, 0, -1),
+				Vector4(0, 10, 0, -1),
+			]
+			elif ct == CELL_LEAF: return [
+				Vector4( 1, 0,  0, 0.25),
+				Vector4(-1, 0,  0, 0.25),
+				Vector4( 0, 0,  1, 0.25),
+				Vector4( 0, 0, -1, 0.25),
+				Vector4( 1, 0,  1, 0.25),
+				Vector4(-1, 0,  1, 0.25),
+				Vector4( 1, 0, -1, 0.25),
+				Vector4(-1, 0, -1, 0.25),
+				Vector4(0, 1, 0, -3),
+				Vector4(0, 2, 0, -2),
+				Vector4(0, 3, 0, -1),
+				Vector4(0, 4, 0, -1),
+			]
+		assert(false, "What type is this +?? ?? ?? ?? ? ?? ? ? ? ? ? ???? ?? ? ?? ? ??")
+		return []
+
+
+	func _to_string() -> String:
+		return "T:" + NAMES[type].lpad(6, " ") +" F:" + str(energy).lpad(4, " ")+" L:" +str(water).lpad(4, " ") +" B:"+str(hp).lpad(4, " ")
+
 
 const ENERGY_DIMS: PackedByteArray = [
 	5,
@@ -36,9 +183,9 @@ func init(cells: PackedByteArray, size: int) -> void:
 			for z in size:
 				var xc := x-centre
 				var zc := z-centre
-				if xc * xc + zc * zc <= 8 * 8:
+				if xc * xc + zc * zc <= 2 * 2:
 					celltypes[ix3d(x, y, z, size)] = CELL_FLESH
-					energy[ix3d(x, y, z, size)] = 128
+					energy[ix3d(x, y, z, size)] = 255
 
 	cells.resize(layer_length * 4)
 	for i in range(0, layer_length):
@@ -50,16 +197,25 @@ func init(cells: PackedByteArray, size: int) -> void:
 func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 	var layer_length := size * size * size
 
+	print("SEET GENERATION: ", old)
+
 	var cells: PackedByteArray = []; cells.resize(layer_length * 4)
 	var energy: PackedByteArray = []; energy.resize(layer_length * 4)
 	var water: PackedByteArray = []; water.resize(layer_length * 4)
 	var hp: PackedByteArray = []; hp.resize(layer_length * 4)
 
+	var first_slice := old.slice(layer_length, layer_length * 2)
+	var second_slice := old.slice(layer_length * 2, layer_length * 3)
+	var third_slice := old.slice(layer_length * 3, layer_length * 4)
+	print("SLOICE1:", first_slice)
+	print("SLOICE2:", second_slice)
+	print("SLOICE3:", third_slice)
+
 	real_generation(
 		old.slice(0, layer_length),
-		old.slice(layer_length, layer_length * 2),
-		old.slice(layer_length * 2, layer_length * 3),
-		old.slice(layer_length * 3, layer_length * 4),
+		first_slice,
+		second_slice,
+		third_slice,
 
 		cells,
 		energy,
@@ -69,7 +225,19 @@ func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 		size,
 	)
 
-	return cells + energy + water + hp
+	print("cells after generation", cells)
+	print("flesh after generation", energy)
+	print("leaf after generation", water)
+	print("bark after generation", hp)
+
+	var allcells := PackedByteArray()
+	allcells.append_array(cells)
+	allcells.append_array(energy)
+	allcells.append_array(water)
+	allcells.append_array(hp)
+	print("ALL CELLS: ", allcells)
+
+	return allcells
 
 
 func getc(b: PackedByteArray, x: int, y: int, z: int, size: int) -> int:
@@ -90,12 +258,33 @@ func real_generation(
 	size: int
 ) -> void:
 
+	print("SEED type ", oldcells)
+	print("SEED flesh ", oldenergy)
+	print("SEED leaf ", oldwater)
+	print("SEED bark ", oldhp)
+	var treecells := TreeCell.from_bytes(oldcells, oldenergy, oldwater, oldhp, size)
+	for t in treecells.values():
+		prints("input:", t)
+	var newgen := _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(treecells, size)
+
 	for y in size:
 		for z in size:
 			for x in size:
-
 				var ix := ix3d(x, y, z, size)
-				_sim_energy(x, y, z, size, oldcells[ix], oldenergy, oldcells, newenergy)
+				var t := newgen[Vector3i(x, y, z)]
+				print("copying over from t ", t)
+				newcells[ix] = t.type
+				newenergy[ix] = t.energy
+				newwater[ix] = t.water
+				newhp[ix] = t.hp
+	print("newcells is ", newcells)
+	print("flesh are ", newenergy)
+	#for y in size:
+		#for z in size:
+			#for x in size:
+#
+				#var ix := ix3d(x, y, z, size)
+				#_sim_energy(x, y, z, size, oldcells[ix], oldenergy, oldcells, newenergy)
 
 
 func _sim_energy(
@@ -125,3 +314,45 @@ func _sim_energy(
 				energy_level = byte_add(energy_level, -FLESH_ENERGY_TRANSFER)
 
 	newenergy[ix] = byte_add(newenergy[ix], energy_level)
+
+
+func _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(cells: Dictionary[Vector3i, TreeCell], size: int) -> Dictionary[Vector3i, TreeCell]:
+	var ngen: Dictionary[Vector3i, TreeCell] = {}
+
+	for k in cells:
+		ngen[k] = TreeCell.new(0, 0, 0, 0)
+
+	print("KERNELS:")
+	for ct in range(CELL_FLESH, CELL_MAX):
+		print(NAMES[ct])
+		for ct2 in range(CELL_FLESH, CELL_MAX):
+			print("  ", NAMES[ct2])
+			var kernel := TreeCell.get_kernel(ct, ct2)
+			print("  kernel: ", kernel)
+			if kernel.is_empty(): continue # :) optimisising
+
+			for y in size:
+				for z in size:
+					for x in size:
+						var coord := Vector3i(x, y, z)
+						prints(NAMES[ct][0], NAMES[ct2][0], "AT", coord)
+						var sum: float = 0
+						for k_add in kernel:
+							var kcoord := Vector3i(k_add.x + x, k_add.y + y, k_add.z + z)
+							var c: TreeCell = cells.get(kcoord, TreeCell.NULL)
+							var add := (c.get_k_value(ct2) * k_add.w) / 255.0
+							sum += add
+							prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.get_k_value(ct2), k_add.w, add, kcoord)
+						var prev := ngen[coord].get_k_value(ct)
+						sum = prev / 255.0 + sum
+						ngen[coord].set_k_value(ct, clampi(int(sum * 255), 0, 255))
+						prints(NAMES[ct][0], NAMES[ct2][0], "og   ", cells[coord].get_k_value(ct))
+						prints(NAMES[ct][0], NAMES[ct2][0], "prevn", prev)
+						prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[coord].get_k_value(ct), "\n")
+
+	print("NEW GEN:")
+	for k in ngen:
+		ngen[k].type = ngen[k].get_highest_k_value()
+		print("   this cell at ", k, " is ", ngen[k])
+
+	return ngen

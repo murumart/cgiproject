@@ -1,7 +1,7 @@
 extends Node3D
 
 @export var life: Life
-@export_range(16, 64) var board_size: int = 32
+@export_range(8, 64) var board_size: int = 32
 @export var draw_parent: Node3D
 @export var cell_materials: Array[Material]
 
@@ -11,23 +11,26 @@ var _cells: PackedByteArray
 func _ready() -> void:
 	_cells = PackedByteArray()
 	life.init(_cells, board_size)
-	print(_cells)
 
 	_draw_life()
 
 
 func _process(_delta: float) -> void:
-	#_simulate()
-	_draw_life()
 
-	set_process(false)
-	var tw := create_tween()
-	tw.tween_interval(0.15)
-	tw.tween_callback(set_process.bind(true))
+
+	#set_process(false)
+	#var tw := create_tween()
+	#tw.tween_interval(0.15)
+	#tw.tween_callback(set_process.bind(true))
+	if Input.is_action_just_pressed(&"ui_left"):
+		print(":=")
+		_simulate()
+		_draw_life()
 
 
 func _simulate() -> void:
-	_cells = life.generation(PackedByteArray(_cells), board_size)
+	var newc := life.generation(PackedByteArray(_cells), board_size)
+	_cells = newc
 
 
 var _boxes: Dictionary[int, MeshInstance3D]

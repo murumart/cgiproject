@@ -13,3 +13,8 @@ config_version=5
 config/name="Cgi project"
 run/main_scene="uid://dpnrjriihffnj"
 config/features=PackedStringArray("4.5", "Forward Plus")
+
+[debug]
+
+file_logging/enable_file_logging=true
+file_logging/log_path="res.//../log.log"
