@@ -19,9 +19,31 @@ class CA:
 	
 	enum WriteState { A, B }
 	var write_state: WriteState
+	
+	func _init(a: PackedFloat32Array, b: PackedFloat32Array, kernels: PackedFloat32Array, state: WriteState) -> void:
+		state_a = a
+		state_b = b
+		kernel = kernels
+		write_state = state
 
 func _ready() -> void:
-	pass
+	rd = RenderingServer.create_local_rendering_device()
+	var shader_file := load("res://shaders/cell_shader_v1.glsl")
+	var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
+	var shader := rd.shader_create_from_spirv(shader_spirv)
+	
+	# Prepare our data. We use floats in the shader, so we need 32 bit.
+	var a = PackedFloat32Array([
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0
+	])
+	var kernel = PackedFloat32Array([
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0
+	])
+	var cells: CA = CA.new(a, a.duplicate(), kernel, CA.WriteState.A)
 
 
 func _process(delta: float) -> void:
