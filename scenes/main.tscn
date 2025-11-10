@@ -92,7 +92,6 @@ size = Vector2(900, 900)
 [node name="Main" type="Node3D" node_paths=PackedStringArray("draw_parent")]
 script = ExtResource("1_o5qli")
 life = SubResource("Resource_sugp2")
-board_size = 8
 draw_parent = NodePath("Meshes")
 cell_materials = Array[Material]([SubResource("StandardMaterial3D_sugp2"), SubResource("StandardMaterial3D_jyhfs"), SubResource("StandardMaterial3D_tbgi4")])
 

@@ -77,31 +77,39 @@ class TreeCell:
 		if tyyp == CELL_FLESH:
 			if ct == CELL_FLESH: return [
 				Vector4(0, 0, 0, 1.0),
-				Vector4(0, -1, 0, 0.75),
+				Vector4(0, -1, 0, 0.05),
+				Vector4(0, -2, 0, 0.02),
+				Vector4(0, -3, 0, 0.01),
+				Vector4(  0,  0,  1, 0.08),
+				Vector4(  0,  0, -1, 0.08),
+				Vector4(  1,  0,  0, 0.08),
+				Vector4( -1,  0,  0, 0.08),
 			]
 			elif ct == CELL_BARK: return [
 				Vector4(0, 0, 0, 0.1)
 			]
 			elif ct == CELL_LEAF: return [
-				Vector4(0, 0, 0, 0.2)
+				Vector4(0, 0, 0, 0.1),
+				Vector4(  0,  6,  1, 0.008),
+				Vector4(  0,  7, -1, 0.012),
+				Vector4(  1,  8,  0, 0.014),
+				Vector4( -1,  10,  0, 0.016),
+				Vector4( -1,  11,  0, 0.018),
+				Vector4( -1,  12,  0, 0.020),
 			]
 		elif tyyp == CELL_BARK:
 			if ct == CELL_FLESH: return [
-				Vector4( 0,  0,  0, -4),
+				Vector4( 0,  0,  0, -9),
 				Vector4( 1,  0,  0, 0.35),
 				Vector4(-1,  0,  0, 0.35),
 				Vector4( 0,  0,  1, 0.35),
 				Vector4( 0,  0, -1, 0.35),
-				Vector4( 1,  0,  -1, 0.15),
-				Vector4(-1,  0,   1, 0.15),
-				Vector4( 1,  0,   1, 0.15),
-				Vector4( -1,  0, -1, 0.15),
 			]
 			elif ct == CELL_BARK: return []
 			elif ct == CELL_LEAF: return []
 		elif tyyp == CELL_LEAF:
 			if ct == CELL_FLESH: return [
-				Vector4( 0,  0,  0,  -7),
+				Vector4( 0,  0,  0,  -12),
 				Vector4( 0, -1,  0, 0.3),
 				Vector4( 1, -1,  0, 0.3),
 				Vector4(-1, -1,  0, 0.3),
@@ -120,13 +128,13 @@ class TreeCell:
 			]
 			elif ct == CELL_BARK: return [
 				Vector4( 0,  0,  0,  -7),
-				Vector4(0, 1, 0, -7),
-				Vector4(0, 2, 0, -6),
-				Vector4(0, 3, 0, -5),
-				Vector4(0, 4, 0, -4),
-				Vector4(0, 5, 0, -3),
-				Vector4(0, 6, 0, -2),
-				Vector4(0, 7, 0, -1),
+				Vector4(0, 1, 0, -12),
+				Vector4(0, 2, 0, -11),
+				Vector4(0, 3, 0, -10),
+				Vector4(0, 4, 0, -9),
+				Vector4(0, 5, 0, -8),
+				Vector4(0, 6, 0, -7),
+				Vector4(0, 7, 0, -6),
 				Vector4(0, 8, 0, -1),
 				Vector4(0, 9, 0, -1),
 				Vector4(0, 10, 0, -1),
@@ -136,14 +144,14 @@ class TreeCell:
 				Vector4(-1, 0,  0, 0.25),
 				Vector4( 0, 0,  1, 0.25),
 				Vector4( 0, 0, -1, 0.25),
-				Vector4( 1, 0,  1, 0.25),
-				Vector4(-1, 0,  1, 0.25),
-				Vector4( 1, 0, -1, 0.25),
-				Vector4(-1, 0, -1, 0.25),
-				Vector4(0, 1, 0, -3),
-				Vector4(0, 2, 0, -2),
-				Vector4(0, 3, 0, -1),
-				Vector4(0, 4, 0, -1),
+				Vector4( 2, 0,  0, 0.01),
+				Vector4(-2, 0,  0, 0.01),
+				Vector4( 0, 0,  2, 0.01),
+				Vector4( 0, 0, -2, 0.01),
+				Vector4(0, 1, 0, -5),
+				Vector4(0, 2, 0, -4),
+				Vector4(0, 3, 0, -3),
+				Vector4(0, 4, 0, -2),
 			]
 		assert(false, "What type is this +?? ?? ?? ?? ? ?? ? ? ? ? ? ???? ?? ? ?? ? ??")
 		return []
@@ -197,19 +205,16 @@ func init(cells: PackedByteArray, size: int) -> void:
 func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 	var layer_length := size * size * size
 
-	print("SEET GENERATION: ", old)
+	print("SEED GENERATION: ", old.size(), old)
 
-	var cells: PackedByteArray = []; cells.resize(layer_length * 4)
-	var energy: PackedByteArray = []; energy.resize(layer_length * 4)
-	var water: PackedByteArray = []; water.resize(layer_length * 4)
-	var hp: PackedByteArray = []; hp.resize(layer_length * 4)
+	var cells: PackedByteArray = []; cells.resize(layer_length)
+	var energy: PackedByteArray = []; energy.resize(layer_length)
+	var water: PackedByteArray = []; water.resize(layer_length)
+	var hp: PackedByteArray = []; hp.resize(layer_length)
 
 	var first_slice := old.slice(layer_length, layer_length * 2)
 	var second_slice := old.slice(layer_length * 2, layer_length * 3)
 	var third_slice := old.slice(layer_length * 3, layer_length * 4)
-	print("SLOICE1:", first_slice)
-	print("SLOICE2:", second_slice)
-	print("SLOICE3:", third_slice)
 
 	real_generation(
 		old.slice(0, layer_length),
@@ -225,17 +230,12 @@ func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 		size,
 	)
 
-	print("cells after generation", cells)
-	print("flesh after generation", energy)
-	print("leaf after generation", water)
-	print("bark after generation", hp)
-
 	var allcells := PackedByteArray()
 	allcells.append_array(cells)
 	allcells.append_array(energy)
 	allcells.append_array(water)
 	allcells.append_array(hp)
-	print("ALL CELLS: ", allcells)
+	print("ALL CELLS AFTER GENERATION: ", allcells)
 
 	return allcells
 
@@ -258,13 +258,9 @@ func real_generation(
 	size: int
 ) -> void:
 
-	print("SEED type ", oldcells)
-	print("SEED flesh ", oldenergy)
-	print("SEED leaf ", oldwater)
-	print("SEED bark ", oldhp)
 	var treecells := TreeCell.from_bytes(oldcells, oldenergy, oldwater, oldhp, size)
-	for t in treecells.values():
-		prints("input:", t)
+	#for t in treecells.values():
+		#prints("input:", t)
 	var newgen := _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(treecells, size)
 
 	for y in size:
@@ -272,13 +268,11 @@ func real_generation(
 			for x in size:
 				var ix := ix3d(x, y, z, size)
 				var t := newgen[Vector3i(x, y, z)]
-				print("copying over from t ", t)
+				#print("copying over from t ", t)
 				newcells[ix] = t.type
 				newenergy[ix] = t.energy
 				newwater[ix] = t.water
 				newhp[ix] = t.hp
-	print("newcells is ", newcells)
-	print("flesh are ", newenergy)
 	#for y in size:
 		#for z in size:
 			#for x in size:
@@ -322,37 +316,37 @@ func _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(cells: Di
 	for k in cells:
 		ngen[k] = TreeCell.new(0, 0, 0, 0)
 
-	print("KERNELS:")
+	#print("KERNELS:")
 	for ct in range(CELL_FLESH, CELL_MAX):
-		print(NAMES[ct])
+		#print(NAMES[ct])
 		for ct2 in range(CELL_FLESH, CELL_MAX):
-			print("  ", NAMES[ct2])
+			#print("  ", NAMES[ct2])
 			var kernel := TreeCell.get_kernel(ct, ct2)
-			print("  kernel: ", kernel)
+			#print("  kernel: ", kernel)
 			if kernel.is_empty(): continue # :) optimisising
 
 			for y in size:
 				for z in size:
 					for x in size:
 						var coord := Vector3i(x, y, z)
-						prints(NAMES[ct][0], NAMES[ct2][0], "AT", coord)
+						#prints(NAMES[ct][0], NAMES[ct2][0], "AT", coord)
 						var sum: float = 0
 						for k_add in kernel:
 							var kcoord := Vector3i(k_add.x + x, k_add.y + y, k_add.z + z)
 							var c: TreeCell = cells.get(kcoord, TreeCell.NULL)
 							var add := (c.get_k_value(ct2) * k_add.w) / 255.0
 							sum += add
-							prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.get_k_value(ct2), k_add.w, add, kcoord)
+							#prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.get_k_value(ct2), k_add.w, add, kcoord)
 						var prev := ngen[coord].get_k_value(ct)
 						sum = prev / 255.0 + sum
 						ngen[coord].set_k_value(ct, clampi(int(sum * 255), 0, 255))
-						prints(NAMES[ct][0], NAMES[ct2][0], "og   ", cells[coord].get_k_value(ct))
-						prints(NAMES[ct][0], NAMES[ct2][0], "prevn", prev)
-						prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[coord].get_k_value(ct), "\n")
+						#prints(NAMES[ct][0], NAMES[ct2][0], "og   ", cells[coord].get_k_value(ct))
+						#prints(NAMES[ct][0], NAMES[ct2][0], "prevn", prev)
+						#prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[coord].get_k_value(ct), "\n")
 
-	print("NEW GEN:")
+	#print("NEW GEN:")
 	for k in ngen:
 		ngen[k].type = ngen[k].get_highest_k_value()
-		print("   this cell at ", k, " is ", ngen[k])
+		#print("   this cell at ", k, " is ", ngen[k])
 
 	return ngen
