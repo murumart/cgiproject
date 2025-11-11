@@ -39,7 +39,6 @@ func _process(_delta: float) -> void:
 		#tw.tween_interval(0.15)
 		#tw.tween_callback(set_process.bind(true))
 		if _simulated:
-			print("aaa")
 			semaphore.post()
 			_draw_life()
 			_simulated = false

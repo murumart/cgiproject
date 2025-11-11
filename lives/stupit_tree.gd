@@ -8,6 +8,82 @@ enum {
 	CELL_MAX
 }
 
+static var FLESH_KERNELS: Dictionary[int, PackedVector4Array] = {
+	CELL_FLESH: [
+		Vector4(0, 0, 0, 1.0),
+		Vector4(0, -1, 0, 0.05),
+		Vector4(0, -2, 0, 0.02),
+		Vector4(0, -3, 0, 0.01),
+	],
+	CELL_LEAF: [
+		Vector4(0, 0, 0, 0.1),
+	],
+	CELL_BARK: [
+		Vector4(0, 0, 0, 0.05)
+	]
+}
+static var LEAF_KERNELS: Dictionary[int, PackedVector4Array] = {
+	CELL_FLESH: [
+		Vector4( 0,  0,  0,  -12),
+		Vector4( 0, -1,  0, 0.3),
+		Vector4( 1, -1,  0, 0.3),
+		Vector4(-1, -1,  0, 0.3),
+		Vector4( 0, -1,  1, 0.3),
+		Vector4( 0, -1, -1, 0.3),
+		Vector4(0, 1, 0, -7),
+		Vector4(0, 2, 0, -6),
+		Vector4(0, 3, 0, -5),
+		Vector4(0, 4, 0, -4),
+		Vector4(0, 5, 0, -3),
+		Vector4(0, 6, 0, -2),
+		Vector4(0, 7, 0, -1),
+		Vector4(0, 8, 0, -1),
+		Vector4(0, 9, 0, -1),
+		Vector4(0, 10, 0, -1),
+	],
+	CELL_LEAF: [
+		Vector4( 1, 0,  0, 0.25),
+		Vector4(-1, 0,  0, 0.25),
+		Vector4( 0, 0,  1, 0.25),
+		Vector4( 0, 0, -1, 0.25),
+		Vector4( 2, 0,  0, 0.05),
+		Vector4(-2, 0,  0, 0.05),
+		Vector4( 0, 0,  2, 0.05),
+		Vector4( 0, 0, -2, 0.05),
+		Vector4(0, 1, 0, 0),
+		Vector4(0, 2, 0, -4 + 1),
+		Vector4(0, 3, 0, -3 + 1),
+		Vector4(0, 4, 0, -2 + 1),
+		Vector4(0, 5, 0, -1 + 1),
+	],
+	CELL_BARK: [
+		Vector4( 0,  0,  0,  -7),
+		Vector4(0, 1, 0, -12),
+		Vector4(0, 2, 0, -11),
+		Vector4(0, 3, 0, -10),
+		Vector4(0, 4, 0, -9),
+		Vector4(0, 5, 0, -8),
+		Vector4(0, 6, 0, -7),
+		Vector4(0, 7, 0, -6),
+		Vector4(0, 8, 0, -1),
+		Vector4(0, 9, 0, -1),
+		Vector4(0, 10, 0, -1),
+	]
+}
+static var BARK_KERNELS: Dictionary[int, PackedVector4Array] = {
+	CELL_FLESH: [
+		Vector4( 0,  0,  0, -9),
+		Vector4( 1,  0,  0, 0.55),
+		Vector4(-1,  0,  0, 0.55),
+		Vector4( 0,  0,  1, 0.55),
+		Vector4( 0,  0, -1, 0.55),
+	],
+	CELL_LEAF: [],
+	CELL_BARK: [],
+}
+static var KERNELS := [{}, FLESH_KERNELS, LEAF_KERNELS, BARK_KERNELS]
+
+
 const NAMES: PackedStringArray = ["NONE", "FLESH", "LEAF", "BARK", "MAX"]
 
 class TreeCell:
@@ -19,31 +95,35 @@ class TreeCell:
 	var water: int # aka CELL_LEAF
 	var hp: int # aka CELL_BARK :)
 
+	var k_vals: PackedByteArray = [0xb0, 0, 0, 0]
+
 
 	func get_k_value(ix: int) -> int:
-		match ix:
-			CELL_FLESH: return energy
-			CELL_LEAF: return water
-			CELL_BARK: return hp
-			_: assert(false, "invalid cell typ asdadsadadadsadsdsdad"); return -1
+		return k_vals[ix]
+		#match ix:
+			#CELL_FLESH: return energy
+			#CELL_LEAF: return water
+			#CELL_BARK: return hp
+			#_: assert(false, "invalid cell typ asdadsadadadsadsdsdad"); return -1
 
 
 	func set_k_value(ix: int, to: int) -> void:
-		match ix:
-			CELL_FLESH: energy = to
-			CELL_LEAF: water = to
-			CELL_BARK: hp = to
-			_: assert(false, "invalid cell typ asdadsadadadsadsdsdad")
+		k_vals[ix] = to
+		#match ix:
+			#CELL_FLESH: energy = to
+			#CELL_LEAF: water = to
+			#CELL_BARK: hp = to
+			#_: assert(false, "invalid cell typ asdadsadadadsadsdsdad")
 
 
 	func get_highest_k_value() -> int:
-		if energy == water and water == hp and hp == 0:
+		if k_vals[1] == k_vals[2] and k_vals[2] == k_vals[3] and k_vals[3] == 0:
 			return CELL_NONE
-		if energy > water:
-			if energy > hp: return CELL_FLESH
+		if k_vals[1] > k_vals[2]:
+			if k_vals[1] > k_vals[3]: return CELL_FLESH
 			else: return CELL_BARK
 		else:
-			if water > hp: return CELL_LEAF
+			if k_vals[2] > k_vals[3]: return CELL_LEAF
 			else: return CELL_BARK
 
 
@@ -52,6 +132,9 @@ class TreeCell:
 		energy = energy_
 		water = water_
 		hp = hp_
+		k_vals[1] = energy_
+		k_vals[2] = water_
+		k_vals[3] = hp_
 
 
 	static func from_bytes(
@@ -74,82 +157,7 @@ class TreeCell:
 
 
 	static func get_kernel(tyyp: int, ct: int) -> PackedVector4Array:
-		if tyyp == CELL_FLESH:
-			if ct == CELL_FLESH: return [
-				Vector4(0, 0, 0, 1.0),
-				Vector4(0, -1, 0, 0.05),
-				Vector4(0, -2, 0, 0.02),
-				Vector4(0, -3, 0, 0.01),
-				#Vector4(  0,  0,  1, 0.08),
-				#Vector4(  0,  0, -1, 0.08),
-				#Vector4(  1,  0,  0, 0.08),
-				#Vector4( -1,  0,  0, 0.08),
-			]
-			elif ct == CELL_BARK: return [
-				Vector4(0, 0, 0, 0.05)
-			]
-			elif ct == CELL_LEAF: return [
-				Vector4(0, 0, 0, 0.1),
-			]
-		elif tyyp == CELL_BARK:
-			if ct == CELL_FLESH: return [
-				Vector4( 0,  0,  0, -9),
-				Vector4( 1,  0,  0, 0.55),
-				Vector4(-1,  0,  0, 0.55),
-				Vector4( 0,  0,  1, 0.55),
-				Vector4( 0,  0, -1, 0.55),
-			]
-			elif ct == CELL_BARK: return []
-			elif ct == CELL_LEAF: return []
-		elif tyyp == CELL_LEAF:
-			if ct == CELL_FLESH: return [
-				Vector4( 0,  0,  0,  -12),
-				Vector4( 0, -1,  0, 0.3),
-				Vector4( 1, -1,  0, 0.3),
-				Vector4(-1, -1,  0, 0.3),
-				Vector4( 0, -1,  1, 0.3),
-				Vector4( 0, -1, -1, 0.3),
-				Vector4(0, 1, 0, -7),
-				Vector4(0, 2, 0, -6),
-				Vector4(0, 3, 0, -5),
-				Vector4(0, 4, 0, -4),
-				Vector4(0, 5, 0, -3),
-				Vector4(0, 6, 0, -2),
-				Vector4(0, 7, 0, -1),
-				Vector4(0, 8, 0, -1),
-				Vector4(0, 9, 0, -1),
-				Vector4(0, 10, 0, -1),
-			]
-			elif ct == CELL_BARK: return [
-				Vector4( 0,  0,  0,  -7),
-				Vector4(0, 1, 0, -12),
-				Vector4(0, 2, 0, -11),
-				Vector4(0, 3, 0, -10),
-				Vector4(0, 4, 0, -9),
-				Vector4(0, 5, 0, -8),
-				Vector4(0, 6, 0, -7),
-				Vector4(0, 7, 0, -6),
-				Vector4(0, 8, 0, -1),
-				Vector4(0, 9, 0, -1),
-				Vector4(0, 10, 0, -1),
-			]
-			elif ct == CELL_LEAF: return [
-				Vector4( 1, 0,  0, 0.25),
-				Vector4(-1, 0,  0, 0.25),
-				Vector4( 0, 0,  1, 0.25),
-				Vector4( 0, 0, -1, 0.25),
-				Vector4( 2, 0,  0, 0.05),
-				Vector4(-2, 0,  0, 0.05),
-				Vector4( 0, 0,  2, 0.05),
-				Vector4( 0, 0, -2, 0.05),
-				Vector4(0, 1, 0, 0),
-				Vector4(0, 2, 0, -4 + 1),
-				Vector4(0, 3, 0, -3 + 1),
-				Vector4(0, 4, 0, -2 + 1),
-				Vector4(0, 5, 0, -1 + 1),
-			]
-		assert(false, "What type is this +?? ?? ?? ?? ? ?? ? ? ? ? ? ???? ?? ? ?? ? ??")
-		return []
+		return StupitTreeLife.KERNELS[tyyp][ct]
 
 
 	func _to_string() -> String:
@@ -265,9 +273,9 @@ func real_generation(
 				var t := newgen[Vector3i(x, y, z)]
 				#print("copying over from t ", t)
 				newcells[ix] = t.type
-				newenergy[ix] = t.energy
-				newwater[ix] = t.water
-				newhp[ix] = t.hp
+				newenergy[ix] = t.k_vals[1]
+				newwater[ix] = t.k_vals[2]
+				newhp[ix] = t.k_vals[3]
 	#for y in size:
 		#for z in size:
 			#for x in size:
