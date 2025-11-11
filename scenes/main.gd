@@ -11,7 +11,7 @@ var _cells: PackedByteArray
 var thread := Thread.new()
 var mutex := Mutex.new()
 var semaphore := Semaphore.new()
-
+var running := true
 
 
 func _ready() -> void:
@@ -20,12 +20,14 @@ func _ready() -> void:
 
 	_draw_life()
 
+	running = true
 	thread.start(_simulate_thread)
 	_simulated = true
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
+		running = false
 		semaphore.post()
 		thread.wait_to_finish()
 
@@ -57,8 +59,10 @@ func _simulate() -> void:
 
 var _simulated := false
 func _simulate_thread() -> void:
-	while true:
+	while running:
 		semaphore.wait()
+		if not running:
+			break
 		_simulate()
 
 
