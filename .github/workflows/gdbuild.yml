@@ -36,6 +36,7 @@ jobs:
         with:
           tag: ${{ github.ref_name }}
           artifacts: ${{ steps.export.outputs.archive_directory }}/*
+          token: ${{ secrets.GITHUB_TOKEN }}
 
     
       
