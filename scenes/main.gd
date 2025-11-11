@@ -13,7 +13,6 @@ var mutex := Mutex.new()
 var semaphore := Semaphore.new()
 
 
-
 func _ready() -> void:
 	_cells = PackedByteArray()
 	life.init(_cells, board_size)
