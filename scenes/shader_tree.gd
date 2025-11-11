@@ -12,7 +12,9 @@ var output_bytes: PackedByteArray
 var pipeline: RID 
 var uniform_set: RID
 
+# Celloral Automata
 class CA:
+	#alternate between writing and reading from board b to a and a to b
 	var state_a: PackedFloat32Array
 	var state_b: PackedFloat32Array
 	var kernel: PackedFloat32Array

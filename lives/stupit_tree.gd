@@ -24,12 +24,12 @@ static var FLESH_KERNELS: Dictionary[int, PackedVector4Array] = {
 }
 static var LEAF_KERNELS: Dictionary[int, PackedVector4Array] = {
 	CELL_FLESH: [
-		Vector4( 0,  0,  0,  -12),
-		Vector4( 0, -1,  0, 0.3),
-		Vector4( 1, -1,  0, 0.3),
-		Vector4(-1, -1,  0, 0.3),
-		Vector4( 0, -1,  1, 0.3),
-		Vector4( 0, -1, -1, 0.3),
+		Vector4(0, 0, 0, -12),
+		Vector4(0, -1, 0, 0.3),
+		Vector4(1, -1, 0, 0.3),
+		Vector4(-1, -1, 0, 0.3),
+		Vector4(0, -1, 1, 0.3),
+		Vector4(0, -1, -1, 0.3),
 		Vector4(0, 1, 0, -7),
 		Vector4(0, 2, 0, -6),
 		Vector4(0, 3, 0, -5),
@@ -42,14 +42,14 @@ static var LEAF_KERNELS: Dictionary[int, PackedVector4Array] = {
 		Vector4(0, 10, 0, -1),
 	],
 	CELL_LEAF: [
-		Vector4( 1, 0,  0, 0.25),
-		Vector4(-1, 0,  0, 0.25),
-		Vector4( 0, 0,  1, 0.25),
-		Vector4( 0, 0, -1, 0.25),
-		Vector4( 2, 0,  0, 0.05),
-		Vector4(-2, 0,  0, 0.05),
-		Vector4( 0, 0,  2, 0.05),
-		Vector4( 0, 0, -2, 0.05),
+		Vector4(1, 0, 0, 0.25),
+		Vector4(-1, 0, 0, 0.25),
+		Vector4(0, 0, 1, 0.25),
+		Vector4(0, 0, -1, 0.25),
+		Vector4(2, 0, 0, 0.05),
+		Vector4(-2, 0, 0, 0.05),
+		Vector4(0, 0, 2, 0.05),
+		Vector4(0, 0, -2, 0.05),
 		Vector4(0, 1, 0, 0),
 		Vector4(0, 2, 0, -4 + 1),
 		Vector4(0, 3, 0, -3 + 1),
@@ -57,7 +57,7 @@ static var LEAF_KERNELS: Dictionary[int, PackedVector4Array] = {
 		Vector4(0, 5, 0, -1 + 1),
 	],
 	CELL_BARK: [
-		Vector4( 0,  0,  0,  -7),
+		Vector4(0, 0, 0, -7),
 		Vector4(0, 1, 0, -12),
 		Vector4(0, 2, 0, -11),
 		Vector4(0, 3, 0, -10),
@@ -72,22 +72,21 @@ static var LEAF_KERNELS: Dictionary[int, PackedVector4Array] = {
 }
 static var BARK_KERNELS: Dictionary[int, PackedVector4Array] = {
 	CELL_FLESH: [
-		Vector4( 0,  0,  0, -9),
-		Vector4( 1,  0,  0, 0.55),
-		Vector4(-1,  0,  0, 0.55),
-		Vector4( 0,  0,  1, 0.55),
-		Vector4( 0,  0, -1, 0.55),
+		Vector4(0, 0, 0, -9),
+		Vector4(1, 0, 0, 0.55),
+		Vector4(-1, 0, 0, 0.55),
+		Vector4(0, 0, 1, 0.55),
+		Vector4(0, 0, -1, 0.55),
 	],
 	CELL_LEAF: [],
 	CELL_BARK: [],
 }
-static var KERNELS := [{}, FLESH_KERNELS, LEAF_KERNELS, BARK_KERNELS]
+static var KERNELS := [ {}, FLESH_KERNELS, LEAF_KERNELS, BARK_KERNELS]
 
 
 const NAMES: PackedStringArray = ["NONE", "FLESH", "LEAF", "BARK", "MAX"]
 
 class TreeCell:
-
 	static var NULL := new(0, 0, 0, 0)
 
 	var type: int
@@ -126,6 +125,11 @@ class TreeCell:
 			if k_vals[2] > k_vals[3]: return CELL_LEAF
 			else: return CELL_BARK
 
+	func clamp(v_min: int, v_max: int):
+		energy = clampi(energy, v_min, v_max)
+		water = clampi(water, v_min, v_max)
+		hp = clampi(hp, v_min, v_max)
+
 
 	func _init(type_: int, energy_: int, water_: int, hp_: int) -> void:
 		type = type_
@@ -145,23 +149,25 @@ class TreeCell:
 		size: int,
 	) -> Dictionary[Vector3i, TreeCell]:
 		var tc: Dictionary[Vector3i, TreeCell]
-		for y in size:
-			for x in size:
+		var i = 0
+		for x in size:
+			for y in size:
 				for z in size:
-					var i := Life.ix3d(x, y, z, size)
+					# var i := Life.ix3d(x, y, z, size)
 					if oldcells[i] == 0:
 						tc[Vector3i(x, y, z)] = NULL
 					else:
 						tc[Vector3i(x, y, z)] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
+					i += 1
 		return tc
 
-
+	# returns a value of the current cell based on the surrounding cells
 	static func get_kernel(tyyp: int, ct: int) -> PackedVector4Array:
 		return StupitTreeLife.KERNELS[tyyp][ct]
 
 
 	func _to_string() -> String:
-		return "T:" + NAMES[type].lpad(6, " ") +" F:" + str(energy).lpad(4, " ")+" L:" +str(water).lpad(4, " ") +" B:"+str(hp).lpad(4, " ")
+		return "T:" + NAMES[type].lpad(6, " ") + " F:" + str(energy).lpad(4, " ") + " L:" + str(water).lpad(4, " ") + " B:" + str(hp).lpad(4, " ")
 
 
 const ENERGY_DIMS: PackedByteArray = [
@@ -192,8 +198,8 @@ func init(cells: PackedByteArray, size: int) -> void:
 	for y in 10:
 		for x in size:
 			for z in size:
-				var xc := x-centre
-				var zc := z-centre
+				var xc := x - centre
+				var zc := z - centre
 				if xc * xc + zc * zc <= 2 * 2:
 					celltypes[ix3d(x, y, z, size)] = CELL_FLESH
 					energy[ix3d(x, y, z, size)] = 255
@@ -260,22 +266,19 @@ func real_generation(
 
 	size: int
 ) -> void:
-
 	var treecells := TreeCell.from_bytes(oldcells, oldenergy, oldwater, oldhp, size)
 	#for t in treecells.values():
 		#prints("input:", t)
 	var newgen := _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(treecells, size)
 
-	for y in size:
-		for z in size:
-			for x in size:
-				var ix := ix3d(x, y, z, size)
-				var t := newgen[Vector3i(x, y, z)]
-				#print("copying over from t ", t)
-				newcells[ix] = t.type
-				newenergy[ix] = t.k_vals[1]
-				newwater[ix] = t.k_vals[2]
-				newhp[ix] = t.k_vals[3]
+	var ix = 0;
+	for t in newgen.values():
+		newcells[ix] = t.type
+		newenergy[ix] = t.k_vals[1]
+		newwater[ix] = t.k_vals[2]
+		newhp[ix] = t.k_vals[3]
+		ix += 1
+
 	#for y in size:
 		#for z in size:
 			#for x in size:
@@ -301,7 +304,6 @@ func _sim_energy(
 	if cell == CELL_FLESH:
 		# distribute energy
 		for n in NEIGHBORS:
-
 			@warning_ignore("narrowing_conversion")
 			var i := ix3d(x + n.x, y + n.y, z + n.z, size)
 			if oldcells[i] == 0:
@@ -319,6 +321,8 @@ func _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(cells: Di
 	for k in cells:
 		ngen[k] = TreeCell.new(0, 0, 0, 0)
 
+	var coord := Vector3i(0, 0, 0)
+	var sum: float = 0.0;
 	#print("KERNELS:")
 	for ct in range(CELL_FLESH, CELL_MAX):
 		#print(NAMES[ct])
@@ -328,28 +332,32 @@ func _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(cells: Di
 			#print("  kernel: ", kernel)
 			if kernel.is_empty(): continue # :) optimisising
 
-			for y in size:
-				for z in size:
-					for x in size:
-						var coord := Vector3i(x, y, z)
+			for x in size:
+				coord.x = x
+				for y in size:
+					coord.y = y
+					for z in size:
+						coord.z = z
 						#prints(NAMES[ct][0], NAMES[ct2][0], "AT", coord)
-						var sum: float = 0
+						sum = ngen[coord].get_k_value(ct)
 						for k_add in kernel:
 							var kcoord := Vector3i(k_add.x + x, k_add.y + y, k_add.z + z)
 							var c: TreeCell = cells.get(kcoord, TreeCell.NULL)
-							var add := (c.get_k_value(ct2) * k_add.w) / 255.0
-							sum += add
+							# var add := (c.get_k_value(ct2) * k_add.w) / 255.0
+							# sum += add
+							sum += c.get_k_value(ct2) * k_add.w
 							#prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.get_k_value(ct2), k_add.w, add, kcoord)
-						var prev := ngen[coord].get_k_value(ct)
-						sum = prev / 255.0 + sum
-						ngen[coord].set_k_value(ct, clampi(int(sum * 255), 0, 255))
+						# var prev := ngen[coord].get_k_value(ct)
+						# sum = prev / 255.0 + sum
+						ngen[coord].set_k_value(ct, int(sum))
 						#prints(NAMES[ct][0], NAMES[ct2][0], "og   ", cells[coord].get_k_value(ct))
 						#prints(NAMES[ct][0], NAMES[ct2][0], "prevn", prev)
 						#prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[coord].get_k_value(ct), "\n")
 
 	#print("NEW GEN:")
-	for k in ngen:
-		ngen[k].type = ngen[k].get_highest_k_value()
+	for t in ngen.values():
+		t.type = t.get_highest_k_value()
+		t.clamp(0, 255)
 		#print("   this cell at ", k, " is ", ngen[k])
 
 	return ngen
