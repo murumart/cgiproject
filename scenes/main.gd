@@ -25,23 +25,19 @@ func _ready() -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_PREDELETE:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		print("ö")
+		_stop_thread = true
 		semaphore.post()
 		thread.wait_to_finish()
 
 
 func _process(_delta: float) -> void:
 	if auto_process:
-		#_simulate()
-		#_draw_life()
-		#set_process(false)
-		#var tw := create_tween()
-		#tw.tween_interval(0.15)
-		#tw.tween_callback(set_process.bind(true))
 		if _simulated:
+			_simulated = false
 			semaphore.post()
 			_draw_life()
-			_simulated = false
 	else:
 		if Input.is_action_just_pressed(&"ui_accept"):
 			print(":=")
@@ -56,8 +52,11 @@ func _simulate() -> void:
 
 
 var _simulated := false
+var _stop_thread := false
 func _simulate_thread() -> void:
 	while true:
+		if _stop_thread:
+			break
 		semaphore.wait()
 		_simulate()
 

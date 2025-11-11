@@ -204,7 +204,7 @@ func init(cells: PackedByteArray, size: int) -> void:
 	for i in range(0, layer_length):
 		cells[i] = celltypes[i]
 	for i in range(layer_length, layer_length * 2):
-		cells[i] = energy[i - layer_length * 2] # ??????????????? Shouldn't it be i - layer_length
+		cells[i] = energy[i - layer_length]
 
 
 func generation(old: PackedByteArray, size: int) -> PackedByteArray:
