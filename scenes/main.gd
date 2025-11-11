@@ -63,7 +63,9 @@ func _simulate_thread() -> void:
 
 
 
-var _boxes: Dictionary[int, MeshInstance3D]
+var _boxes: Dictionary[int, Dictionary] = {
+
+}
 func _draw_life() -> void:
 	if _boxes.is_empty():
 		draw_parent.get_children().map(func(n: Node) -> void: n.queue_free())
@@ -72,16 +74,36 @@ func _draw_life() -> void:
 		for y in board_size:
 			for z in board_size:
 				var ix := Life.ix3d(x, y, z, board_size)
-				if not ix in _boxes:
-					var cube := MeshInstance3D.new()
-					#cube.mesh.size = Vector3.ONE * 0.5
-					cube.position = Vector3(x - board_size * 0.5, y, z - board_size * 0.5)
-					draw_parent.add_child(cube)
-					cube.mesh = BoxMesh.new()
-					_boxes[ix] = cube
-				var cell = _cells[ix]
-				if cell - 1 < cell_materials.size():
-					_boxes[ix].material_override = cell_materials[cell - 1]
-				else:
-					_boxes[ix].material_override = null
-				_boxes[ix].visible = cell != 0
+				_draw_check_box(ix, x, y, z)
+				_draw_update_cell(ix)
+
+
+var _bmesh := BoxMesh.new()
+var _cube: MeshInstance3D
+func _draw_check_box(ix: int, x: int, y: int, z: int) -> void:
+	if _cube == null:
+		_cube = MeshInstance3D.new()
+		_cube.mesh = _bmesh
+	if _boxes.is_empty():
+		for i in cell_materials.size():
+			_boxes[i + 1] = {}
+	if not ix in _boxes[1]:
+		#cube.mesh.size = Vector3.ONE * 0.5
+		for i in cell_materials.size():
+			var matcube := _cube.duplicate()
+			matcube.position = Vector3(x - board_size * 0.5, y, z - board_size * 0.5)
+			draw_parent.add_child(matcube)
+			matcube.material_override = cell_materials[i]
+			_boxes[i + 1][ix] = matcube
+
+
+func _draw_update_cell(ix: int) -> void:
+	var cell = _cells[ix]
+	#if cell - 1 < cell_materials.size():
+		#_boxes[ix].material_override = cell_materials[cell - 1]
+	#else:
+		#_boxes[ix].material_override = null
+	for b in _boxes:
+		_boxes[b][ix].hide()
+	if cell == 0: return
+	_boxes[cell][ix].show()
