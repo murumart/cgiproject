@@ -65,18 +65,14 @@ class TreeCell:
 		oldwater: PackedByteArray,
 		oldhp: PackedByteArray,
 		size: int,
-	) -> Dictionary[Vector3i, TreeCell]:
-		var tc: Dictionary[Vector3i, TreeCell]
-		var i = 0
-		for x in size:
-			for y in size:
-				for z in size:
-					# var i := Life.ix3d(x, y, z, size)
-					if oldcells[i] == 0:
-						tc[Vector3i(x, y, z)] = NULL
-					else:
-						tc[Vector3i(x, y, z)] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
-					i += 1
+	) -> Array:
+		var tc: Array = []
+		tc.resize(size * size * size)
+		for i in size * size * size:
+			if oldcells[i] == 0:
+				tc[i] = NULL
+			else:
+				tc[i] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
 		return tc
 
 	# returns a value of the current cell based on the surrounding cells
@@ -269,33 +265,12 @@ func real_generation(
 	# var coords = Vector3i(0,0,0)
 	var ix = 0;
 	
-	for t in newgen.values():
+	for t in newgen:
 		newcells[ix] = t.type
 		newenergy[ix] = t.energy
 		newwater[ix] = t.water
 		newhp[ix] = t.hp
 		ix += 1
-	
-	# for x in size:
-	# 	coords.x=x
-	# 	for y in size:
-	# 		coords.y=y
-	# 		for z in size:
-	# 			coords.z=z
-	# 			# var ix := ix3d(x, y, z, size)
-	# 			t = newgen[coords]
-	# 			#print("copying over from t ", t)
-	# 			newcells[ix] = t.type
-	# 			newenergy[ix] = t.energy
-	# 			newwater[ix] = t.water
-	# 			newhp[ix] = t.hp
-	# 			ix += 1
-	#for y in size:
-		#for z in size:
-			#for x in size:
-#
-				#var ix := ix3d(x, y, z, size)
-				#_sim_energy(x, y, z, size, oldcells[ix], oldenergy, oldcells, newenergy)
 
 
 func _sim_energy(
@@ -327,13 +302,13 @@ func _sim_energy(
 	newenergy[ix] = byte_add(newenergy[ix], energy_level)
 
 
-func _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(cells: Dictionary[Vector3i, TreeCell], size: int) -> Dictionary[Vector3i, TreeCell]:
-	var ngen: Dictionary[Vector3i, TreeCell] = {}
+func _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(cells: Array, size: int) -> Array:
+	var layer_length := cells.size()
+	var ngen: Array = []
+	ngen.resize(layer_length)
+	for i in range(layer_length):
+		ngen[i] = TreeCell.new(0, 0, 0, 0)
 
-	for k in cells:
-		ngen[k] = TreeCell.new(0, 0, 0, 0)
-
-	var coord := Vector3i(0, 0, 0)
 	var sum: float = 0.0;
 	#print("KERNELS:")
 	for ct in range(CELL_FLESH, CELL_MAX):
@@ -344,32 +319,36 @@ func _real_cool_object_jeneration_optimised_0999999_type_algorithm_yes(cells: Di
 			#print("  kernel: ", kernel)
 			if kernel.is_empty(): continue # :) optimisising
 
+			var ix = 0
 			for x in size:
-				coord.x=x
 				for y in size:
-					coord.y=y
 					for z in size:
-						coord.z=z
 						#prints(NAMES[ct][0], NAMES[ct2][0], "AT", coord)
-						sum = ngen[coord].get_k_value(ct)
+						sum = ngen[ix].get_k_value(ct)
 						for k_add in kernel:
-							var kcoord := Vector3i(k_add.x + x, k_add.y + y, k_add.z + z)
-							var c: TreeCell = cells.get(kcoord, TreeCell.NULL)
+							var kx := int(k_add.x) + x
+							var ky := int(k_add.y) + y
+							var kz := int(k_add.z) + z
+							if kx < 0 or ky < 0 or kz < 0 or kx >= size or ky >= size or kz >= size:
+								continue
+							var kcoord: int = ix3d(kx, ky, kz, size)
+							var c: TreeCell = cells[kcoord]
 							# var add := (c.get_k_value(ct2) * k_add.w) / 255.0
 							# sum += add
 							sum += c.get_k_value(ct2) * k_add.w
-							#prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.get_k_value(ct2), k_add.w, add, kcoord)
+							# prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.get_k_value(ct2), k_add.w, c.get_k_value(ct2) * k_add.w, kcoord)
 						# var prev := ngen[coord].get_k_value(ct)
 						# sum = prev / 255.0 + sum
-						ngen[coord].set_k_value(ct, int(sum))
+						ngen[ix].set_k_value(ct, int(sum))
 						#prints(NAMES[ct][0], NAMES[ct2][0], "og   ", cells[coord].get_k_value(ct))
 						#prints(NAMES[ct][0], NAMES[ct2][0], "prevn", prev)
-						#prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[coord].get_k_value(ct), "\n")
+						# prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[ix].get_k_value(ct), "\n")
+						ix += 1
 
 	#print("NEW GEN:")
-	for t in ngen.values():
+	for t in ngen:
 		t.type = t.get_highest_k_value()
 		t.clamp(0, 255)
-		#print("   this cell at ", k, " is ", ngen[k])
+		# print("   this cell at ", i, " is ", t)
 
 	return ngen

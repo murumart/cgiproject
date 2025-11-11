@@ -69,10 +69,10 @@ func _draw_life() -> void:
 	if _boxes.is_empty():
 		draw_parent.get_children().map(func(n: Node) -> void: n.queue_free())
 
+	var ix := 0
 	for x in board_size:
 		for y in board_size:
 			for z in board_size:
-				var ix := Life.ix3d(x, y, z, board_size)
 				if not ix in _boxes:
 					var cube := MeshInstance3D.new()
 					#cube.mesh.size = Vector3.ONE * 0.5
@@ -86,3 +86,4 @@ func _draw_life() -> void:
 				else:
 					_boxes[ix].material_override = null
 				_boxes[ix].visible = cell != 0
+				ix += 1
