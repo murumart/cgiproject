@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://yo1slvqoknh0"]
+
+[ext_resource type="Shader" uid="uid://8pdmscum8ja3" path="res://shaders/volumetric_display.gdshader" id="1_5h8l5"]
+
+[resource]
+render_priority = 1
+shader = ExtResource("1_5h8l5")
+shader_parameter/color = Color(0.98402256, 0.59281677, 0.73941725, 1)
+shader_parameter/density = 100.0
+shader_parameter/render_setting = 0

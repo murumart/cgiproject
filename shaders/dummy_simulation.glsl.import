@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://4goh1vt5y1tc"
+path="res://.godot/imported/dummy_simulation.glsl-4dbe27c842eefd1295e9af93c79ab79a.res"
+
+[deps]
+
+source_file="res://shaders/dummy_simulation.glsl"
+dest_files=["res://.godot/imported/dummy_simulation.glsl-4dbe27c842eefd1295e9af93c79ab79a.res"]
+
+[params]
+
