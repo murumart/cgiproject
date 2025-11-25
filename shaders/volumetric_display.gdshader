@@ -37,7 +37,7 @@ void fragment() {
 
 	// Get texture dimensions
 	ivec3 tex_size = textureSize(simulation_data, 0);
-	int max_steps = tex_size.x * 2; // should this be * 2?
+	//int max_steps = tex_size.x * 2; // should this be * 2?
 	vec3 voxel_resolution = vec3(tex_size);
 	
 	// Convert to voxel space (0 to voxel_resolution)
@@ -86,8 +86,8 @@ void fragment() {
 	
 	// DDA traversal
 	// move the ray through the voxel grid until we reach the end or alpha is 1 (find the next occupied voxel)
-	while (steps < uint(max_steps)) {
-		steps++;
+	while (true) { // can make faster using max steps
+		//steps++;
 		
 		// Sample current voxel
 		vec3 uvw = (vec3(coord) + 0.5) / voxel_resolution; // uvw coordinates of the voxel
