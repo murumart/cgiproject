@@ -39,18 +39,20 @@ void fragment() {
 	inv_dir = clamp(inv_dir, vec3(-FLT_MAX), vec3(FLT_MAX));
 	
 	// Calculate intersection with voxel grid bounds
-	vec3 t1 = -origin * inv_dir;
-	vec3 t2 = (voxel_resolution - origin) * inv_dir;
+	vec3 t1 = -origin * inv_dir; // t1 is the distance to the first intersection with the voxel grid
+	vec3 t2 = (voxel_resolution - origin) * inv_dir; // t2 is the distance to the second intersection with the voxel grid
 	
-	vec3 tmins = min(t1, t2);
-	vec3 tmaxs = max(t1, t2);
+	vec3 tmins = min(t1, t2); 
+	vec3 tmaxs = max(t1, t2); 
 	
 	// Don't clamp tmin to 0 - if camera is inside the volume, tmin will be negative
-	float tmin = max(tmins.x, max(tmins.y, tmins.z));
-	float tmax = min(tmaxs.x, min(tmaxs.y, tmaxs.z));
+	float tmin = max(tmins.x, max(tmins.y, tmins.z)); 
+	float tmax = min(tmaxs.x, min(tmaxs.y, tmaxs.z)); 
 	
-	// Discard if ray misses the volume
-	if (tmin > tmax) discard;
+	// discard if the ray doesn't hit the volume
+	if (tmin > tmax){
+		discard;
+	}
 	
 	// Move origin to entry point (or keep at camera position if inside)
 	origin += dir * max(tmin, 0.0);
