@@ -12,18 +12,6 @@ uniform int render_setting : hint_range(0, 2) = 0;
 //uniform int max_steps = 128; // Reduce this if performance is low
 
 
-// Standard AABB Intersection
-vec2 intersect_box(vec3 orig, vec3 dir, vec3 box_min, vec3 box_max) {
-	vec3 inv_dir = 1.0 / dir;
-	vec3 tmin_tmp = (box_min - orig) * inv_dir;
-	vec3 tmax_tmp = (box_max - orig) * inv_dir;
-	vec3 tmin = min(tmin_tmp, tmax_tmp);
-	vec3 tmax = max(tmin_tmp, tmax_tmp);
-	float t0 = max(tmin.x, max(tmin.y, tmin.z));
-	float t1 = min(tmax.x, min(tmax.y, tmax.z));
-	return vec2(t0, t1); // t0 is the start, t1 is the end
-}
-
 varying vec3 local_pos;
 
 void vertex() {
