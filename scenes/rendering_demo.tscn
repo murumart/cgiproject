@@ -27,6 +27,7 @@ size = Vector2(900, 900)
 [sub_resource type="BoxMesh" id="BoxMesh_o5vmg"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_22u3y"]
+size = Vector3(100, 100, 100)
 
 [node name="RenderingDemo" type="Node3D"]
 
@@ -51,7 +52,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87752557, -0.9913276)
 mesh = SubResource("BoxMesh_o5vmg")
 
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0.03567314, 51.263046, 0.08656311)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.485502, 54.834957, 2.4937973)
 material_override = ExtResource("2_qjyat")
 mesh = SubResource("BoxMesh_22u3y")
 script = ExtResource("3_lqk3y")

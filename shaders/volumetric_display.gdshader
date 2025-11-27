@@ -10,17 +10,18 @@ uniform vec4 color : source_color = vec4(0.2, 0.8, 1.0, 1.0);
 uniform float density : hint_range(0.1, 100) = 100;
 uniform int render_setting : hint_range(0, 2) = 0;
 //uniform int max_steps = 128; // Reduce this if performance is low
+uniform float mesh_size : hint_range(1, 400);
 
 
 varying vec3 local_pos;
 
 void vertex() {
-	local_pos = VERTEX;
+	local_pos = VERTEX / mesh_size;
 }
 
 void fragment() {
 	// Transform camera ray to object local space
-	vec3 local_cam = (inverse(MODEL_MATRIX) * vec4(CAMERA_POSITION_WORLD, 1.0)).xyz; // position of the camera in object space
+	vec3 local_cam = (inverse(MODEL_MATRIX) * vec4(CAMERA_POSITION_WORLD, 1.0)).xyz / mesh_size; // position of the camera in object space
 	vec3 local_frag = local_pos; // position of the fragment in object space
 	vec3 dir = normalize(local_frag - local_cam); // direction to the fragment from the camera
 
@@ -71,7 +72,7 @@ void fragment() {
 	float alpha_acc = 0.0; // accumulated alpha
 	uint steps = 0u; // the number of steps we have taken
 	int stepped_axis = 0; // the axis we are stepping on (0 = x, 1 = y, 2 = z)
-
+	int step_sign = 0;
 
 	float depth = 0.0;
 	
@@ -97,20 +98,24 @@ void fragment() {
 				coord.x += istep.x;
 				t.x += delta.x;
 				stepped_axis = 0;
+				step_sign = sign(istep.x);
 			} else { // z is the smallest
 				coord.z += istep.z;
 				t.z += delta.z;
 				stepped_axis = 2;
+				step_sign = sign(istep.z);
 			}
 		} else { // y is the smallest
 			if (t.y < t.z) { // y is the smallest
 				coord.y += istep.y;
 				t.y += delta.y;
 				stepped_axis = 1;
+				step_sign = sign(istep.y);
 			} else { // z is the smallest
 				coord.z += istep.z;
 				t.z += delta.z;
 				stepped_axis = 2;
+				step_sign = sign(istep.z);
 			}
 		}
 		
@@ -126,6 +131,11 @@ void fragment() {
 	switch (render_setting) {
 		case 0: // color
 			ALBEDO = color.rgb;
+			switch (stepped_axis) {
+				case 0: ALBEDO -= vec3(0.2); break;
+				case 1: if (step_sign > 0) ALBEDO -= vec3(0.4); break;
+				case 2: ALBEDO -= vec3(0.1); break;
+			}
 			ALPHA = alpha_acc;
 			break;
 		case 1: // depth
