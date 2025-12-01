@@ -2,13 +2,13 @@ shader_type spatial;
 
 // source https://www.youtube.com/watch?v=ztkh1r1ioZo
 
-// Unshaded is faster; cull_back allows us to see "into" the box
-render_mode unshaded, cull_disabled;
+// Unshaded is faster; cull_front allows us to see "into" the box
+render_mode unshaded, cull_front;
 
 uniform sampler3D simulation_data : filter_nearest; // The texture from the compute shader
 uniform vec4 color : source_color = vec4(0.2, 0.8, 1.0, 1.0);
 uniform float density : hint_range(0.1, 100) = 100;
-uniform int render_setting : hint_range(0, 2) = 0;
+uniform int render_setting : hint_range(0, 3) = 0;
 //uniform int max_steps = 128; // Reduce this if performance is low
 uniform float mesh_size : hint_range(1, 400);
 
@@ -79,7 +79,7 @@ void fragment() {
 	// DDA traversal
 	// move the ray through the voxel grid until we reach the end or alpha is 1 (find the next occupied voxel)
 	while (true) { // can make faster using max steps
-		//steps++;
+		steps++;
 		
 		// Sample current voxel
 		vec3 uvw = (vec3(coord) + 0.5) / voxel_resolution; // uvw coordinates of the voxel
@@ -121,11 +121,13 @@ void fragment() {
 		
 		// Check if we exited the volume
 		if (any(lessThan(coord, ivec3(0))) || any(greaterThanEqual(coord, ivec3(voxel_resolution)))) {
+			//depth += t[stepped_axis];
+			//alpha_acc = 1.0;
 			break;
 		}
 	}
 
-	if (alpha_acc < 0.01) discard;
+	if (alpha_acc < 0.01 && render_setting != 3) discard;
 
 	depth = depth / 255.0;
 	switch (render_setting) {
@@ -157,6 +159,10 @@ void fragment() {
 					ALPHA = alpha_acc;
 					break;
 				}
+			break;
+		case 3: // steps
+			ALBEDO = vec3(float(steps)) / vec3(tex_size);
+			ALPHA = 1.0;
 			break;
 	}
 }
