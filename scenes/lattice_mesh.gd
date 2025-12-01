@@ -69,13 +69,16 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 		var plane_col := PLANE_COLORS[i]
 
 		for j in grid_size + 1:
-			# make sure to draw in an order such that outer planes are in front of inner ones
 			var back := plane.abs() != plane
 			var out := Vector3()
 			if back:
+				# so that the back planes are put in correct positions
 				out = - plane * grid_size
 			for pvi in 4:
-				vertices.append(out + plane_vtx[pvi] * grid_size + plane * j + plane * 0.5)
+				var vtx := out + plane_vtx[pvi] * grid_size + plane * j
+				# adding 0.5 because reasons???
+				vtx += plane * 0.5
+				vertices.append(vtx)
 				uvs.append(plane_uv[pvi])
 				normals.append(plane)
 				colors.append(Color.RED * outof * j)
