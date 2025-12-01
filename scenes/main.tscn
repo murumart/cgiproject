@@ -92,8 +92,7 @@ size = Vector2(900, 900)
 
 [sub_resource type="BoxMesh" id="BoxMesh_tbgi4"]
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_sugp2"]
-size = Vector2(1, 1)
+[sub_resource type="TorusMesh" id="TorusMesh_tbgi4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_tefeu"]
 render_priority = 0
@@ -129,12 +128,11 @@ visible = false
 mesh = SubResource("BoxMesh_tbgi4")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1)
-visible = false
-mesh = SubResource("PlaneMesh_sugp2")
+transform = Transform3D(0.88848907, 0.33582944, -0.31273896, 0.112695225, -0.82030874, -0.56070834, -0.44484484, 0.46293908, -0.76668173, 0, 0, 0)
+mesh = SubResource("TorusMesh_tbgi4")
 
 [node name="LatticeMeshInstance" type="MeshInstance3D" parent="."]
 material_override = SubResource("ShaderMaterial_tefeu")
 script = ExtResource("4_jyhfs")
-grid_size = 4
+grid_size = 16
 metadata/_custom_type_script = "uid://o2qjsa51xmt1"

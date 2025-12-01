@@ -31,6 +31,7 @@ static var PLANE_UVS: Array[PackedVector2Array] = [
 ]
 
 static var PLANES: PackedVector3Array = [Vector3.RIGHT, Vector3.LEFT, Vector3.UP, Vector3.DOWN, Vector3.BACK, Vector3.FORWARD]
+static var PLANE_COLORS: PackedColorArray = [Color.RED, Color.RED, Color.GREEN, Color.GREEN, Color.BLUE, Color.BLUE]
 
 static var PLANE_INDICES: PackedInt32Array = [0, 1, 2, 2, 3, 0]
 
@@ -65,17 +66,18 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 		var plane := PLANES[i]
 		var plane_vtx := PLANE_VERTICES[i]
 		var plane_uv := PLANE_UVS[i]
+		var plane_col := PLANE_COLORS[i]
 
 		for j in grid_size + 1:
 			# make sure to draw in an order such that outer planes are in front of inner ones
 			var out := Vector3()
-			if plane.abs() != plane:
-				out = - plane * grid_size
+			#if plane.abs() != plane:
+			#	out = - plane * grid_size
 			for pvi in 4:
-				vertices.append(out + plane_vtx[pvi] * grid_size + plane * j)
+				vertices.append(out + plane_vtx[pvi] * grid_size + plane.abs() * j)
 				uvs.append(plane_uv[pvi])
 				normals.append(plane)
-				colors.append(Color.RED * outof * j)
+				colors.append(plane_col * outof * j)
 			
 			for index in PLANE_INDICES:
 				indices.append(index + ix)
@@ -88,8 +90,8 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_COLOR] = colors
 
-#	for i in Mesh.ARRAY_MAX:
-#		if arrays[i] == null: continue
-#		printt(i, arrays[i])
+	#for i in Mesh.ARRAY_MAX:
+	#	if arrays[i] == null: continue
+	#	printt(i, arrays[i])
 
 	return arrays
