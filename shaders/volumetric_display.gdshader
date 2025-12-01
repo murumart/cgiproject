@@ -3,7 +3,7 @@ shader_type spatial;
 // source https://www.youtube.com/watch?v=ztkh1r1ioZo
 
 // Unshaded is faster; cull_back allows us to see "into" the box
-render_mode unshaded, cull_disabled;
+render_mode unshaded, cull_front;
 
 uniform sampler3D simulation_data : filter_nearest; // The texture from the compute shader
 uniform vec4 color : source_color = vec4(0.2, 0.8, 1.0, 1.0);

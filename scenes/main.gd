@@ -5,6 +5,7 @@ extends Node3D
 @export var draw_parent: Node3D
 @export var cell_materials: Array[Material]
 @export var auto_process := false
+@export var lattice: LatticeMeshInstance
 
 var _cells: PackedByteArray
 
@@ -14,13 +15,22 @@ var semaphore := Semaphore.new()
 
 
 func _ready() -> void:
+	RenderingServer.set_debug_generate_wireframes(true)
+
 	_cells = PackedByteArray()
-	life.init(_cells, board_size)
+	#life.init(_cells, board_size)
 
-	_draw_life()
+	#_draw_life()
 
-	thread.start(_simulate_thread)
-	_simulated = true
+	#thread.start(_simulate_thread)
+	#_simulated = true
+
+	lattice.generate()
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event.is_action(&"ui_end") and event.is_pressed():
+		get_viewport().debug_draw = (get_viewport().debug_draw + 1) % 5
 
 
 func _notification(what: int) -> void:
@@ -58,7 +68,6 @@ func _simulate_thread() -> void:
 			break
 		semaphore.wait()
 		_simulate()
-
 
 
 var _boxes: Dictionary[int, Dictionary] = {
