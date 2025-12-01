@@ -70,14 +70,15 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 
 		for j in grid_size + 1:
 			# make sure to draw in an order such that outer planes are in front of inner ones
+			var back := plane.abs() != plane
 			var out := Vector3()
-			#if plane.abs() != plane:
-			#	out = - plane * grid_size
+			if back:
+				out = - plane * grid_size
 			for pvi in 4:
-				vertices.append(out + plane_vtx[pvi] * grid_size + plane.abs() * j)
+				vertices.append(out + plane_vtx[pvi] * grid_size + plane * j + plane * 0.5)
 				uvs.append(plane_uv[pvi])
 				normals.append(plane)
-				colors.append(plane_col * outof * j)
+				colors.append(Color.RED * outof * j)
 			
 			for index in PLANE_INDICES:
 				indices.append(index + ix)
@@ -90,8 +91,9 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 	arrays[Mesh.ARRAY_TEX_UV] = uvs
 	arrays[Mesh.ARRAY_COLOR] = colors
 
-	#for i in Mesh.ARRAY_MAX:
-	#	if arrays[i] == null: continue
-	#	printt(i, arrays[i])
+	if grid_size < 5:
+		for i in Mesh.ARRAY_MAX:
+			if arrays[i] == null: continue
+			printt(i, arrays[i])
 
 	return arrays

@@ -15,8 +15,6 @@ var semaphore := Semaphore.new()
 
 
 func _ready() -> void:
-	RenderingServer.set_debug_generate_wireframes(true)
-
 	_cells = PackedByteArray()
 	#life.init(_cells, board_size)
 
