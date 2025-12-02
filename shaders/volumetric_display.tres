@@ -7,5 +7,6 @@ render_priority = 1
 shader = ExtResource("1_5h8l5")
 shader_parameter/color = Color(0.98402256, 0.59281677, 0.73941725, 1)
 shader_parameter/density = 100.0
-shader_parameter/render_setting = 3
+shader_parameter/render_setting = 0
 shader_parameter/mesh_size = 100.0000047025
+shader_parameter/brick_size = 8

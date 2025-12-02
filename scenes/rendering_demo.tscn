@@ -41,18 +41,22 @@ environment = SubResource("Environment_lqk3y")
 [node name="Plane" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_o5vmg")
 
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.9638447, 0.26646462, 0, -0.2664646, 0.9638447, 3.8146973e-06, 76.50032, 85.6985)
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("volumetric_controller")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 59.735, 84.699)
 script = ExtResource("1_jjfih")
+volumetric_controller = NodePath("../Meshes/MeshInstance3D3")
 
 [node name="Meshes" type="Node3D" parent="."]
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87752557, -0.9913276)
+visible = false
 mesh = SubResource("BoxMesh_o5vmg")
 
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.485502, 54.834957, 2.4937973)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50.1, 0)
 material_override = ExtResource("2_qjyat")
 mesh = SubResource("BoxMesh_22u3y")
 script = ExtResource("3_lqk3y")
+render_setting = 3
+grid_size = Vector3i(2000, 2000, 2000)
