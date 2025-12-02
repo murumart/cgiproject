@@ -7,6 +7,10 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 // Output Texture (Write Only) - R8 format (red channel, 8-bit)
 layout(set = 0, binding = 0, r32f) uniform restrict writeonly image3D output_grid;
 
+layout(push_constant) uniform PushConstants {
+	uint seed;
+} pc;
+
 void main()
 {
 	ivec3 id = ivec3(gl_GlobalInvocationID.xyz);
@@ -36,8 +40,8 @@ void main()
 		
 		// Generate shape (Sphere + Noise)
 		float dist = length(center);
-		float radius = 0.4;
-		float noise = sin(pos.x * 20.0) * sin(pos.y * 20.0) * sin(pos.z * 20.0);
+		float radius = 0.4 * abs(sin(pc.seed * 0.002));
+		float noise = abs(sin(pc.seed * 0.02)) * sin(sin(pc.seed * 0.02) * pos.x * 20.0) * sin(sin(pc.seed * 0.02) * pos.y * 20.0) * sin(sin(pc.seed * 0.02) * pos.z * 20.0);
 		
 		bool is_filled = (dist < radius && noise > -0.5);
 		

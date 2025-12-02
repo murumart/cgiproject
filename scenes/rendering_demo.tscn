@@ -71,3 +71,4 @@ render_setting = 3
 brick_size = 16
 grid_size = 1500
 mesh_instance = NodePath(".")
+simulte = false

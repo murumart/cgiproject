@@ -23,7 +23,19 @@ var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 @export var grid_size := 512 # 512^3 = 134,217,728 voxels
 @export var mesh_instance: MeshInstance3D
 @export var material: ShaderMaterial
+@export var sim_seed: int = int(PI * 250)
+@export var simulte: bool = true
 
+
+func _process(_delta):
+	if simulte:
+		run_simulation_once()
+		if sim_seed >= int(PI * 1000):
+			sim_seed = 0
+		else:
+			sim_seed += 1
+		build_brick_map()
+		bind_texture_to_material()
 
 func _ready():
 	rd = RenderingServer.get_rendering_device()
@@ -33,7 +45,7 @@ func _ready():
 	var brick_grid_size1 = int(ceil(float(grid_size) / float(brick_size)))
 	brick_grid_size = Vector3i(brick_grid_size1, brick_grid_size1, brick_grid_size1)
 
-	print("Brick grid size: ", brick_grid_size)
+	#print("Brick grid size: ", brick_grid_size)
 
 	# Setup
 	setup_compute_pipeline()
@@ -68,7 +80,7 @@ func setup_brick_pipeline():
 
 func create_texture():
 	var fmt = RDTextureFormat.new()
-	fmt.width = int(grid_size / 32.0) # Packed along X axis
+	fmt.width = int(ceil(grid_size / 32.0)) # Packed along X axis
 	fmt.height = grid_size
 	fmt.depth = grid_size
 	fmt.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
@@ -99,27 +111,33 @@ func create_brick_map_texture():
 		RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
 	
 	brick_map_texture_rid = rd.texture_create(fmt, RDTextureView.new())
-	print("Brick map texture created: ", brick_grid_size, " = ", brick_grid_size.x * brick_grid_size.y * brick_grid_size.z, " bricks")
+	#print("Brick map texture created: ", brick_grid_size, " = ", brick_grid_size.x * brick_grid_size.y * brick_grid_size.z, " bricks")
 
 func run_simulation_once():
-	var uniform = RDUniform.new()
-	uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
-	uniform.binding = 0
-	uniform.add_id(texture_rid)
+	var uniform = RDUniform.new() # Create uniform for texture
+	uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE # Set uniform type to image
+	uniform.binding = 0 # Set binding to 0
+	uniform.add_id(texture_rid) # Add texture ID
 	
-	var uniform_set = rd.uniform_set_create([uniform], shader_rid, 0)
+	var uniform_set = rd.uniform_set_create([uniform], shader_rid, 0) # Create uniform set
 	
-	var compute_list = rd.compute_list_begin()
-	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_rid)
-	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
+	var compute_list = rd.compute_list_begin() # Begin compute list
+	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_rid) # Bind compute pipeline
+	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 	
-	rd.compute_list_dispatch(compute_list,
-		int((grid_size / 32.0) / 8.0), # Packed width / workgroup size
-		int(grid_size / 8.0),
-		int(grid_size / 8.0)
+	# Push constant for seed
+	var push_constant := PackedByteArray()
+	push_constant.resize(16) # Padding to 16 bytes to match shader alignment
+	push_constant.encode_u32(0, sim_seed)
+	rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
+	
+	rd.compute_list_dispatch(compute_list, # Dispatch compute list
+		int(ceil((grid_size / 32.0) / 8.0)), # Packed width / workgroup size
+		int(ceil(grid_size / 8.0)),
+		int(ceil(grid_size / 8.0))
 	)
 	
-	rd.compute_list_end()
+	rd.compute_list_end() # End compute list
 
 func build_brick_map():
 	# Create uniforms for brick map builder
@@ -154,26 +172,26 @@ func build_brick_map():
 	)
 	
 	rd.compute_list_end()
-	print("Brick map built")
+	#print("Brick map built")
 
 func bind_texture_to_material():
 	# Create texture wrappers
-	var texture_rd = Texture3DRD.new()
-	texture_rd.texture_rd_rid = texture_rid
+	var texture_rd = Texture3DRD.new() # Create texture wrapper
+	texture_rd.texture_rd_rid = texture_rid # Set texture ID
 	
-	var brick_map_rd = Texture3DRD.new()
-	brick_map_rd.texture_rd_rid = brick_map_texture_rid
+	var brick_map_rd = Texture3DRD.new() # Create brick map texture wrapper
+	brick_map_rd.texture_rd_rid = brick_map_texture_rid # Set brick map texture ID
 	if mesh_instance:
-		var mat = mesh_instance.get_active_material(0) as ShaderMaterial
+		var mat = mesh_instance.get_active_material(0) as ShaderMaterial # Get active material
 		if mat:
-			mat.set_shader_parameter("simulation_data", texture_rd)
-			mat.set_shader_parameter("brick_map", brick_map_rd)
-			mat.set_shader_parameter("brick_size", brick_size)
-			mat.set_shader_parameter("render_setting", render_setting)
-		print("Textures bound to material")
-	else:
-		printerr("ERROR: No ShaderMaterial found on MeshInstance3D")
-	if material:
+			mat.set_shader_parameter("simulation_data", texture_rd) # Set simulation data
+			mat.set_shader_parameter("brick_map", brick_map_rd) # Set brick map
+			mat.set_shader_parameter("brick_size", brick_size) # Set brick size
+			mat.set_shader_parameter("render_setting", render_setting) # Set render setting
+			#mat.set_shader_parameter("seed", sim_seed) # Set seed
+		#print("Textures bound to material")
+	elif material:
 		material.set_shader_parameter("simulation_data", texture_rd)
+		#material.set_shader_parameter("seed", sim_seed)
 	else:
 		printerr("ERROR: No ShaderMaterial found on VolumetricController")
