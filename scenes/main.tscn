@@ -1,10 +1,11 @@
-[gd_scene load_steps=26 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=29 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="Script" uid="uid://uauoj3dn61up" path="res://scenes/main.gd" id="1_o5qli"]
 [ext_resource type="Script" uid="uid://c0wpmlv3h3v1y" path="res://lives/stupit_tree.gd" id="2_0wfyh"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://o2qjsa51xmt1" path="res://scenes/lattice_mesh.gd" id="4_jyhfs"]
-[ext_resource type="Shader" uid="uid://j34s186a5vhe" path="res://shaders/lattice.gdshader" id="4_tbgi4"]
+[ext_resource type="Material" uid="uid://dl42s6e68ocqk" path="res://shaders/lattice_material.tres" id="5_tefeu"]
+[ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/volumetric_controller.gd" id="6_tefeu"]
 
 [sub_resource type="Resource" id="Resource_sugp2"]
 script = ExtResource("2_0wfyh")
@@ -92,11 +93,17 @@ size = Vector2(900, 900)
 
 [sub_resource type="BoxMesh" id="BoxMesh_tbgi4"]
 
-[sub_resource type="TorusMesh" id="TorusMesh_tbgi4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tefeu"]
+albedo_color = Color(0.003921569, 0.41960785, 1, 1)
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_tefeu"]
-render_priority = 0
-shader = ExtResource("4_tbgi4")
+[sub_resource type="TorusMesh" id="TorusMesh_tbgi4"]
+material = SubResource("StandardMaterial3D_tefeu")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o6xl0"]
+albedo_color = Color(0.8117647, 0.14901961, 0.21568628, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_tipki"]
+material = SubResource("StandardMaterial3D_o6xl0")
 
 [node name="Main" type="Node3D" node_paths=PackedStringArray("draw_parent", "lattice")]
 script = ExtResource("1_o5qli")
@@ -106,9 +113,16 @@ cell_materials = Array[Material]([SubResource("StandardMaterial3D_sugp2"), SubRe
 auto_process = true
 lattice = NodePath("LatticeMeshInstance")
 
+[node name="VolControl" type="Node" parent="." node_paths=PackedStringArray("mesh_instance")]
+script = ExtResource("6_tefeu")
+grid_size = 32
+mesh_instance = NodePath("../LatticeMeshInstance")
+material = ExtResource("5_tefeu")
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+transform = Transform3D(0.19199611, 0.8749372, -0.44454756, 0.6146486, 0.24592778, 0.7494844, 0.76507825, -0.41713855, -0.4905617, 0, 0, 0)
 shadow_enabled = true
+sky_mode = 1
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_jyhfs")
@@ -124,15 +138,18 @@ script = ExtResource("3_sugp2")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.50404036, 0)
-visible = false
 mesh = SubResource("BoxMesh_tbgi4")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.88848907, 0.33582944, -0.31273896, 0.112695225, -0.82030874, -0.56070834, -0.44484484, 0.46293908, -0.76668173, 0, 0, 0)
+[node name="ZAxis" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.05691886, 0.9950168, 0.08186516, 0.88379925, 0.08835773, -0.4594467, -0.46439058, 0.04620108, -0.8844246, 0, 0, 0.34553003)
 mesh = SubResource("TorusMesh_tbgi4")
 
+[node name="XAxis" type="MeshInstance3D" parent="."]
+transform = Transform3D(-0.46292895, 0.02286752, -0.8861004, 0.88233346, -0.08370005, -0.46312127, -0.08475698, -0.9962286, 0.018570222, 0.3974507, 0, 0)
+mesh = SubResource("TorusMesh_tipki")
+
 [node name="LatticeMeshInstance" type="MeshInstance3D" parent="."]
-material_override = SubResource("ShaderMaterial_tefeu")
+material_override = ExtResource("5_tefeu")
 script = ExtResource("4_jyhfs")
-grid_size = 16
+grid_size = 32
 metadata/_custom_type_script = "uid://o2qjsa51xmt1"
