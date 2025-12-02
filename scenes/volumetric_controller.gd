@@ -30,28 +30,26 @@ func _ready():
 	if not rd: return
 
 	# Calculate brick grid dimensions
-	brick_grid_size = Vector3i(
-		int(grid_size / brick_size),
-		int(grid_size / brick_size),
-		int(grid_size / brick_size)
-	)
+	var brick_grid_size1 = int(ceil(float(grid_size) / float(brick_size)))
+	brick_grid_size = Vector3i(brick_grid_size1, brick_grid_size1, brick_grid_size1)
+
 	print("Brick grid size: ", brick_grid_size)
 
-	# 1. Setup
+	# Setup
 	setup_compute_pipeline()
 	setup_brick_pipeline()
 	create_texture()
 	create_brick_map_texture()
 	
-	# 2. Run Simulation
+	# Run Simulation
 	# This queues the commands on the GPU but doesn't execute them instantly.
 	run_simulation_once()
 	
-	# 3. Build Brick Map
+	# Build Brick Map
 	# Analyze voxel data and create brick occupancy map
 	build_brick_map()
 	
-	# 4. Bind to Material
+	# Bind to Material
 	# We bind immediately. The GPU barrier is now handled automatically by the engine.
 	bind_texture_to_material()
 
@@ -70,10 +68,10 @@ func setup_brick_pipeline():
 
 func create_texture():
 	var fmt = RDTextureFormat.new()
-	fmt.width = grid_size
+	fmt.width = int(grid_size / 32.0) # Packed along X axis
 	fmt.height = grid_size
 	fmt.depth = grid_size
-	fmt.format = RenderingDevice.DATA_FORMAT_R8_UNORM
+	fmt.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
 	fmt.texture_type = RenderingDevice.TEXTURE_TYPE_3D
 	
 	# Usage bits: Storage (Compute Write) + Sampling (Shader Read)
@@ -116,7 +114,7 @@ func run_simulation_once():
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
 	
 	rd.compute_list_dispatch(compute_list,
-		int(grid_size / 8.0),
+		int((grid_size / 32.0) / 8.0), # Packed width / workgroup size
 		int(grid_size / 8.0),
 		int(grid_size / 8.0)
 	)

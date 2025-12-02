@@ -60,6 +60,7 @@ mesh = SubResource("BoxMesh_o5vmg")
 
 [node name="Mesh" type="MeshInstance3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.485502, 54.834957, 2.4937973)
+visible = false
 
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="Meshes" node_paths=PackedStringArray("mesh_instance")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50.1, 0)
@@ -68,5 +69,5 @@ mesh = SubResource("BoxMesh_22u3y")
 script = ExtResource("3_lqk3y")
 render_setting = 3
 brick_size = 16
-grid_size = 2000
+grid_size = 1500
 mesh_instance = NodePath(".")

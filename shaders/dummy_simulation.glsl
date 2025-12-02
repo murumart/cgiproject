@@ -5,7 +5,7 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // Output Texture (Write Only) - R8 format (red channel, 8-bit)
-layout(set = 0, binding = 0, r8) uniform restrict writeonly image3D output_grid;
+layout(set = 0, binding = 0, r32f) uniform restrict writeonly image3D output_grid;
 
 void main()
 {
@@ -17,23 +17,35 @@ void main()
 
 	// --- DUMMY GENERATION LOGIC ---
 
-	// 1. Calculate normalized position (0.0 to 1.0)
-	vec3 pos = vec3(id) / vec3(size);
+	// 1. Calculate the base voxel coordinate for this thread
+	// Each thread writes one uint, which represents 32 voxels along X
+	int base_x = id.x * 32;
+	int y = id.y;
+	int z = id.z;
+	
+	uint packed_data = 0;
+	
+	// Loop 32 times to generate bits for this integer
+	for (int i = 0; i < 32; i++) {
+		int current_x = base_x + i;
+		
+		// Normalized position for generation logic
+		// Note: We use the full grid size for normalization
+		vec3 pos = vec3(float(current_x), float(y), float(z)) / vec3(size.x * 32.0, size.y, size.z);
+		vec3 center = pos - 0.5;
+		
+		// Generate shape (Sphere + Noise)
+		float dist = length(center);
+		float radius = 0.4;
+		float noise = sin(pos.x * 20.0) * sin(pos.y * 20.0) * sin(pos.z * 20.0);
+		
+		bool is_filled = (dist < radius && noise > -0.5);
+		
+		if (is_filled) {
+			packed_data |= (1u << i);
+		}
+	}
 
-	// 2. Center the coordinates (-0.5 to 0.5)
-	vec3 center = pos - 0.5;
-
-	// 3. Generate a Sphere
-	float dist = length(center);
-	float radius = 0.4;
-
-	// 4. Add some "noise" holes (simple sine wave interference)
-	float noise = sin(pos.x * 20.0) * sin(pos.y * 20.0) * sin(pos.z * 20.0);
-
-	// 5. Determine state (1.0 = Filled, 0.0 = Empty)
-	// We combine the sphere shape with the noise pattern
-	float state = (dist < radius && noise > -0.5) ? 1.0 : 0.0;
-
-	// Write to the Red channel
-	imageStore(output_grid, id, vec4(state, 0.0, 0.0, 1.0));
+	// Write the packed uint to the Red channel as a float
+	imageStore(output_grid, id, vec4(uintBitsToFloat(packed_data), 0.0, 0.0, 0.0));
 }

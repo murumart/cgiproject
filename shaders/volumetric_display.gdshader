@@ -5,7 +5,7 @@ shader_type spatial;
 // Unshaded is faster; cull_front allows us to see "into" the box
 render_mode unshaded, cull_front;
 
-uniform sampler3D simulation_data : filter_nearest; // The texture from the compute shader
+uniform usampler3D simulation_data : filter_nearest; // The texture from the compute shader
 uniform sampler3D brick_map : filter_nearest; // Brick occupancy map
 uniform vec4 color : source_color = vec4(0.2, 0.8, 1.0, 1.0);
 uniform float density : hint_range(0.1, 100) = 100;
@@ -30,7 +30,8 @@ void fragment() {
 	// Get texture dimensions
 	ivec3 tex_size = textureSize(simulation_data, 0);
 	//int max_steps = tex_size.x * 2; // should this be * 2?
-	vec3 voxel_resolution = vec3(tex_size);
+	// Since texture is packed along X (32 voxels per pixel), we multiply x by 32
+	vec3 voxel_resolution = vec3(float(tex_size.x * 32), float(tex_size.y), float(tex_size.z));
 	
 	// Convert to voxel space (0 to voxel_resolution)
 	vec3 origin = (local_cam + 0.5) * voxel_resolution;
@@ -107,8 +108,22 @@ void fragment() {
 		
 		if (brick_occupied > 0.5) {
 			// Sample current voxel (only if brick is occupied)
-			vec3 uvw = (vec3(coord) + 0.5) / voxel_resolution; // uvw coordinates of the voxel
-			float cell = texture(simulation_data, uvw).r; // value of the voxel
+			// Calculate packed coordinates
+			// coord.x is the voxel index (0..511)
+			// packed texture width is 16 (0..15)
+			// We need to fetch the uint at coord.x / 32
+			
+			ivec3 packed_tex_size = textureSize(simulation_data, 0);
+			int packed_x = coord.x / 32;
+			uint bit_index = uint(coord.x % 32);
+			
+			// Use texelFetch for precise integer coordinate sampling
+			// Normalized coordinates with linear filtering would be disastrous for bit-packed data
+			uint packed_val = texelFetch(simulation_data, ivec3(packed_x, coord.y, coord.z), 0).r;
+			
+			// Extract bit
+			uint cell_uint = (packed_val >> bit_index) & 1u;
+			float cell = float(cell_uint); // 0.0 or 1.0
 			
 			// if the voxel is occupied
 			if (cell > 0.5) { 

@@ -9,7 +9,7 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // Input: Full voxel grid (e.g., 512^3)
-layout(set = 0, binding = 0, r8) uniform restrict readonly image3D voxel_data;
+layout(set = 0, binding = 0, r32f) uniform restrict readonly image3D voxel_data;
 
 // Output: Brick occupancy map (e.g., 64^3 for 512^3 voxels with 8^3 bricks)
 layout(set = 0, binding = 1, r8) uniform restrict writeonly image3D brick_map;
@@ -58,11 +58,19 @@ void main()
 		
 		ivec3 voxel_pos = brick_start + ivec3(x, y, z);
 		
-		// Sample the voxel
-		float voxel_value = imageLoad(voxel_data, voxel_pos).r;
+		// Calculate packed coordinates
+		ivec3 packed_pos = ivec3(voxel_pos.x / 32, voxel_pos.y, voxel_pos.z);
+		uint bit_index = uint(voxel_pos.x % 32);
+		
+		// Sample the packed voxel data
+		float packed_float = imageLoad(voxel_data, packed_pos).r;
+		uint packed_value = floatBitsToUint(packed_float);
+		
+		// Check if the specific bit is set
+		bool is_occupied = ((packed_value >> bit_index) & 1u) != 0u;
 		
 		// If this voxel is occupied, mark the shared flag
-		if (voxel_value > 0.5) {
+		if (is_occupied) {
 			atomicOr(brick_occupied_shared, 1);
 		}
 	}
