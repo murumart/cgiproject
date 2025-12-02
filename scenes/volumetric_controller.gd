@@ -80,10 +80,10 @@ func setup_brick_pipeline():
 
 func create_texture():
 	var fmt = RDTextureFormat.new()
-	fmt.width = int(ceil(grid_size / 32.0)) # Packed along X axis
+	fmt.width = grid_size # No packing - each voxel gets its own texel
 	fmt.height = grid_size
 	fmt.depth = grid_size
-	fmt.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
+	fmt.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
 	fmt.texture_type = RenderingDevice.TEXTURE_TYPE_3D
 	
 	# Usage bits: Storage (Compute Write) + Sampling (Shader Read)
@@ -132,7 +132,7 @@ func run_simulation_once():
 	rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
 	
 	rd.compute_list_dispatch(compute_list, # Dispatch compute list
-		int(ceil((grid_size / 32.0) / 8.0)), # Packed width / workgroup size
+		int(ceil(grid_size / 8.0)), # grid_size / workgroup size
 		int(ceil(grid_size / 8.0)),
 		int(ceil(grid_size / 8.0))
 	)

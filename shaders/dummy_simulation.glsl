@@ -4,8 +4,8 @@
 // 8x8x8 threads per group
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
-// Output Texture (Write Only) - R8 format (red channel, 8-bit)
-layout(set = 0, binding = 0, r32f) uniform restrict writeonly image3D output_grid;
+// Output Texture (Write Only) - RGBA32F format
+layout(set = 0, binding = 0, rgba32f) uniform restrict writeonly image3D output_grid;
 
 layout(push_constant) uniform PushConstants {
 	uint seed;
@@ -13,43 +13,33 @@ layout(push_constant) uniform PushConstants {
 
 void main()
 {
-	ivec3 id = ivec3(gl_GlobalInvocationID.xyz);
+	ivec3 coord = ivec3(gl_GlobalInvocationID.xyz);
 	ivec3 size = imageSize(output_grid);
 
 	// Safety: Stop if we are outside the texture bounds
-	if (any(greaterThan(id, size))) return;
+	if (any(greaterThanEqual(coord, size))) return;
 
-	// --- DUMMY GENERATION LOGIC ---
-
-	// 1. Calculate the base voxel coordinate for this thread
-	// Each thread writes one uint, which represents 32 voxels along X
-	int base_x = id.x * 32;
-	int y = id.y;
-	int z = id.z;
+	// Normalized position for generation logic
+	vec3 pos = (vec3(coord) + 0.5) / vec3(size);
+	vec3 center = pos - 0.5;
 	
-	uint packed_data = 0;
+	// Generate shape (Sphere + Noise)
+	float dist = length(center);
+	float radius = 0.4 * abs(sin(float(pc.seed) * 0.002));
+	float noise = abs(sin(float(pc.seed) * 0.02)) * sin(sin(float(pc.seed) * 0.02) * pos.x * 20.0) * sin(sin(float(pc.seed) * 0.02) * pos.y * 20.0) * sin(sin(float(pc.seed) * 0.02) * pos.z * 20.0);
 	
-	// Loop 32 times to generate bits for this integer
-	for (int i = 0; i < 32; i++) {
-		int current_x = base_x + i;
-		
-		// Normalized position for generation logic
-		// Note: We use the full grid size for normalization
-		vec3 pos = vec3(float(current_x), float(y), float(z)) / vec3(size.x * 32.0, size.y, size.z);
-		vec3 center = pos - 0.5;
-		
-		// Generate shape (Sphere + Noise)
-		float dist = length(center);
-		float radius = 0.4 * abs(sin(pc.seed * 0.002));
-		float noise = abs(sin(pc.seed * 0.02)) * sin(sin(pc.seed * 0.02) * pos.x * 20.0) * sin(sin(pc.seed * 0.02) * pos.y * 20.0) * sin(sin(pc.seed * 0.02) * pos.z * 20.0);
-		
-		bool is_filled = (dist < radius && noise > -0.5);
-		
-		if (is_filled) {
-			packed_data |= (1u << i);
-		}
-	}
-
-	// Write the packed uint to the Red channel as a float
-	imageStore(output_grid, id, vec4(uintBitsToFloat(packed_data), 0.0, 0.0, 0.0));
+	bool is_filled = (dist < radius && noise > -0.5);
+	
+	// Generate color based on position
+	vec3 color = vec3(
+		0.5 + 0.5 * sin(pos.x * 10.0 + float(pc.seed) * 0.01),
+		0.5 + 0.5 * sin(pos.y * 10.0 + float(pc.seed) * 0.01),
+		0.5 + 0.5 * sin(pos.z * 10.0 + float(pc.seed) * 0.01)
+	);
+	
+	// Alpha channel = occupancy
+	float occupancy = is_filled ? 1.0 : 0.0;
+	
+	// Write color + occupancy
+	imageStore(output_grid, coord, vec4(color * occupancy, occupancy));
 }
