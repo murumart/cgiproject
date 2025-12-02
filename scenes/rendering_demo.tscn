@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://bd72pbxexio0w"]
+[gd_scene load_steps=11 format=3 uid="uid://bd72pbxexio0w"]
 
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="1_jjfih"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="2_qjyat"]
@@ -60,10 +60,13 @@ mesh = SubResource("BoxMesh_o5vmg")
 
 [node name="Mesh" type="MeshInstance3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.485502, 54.834957, 2.4937973)
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="Meshes"]
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Meshes" node_paths=PackedStringArray("mesh_instance")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50.1, 0)
 material_override = ExtResource("2_qjyat")
 mesh = SubResource("BoxMesh_22u3y")
 script = ExtResource("3_lqk3y")
 render_setting = 3
 brick_size = 16
+grid_size = 2000
+mesh_instance = NodePath(".")
