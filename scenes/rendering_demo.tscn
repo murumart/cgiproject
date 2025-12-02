@@ -59,4 +59,4 @@ material_override = ExtResource("2_qjyat")
 mesh = SubResource("BoxMesh_22u3y")
 script = ExtResource("3_lqk3y")
 render_setting = 3
-grid_size = Vector3i(2000, 2000, 2000)
+brick_size = 16

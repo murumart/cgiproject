@@ -17,8 +17,8 @@ var brick_pipeline_rid: RID
 		if mat:
 			mat.set_shader_parameter("render_setting", render_setting)
 
-@export var grid_size := Vector3i(512, 512, 512) # 512^3 = 134,217,728 voxels
-@export var brick_size := 8 # 8x8x8 voxels per brick
+@export var grid_size: Vector3i = Vector3i(512, 512, 512) # 512^3 = 134,217,728 voxels
+@export var brick_size: int = 8 # 8x8x8 voxels per brick
 var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 
 func _ready():
@@ -135,6 +135,12 @@ func build_brick_map():
 	var compute_list = rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, brick_pipeline_rid)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
+	
+	# Push constant for brick size
+	var push_constant := PackedByteArray()
+	push_constant.resize(16) # Padding to 16 bytes to match shader alignment
+	push_constant.encode_u32(0, brick_size)
+	rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
 	
 	# Dispatch with workgroup size 8x8x8 (from shader)
 	# Each workgroup handles one brick, so we dispatch exactly brick_grid_size workgroups

@@ -12,7 +12,7 @@ uniform float density : hint_range(0.1, 100) = 100;
 uniform int render_setting : hint_range(0, 5) = 0; // from the controller, can change in runtime
 //uniform int max_steps = 128; // Reduce this if performance is low
 uniform float mesh_size : hint_range(1, 400);
-uniform int brick_size = 8; // Size of each brick (must match VolumetricController)
+uniform int brick_size; // Size of each brick (must match VolumetricController)
 
 
 varying vec3 local_pos;
