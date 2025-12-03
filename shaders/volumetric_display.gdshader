@@ -100,6 +100,7 @@ void fragment() {
 	float depth = 0.0;
 	float exited = 0.0;
 
+ 	float passed_through = 0.0;
 
 	uint cell = 0u; // cell type
 	
@@ -127,18 +128,39 @@ void fragment() {
 		vec3 brick_uvw = (vec3(brick_coord) + 0.5) / vec3(textureSize(brick_map, 0)); // uvw coordinates of the brick
 		float brick_occupied = texture(brick_map, brick_uvw).r; // if the brick is occupied
 		//brick_occupied = 1.0;
+
 		if (brick_occupied > 0.5) {
 			vec4 voxel_data_u = texelFetch(simulation_data, coord, 0);
 			cell = uint(voxel_data_u.r * 255.0); // cell type
+
 			
+
 			// if the voxel is occupied
 			if (cell > 0u) { 
 				depth += t[stepped_axis];
 				
-				color_acc += my_color(cell);
+
+
+				//color_acc += my_color(cell) * 0.01 * density;
+				color_acc = mix(color_acc, my_color(cell), 0.01 * density);
+
+				if (passed_through == 0.0) {
+					switch (stepped_axis) {
+						case 0: color_acc *= vec3(0.6); break;
+						case 1: if (sgn_dir.y > 0.0) color_acc *= vec3(0.4); break;
+						case 2: color_acc *= vec3(0.7); break;
+					}
+				}
+				
 				alpha_acc += 0.01 * density; // we add the density to the alpha
-				if (alpha_acc >= 1.0) break; // if the alpha is 1, we break
-		}
+				if (alpha_acc >= 1.0) {
+					alpha_acc = 1.0;
+					break; // if the alpha is 1, we break
+				}
+				passed_through += 1.0;
+			} else if (cell == 0u) {
+				passed_through = 0.0;
+			}
 		} else {
 			// If brick is empty, skip to next brick boundary
 			// Calculate the position of the next brick boundaries for ALL axes
@@ -229,12 +251,7 @@ void fragment() {
 	switch (render_setting) {
 		case 0: // color
 			ALBEDO = color_acc;
-			//ALPHA = alpha_acc;
-			switch (stepped_axis) {
-				case 0: ALBEDO -= vec3(0.2); break;
-				case 1: if (sgn_dir.y > 0.0) ALBEDO -= vec3(0.4); break;
-				case 2: ALBEDO -= vec3(0.1); break;
-			}
+			
 			ALPHA = alpha_acc;
 			break;
 		case 1: // depth
@@ -262,7 +279,7 @@ void fragment() {
 			ALPHA = 1.0;
 			break;
 		case 4: 
-			ALBEDO = vec3(exited);
+			ALBEDO = vec3(passed_through);
 			ALPHA = 1.0;
 			break;
 		case 5: // exited
