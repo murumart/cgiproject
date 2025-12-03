@@ -18,7 +18,7 @@ var brick_pipeline_rid: RID
 			if mat:
 				mat.set_shader_parameter("render_setting", render_setting)
 
-@export var brick_size: int = 8 # 8x8x8 voxels per brick
+@export var brick_size: int = 16 # 16x16x16 voxels per brick
 var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 @export var grid_size := 512 # 512^3 = 134,217,728 voxels
 @export var mesh_instance: MeshInstance3D

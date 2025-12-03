@@ -58,11 +58,9 @@ void main()
 		
 		ivec3 voxel_pos = brick_start + ivec3(x, y, z);
 		
-		// Sample voxel directly (no packing)
 		vec4 voxel = imageLoad(voxel_data, voxel_pos);
 		
 		// Check occupancy (cell type > 0)
-		// Convert normalized float back to integer (approximate)
 		uint cell_type = uint(voxel.r * 255.0 + 0.5);
 		bool is_occupied = cell_type > 0u;
 		
