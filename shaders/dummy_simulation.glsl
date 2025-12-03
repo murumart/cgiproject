@@ -26,7 +26,7 @@ void main()
 	// Generate shape (Sphere + Noise)
 	float dist = length(center);
 	float radius = 0.4 * abs(sin(float(pc.seed) * 0.002));
-	float noise = abs(sin(float(pc.seed) * 0.02)) * sin(sin(float(pc.seed) * 0.02) * pos.x * 20.0) * sin(sin(float(pc.seed) * 0.02) * pos.y * 20.0) * sin(sin(float(pc.seed) * 0.02) * pos.z * 20.0);
+	float noise = abs(sin(float(pc.seed + 200) * 0.02)) * sin(sin(float(pc.seed + 200) * 0.02) * pos.x * 20.0) * sin(sin(float(pc.seed + 200) * 0.02) * pos.y * 20.0) * sin(sin(float(pc.seed + 200) * 0.02) * pos.z * 20.0);
 	
 	bool is_filled = (dist < radius && noise > -0.5);
 	
@@ -57,11 +57,10 @@ void main()
 		cell_type = 0;
 	}
 
-	if (coord.x % 16 == 0 && coord.y % 16 == 0 && coord.z % 16 == 0 && dist < radius * 1.1)
-	{
-		cell_type = 3;
-	}
-	
+	//if (coord.x % 16 == 0 && coord.y % 16 == 0 && coord.z % 16 == 0 && dist < radius * 1.1)
+	//{
+	//	cell_type = 3;
+	//}
 	
 	
 	

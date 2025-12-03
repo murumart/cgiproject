@@ -68,4 +68,4 @@ material_override = ExtResource("2_qjyat")
 mesh = SubResource("BoxMesh_22u3y")
 script = ExtResource("3_lqk3y")
 mesh_instance = NodePath(".")
-simulte = false
+material = ExtResource("2_qjyat")
