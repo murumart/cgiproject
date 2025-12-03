@@ -24,7 +24,7 @@ var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 @export var mesh_instance: MeshInstance3D
 @export var material: ShaderMaterial
 @export var sim_seed: int = int(PI * 250)
-@export var simulte: bool = true
+@export var simulte: bool = false
 
 
 func _process(_delta):
