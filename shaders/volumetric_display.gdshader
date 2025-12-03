@@ -5,7 +5,7 @@ shader_type spatial;
 // Unshaded is faster; cull_front allows us to see "into" the box
 render_mode unshaded, cull_front;
 
-uniform sampler3D simulation_data : filter_nearest; // The texture from the compute shader (RGBA color)
+uniform sampler3D simulation_data : filter_nearest; // The texture from the compute shader (R cell type)
 uniform sampler3D brick_map : filter_nearest; // Brick occupancy map
 uniform vec4 color : source_color = vec4(0.2, 0.8, 1.0, 1.0);
 uniform float density : hint_range(0.1, 100) = 100;
@@ -81,7 +81,7 @@ void fragment() {
 
 	float exited = 0.0;
 
-	vec4 voxel_data;
+	uint cell = 0u;
 	
 	// DDA traversal with brick map acceleration
 	// move the ray through the voxel grid until we reach the end or alpha is 1 (find the next occupied voxel)
@@ -108,11 +108,12 @@ void fragment() {
 		//brick_occupied = 1.0;
 		if (brick_occupied > 0.5) {
 			// Sample current voxel directly (no packing)
-			voxel_data = texelFetch(simulation_data, coord, 0);
-			float cell = voxel_data.a; // Alpha channel = occupancy
+			// Sample current voxel directly (no packing)
+			vec4 voxel_data_u = texelFetch(simulation_data, coord, 0);
+			cell = uint(voxel_data_u.r * 255.0 + 0.5); // cell type
 			
 			// if the voxel is occupied
-			if (cell > 0.5) { 
+			if (cell > 0u) { 
 				depth += t[stepped_axis];
 				alpha_acc += 0.01 * density; // we add the density to the alpha
 				if (alpha_acc >= 1.0) break; // if the alpha is 1, we break
@@ -217,7 +218,12 @@ void fragment() {
 	depth = depth / 255.0;
 	switch (render_setting) {
 		case 0: // color
-			ALBEDO = voxel_data.rgb;
+			switch (cell) {
+				case 0u: ALBEDO = vec3(0.0, 0.0, 0.0); break; // air
+				case 1u: ALBEDO = vec3(0.5, 0.5, 0.5); break; // rock
+				case 2u: ALBEDO = vec3(0.0, 0.5, 0.0); break; // grass
+				case 3u: ALBEDO = vec3(1.0, 0.5, 0.5); break; // tree
+			}
 			switch (stepped_axis) {
 				case 0: ALBEDO -= vec3(0.2); break;
 				case 1: if (step_sign > 0) ALBEDO -= vec3(0.4); break;

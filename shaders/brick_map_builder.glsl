@@ -8,8 +8,8 @@
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
-// Input: Full voxel grid (e.g., 512^3) - RGBA format
-layout(set = 0, binding = 0, rgba32f) uniform restrict readonly image3D voxel_data;
+// Input: Full voxel grid (e.g., 512^3) - R8 UNORM format (cell type)
+layout(set = 0, binding = 0, r8) uniform restrict readonly image3D voxel_data;
 
 // Output: Brick occupancy map (e.g., 64^3 for 512^3 voxels with 8^3 bricks)
 layout(set = 0, binding = 1, r8) uniform restrict writeonly image3D brick_map;
@@ -61,8 +61,10 @@ void main()
 		// Sample voxel directly (no packing)
 		vec4 voxel = imageLoad(voxel_data, voxel_pos);
 		
-		// Check occupancy from alpha channel
-		bool is_occupied = voxel.a > 0.5;
+		// Check occupancy (cell type > 0)
+		// Convert normalized float back to integer (approximate)
+		uint cell_type = uint(voxel.r * 255.0 + 0.5);
+		bool is_occupied = cell_type > 0u;
 		
 		// If this voxel is occupied, mark the shared flag
 		if (is_occupied) {

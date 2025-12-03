@@ -83,7 +83,7 @@ func create_texture():
 	fmt.width = grid_size # No packing - each voxel gets its own texel
 	fmt.height = grid_size
 	fmt.depth = grid_size
-	fmt.format = RenderingDevice.DATA_FORMAT_R32G32B32A32_SFLOAT
+	fmt.format = RenderingDevice.DATA_FORMAT_R8_UNORM
 	fmt.texture_type = RenderingDevice.TEXTURE_TYPE_3D
 	
 	# Usage bits: Storage (Compute Write) + Sampling (Shader Read)
@@ -94,6 +94,9 @@ func create_texture():
 		RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
 	
 	texture_rid = rd.texture_create(fmt, RDTextureView.new())
+	if not texture_rid.is_valid():
+		printerr("CRITICAL ERROR: Failed to create voxel texture! Grid size ", grid_size, " might be too large for VRAM.")
+		return
 
 func create_brick_map_texture():
 	var fmt = RDTextureFormat.new()
@@ -114,6 +117,9 @@ func create_brick_map_texture():
 	#print("Brick map texture created: ", brick_grid_size, " = ", brick_grid_size.x * brick_grid_size.y * brick_grid_size.z, " bricks")
 
 func run_simulation_once():
+	if not texture_rid.is_valid():
+		return
+		
 	var uniform = RDUniform.new() # Create uniform for texture
 	uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE # Set uniform type to image
 	uniform.binding = 0 # Set binding to 0
@@ -140,6 +146,9 @@ func run_simulation_once():
 	rd.compute_list_end() # End compute list
 
 func build_brick_map():
+	if not texture_rid.is_valid() or not brick_map_texture_rid.is_valid():
+		return
+
 	# Create uniforms for brick map builder
 	var voxel_uniform = RDUniform.new()
 	voxel_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
@@ -177,10 +186,17 @@ func build_brick_map():
 func bind_texture_to_material():
 	# Create texture wrappers
 	var texture_rd = Texture3DRD.new() # Create texture wrapper
-	texture_rd.texture_rd_rid = texture_rid # Set texture ID
+	if texture_rid.is_valid():
+		texture_rd.texture_rd_rid = texture_rid # Set texture ID
+	else:
+		printerr("Cannot bind texture: Invalid RID")
+		return
 	
 	var brick_map_rd = Texture3DRD.new() # Create brick map texture wrapper
-	brick_map_rd.texture_rd_rid = brick_map_texture_rid # Set brick map texture ID
+	if brick_map_texture_rid.is_valid():
+		brick_map_rd.texture_rd_rid = brick_map_texture_rid # Set brick map texture ID
+	else:
+		return
 	if mesh_instance:
 		var mat = mesh_instance.get_active_material(0) as ShaderMaterial # Get active material
 		if mat:
