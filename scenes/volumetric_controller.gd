@@ -1,4 +1,4 @@
-extends Node
+class_name VolumetricController extends Node
 
 var rd: RenderingDevice
 var texture_rid: RID

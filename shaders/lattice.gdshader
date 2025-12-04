@@ -26,7 +26,7 @@ void fragment() {
 		ALPHA = sin(TIME) * 0.5 + 0.5;
 	} */
 
-	
+
 	// converting fragment coordinates to 3d texture coordinates
 	vec3 uvw = vec3(0);
 	// these probably have mistakes in many places...

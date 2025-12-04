@@ -120,7 +120,7 @@ lattice = NodePath("LatticeMeshInstance")
 
 [node name="VolControl" type="Node" parent="." node_paths=PackedStringArray("mesh_instance")]
 script = ExtResource("6_tefeu")
-grid_size = 32
+grid_size = 16
 mesh_instance = NodePath("../LatticeMeshInstance")
 material = ExtResource("5_tefeu")
 
@@ -146,12 +146,10 @@ volumetric_controller = NodePath("../Meshes/RaytracedVolume")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.50404036, 0)
 mesh = SubResource("BoxMesh_tbgi4")
 
-[node name="RaytracedVolume" type="MeshInstance3D" parent="Meshes" node_paths=PackedStringArray("mesh_instance")]
+[node name="RaytracedVolume" type="MeshInstance3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.789654, 50.1, 0)
 visible = false
 mesh = SubResource("BoxMesh_tefeu")
-script = ExtResource("6_tefeu")
-mesh_instance = NodePath(".")
 
 [node name="ZAxis" type="MeshInstance3D" parent="."]
 transform = Transform3D(-0.05691886, 0.9950168, 0.08186516, 0.88379925, 0.08835773, -0.4594467, -0.46439058, 0.04620108, -0.8844246, 0, 0, 0.34553003)
@@ -165,5 +163,5 @@ mesh = SubResource("TorusMesh_tipki")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2125053, 0, 0)
 material_override = ExtResource("5_tefeu")
 script = ExtResource("4_jyhfs")
-grid_size = 32
+grid_size = 16
 metadata/_custom_type_script = "uid://o2qjsa51xmt1"

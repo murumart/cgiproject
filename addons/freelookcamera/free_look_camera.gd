@@ -8,7 +8,7 @@ extends Camera3D
 @export var max_speed: float = 1000
 @export var min_speed: float = 0.2
 
-@export var volumetric_controller: Node3D
+@export var volumetric_controller: VolumetricController
 
 @onready var _velocity = default_velocity
 
