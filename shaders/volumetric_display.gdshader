@@ -213,17 +213,11 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 		res.stepped_axis = (t.x <= t.y && t.x <= t.z) ? 0 : (t.y <= t.z ? 1 : 2);
 
-		exit_pos = curr_pos + (dir * t_exit);
 
-		// Add a bias vector in the direction of travel. 
-		// This pushes the point physically INTO the next voxel.
-		vec3 bias = sgn_dir * 1e-4;
+		// Pure integer stepping to avoid precision issues
+		coord[res.stepped_axis] += int(sgn_dir[res.stepped_axis]);
 		
-		// Floor the biased position. 
-		// Because we pushed it forward, floor() is forced to snap to the next index.
-		ivec3 next_coord = ivec3(floor(exit_pos + bias));
-		
-		coord = next_coord;
+		// Recalculate t for the new coordinate (to maintain precision relative to origin)
 		t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
 		
 		// Update t_current to the voxel boundary
