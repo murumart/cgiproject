@@ -1,0 +1,71 @@
+[gd_scene load_steps=11 format=3 uid="uid://dtpir48rq481n"]
+
+[ext_resource type="Script" uid="uid://c32drlrt24f2m" path="res://scenes/cs_test.gd" id="1_ayjdf"]
+[ext_resource type="Material" path="res://shaders/volumetric_display.tres" id="2_1t7rw"]
+[ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_aerx3"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_qjyat"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_sugp2"]
+sky_material = SubResource("ProceduralSkyMaterial_qjyat")
+
+[sub_resource type="Environment" id="Environment_lqk3y"]
+background_mode = 2
+sky = SubResource("Sky_sugp2")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wfyh"]
+albedo_color = Color(0.6496686, 0.40608382, 0.15865174, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_o5vmg"]
+material = SubResource("StandardMaterial3D_0wfyh")
+size = Vector2(900, 900)
+
+[sub_resource type="BoxMesh" id="BoxMesh_o5vmg"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_22u3y"]
+size = Vector3(100, 100, 100)
+
+[node name="RenderingDemo" type="Node3D"]
+script = ExtResource("1_ayjdf")
+
+[node name="Node" type="Node" parent="." node_paths=PackedStringArray("mesh_instance")]
+script = ExtResource("1_ayjdf")
+render_setting = 3
+grid_size = 128
+mesh_instance = NodePath("../Meshes/MeshInstance3D3")
+material = ExtResource("2_1t7rw")
+simulte = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_lqk3y")
+
+[node name="Plane" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_o5vmg")
+
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("volumetric_controller")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 59.735, 84.699)
+script = ExtResource("3_aerx3")
+volumetric_controller = NodePath("../Node")
+
+[node name="Meshes" type="Node3D" parent="."]
+
+[node name="Dummy" type="MeshInstance3D" parent="Meshes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87752557, -0.9913276)
+visible = false
+mesh = SubResource("BoxMesh_o5vmg")
+
+[node name="Mesh" type="MeshInstance3D" parent="Meshes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.485502, 54.834957, 2.4937973)
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Meshes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 50.1, 0)
+material_override = ExtResource("2_1t7rw")
+mesh = SubResource("BoxMesh_22u3y")

@@ -85,3 +85,5 @@ void main() {
     // write.data[out_i] = clamp(cur + pc.dt * growth, 0.0, 1.0);
     write.data[out_i] = clamp(sum, 0.0, 255.0);
 }
+
+
