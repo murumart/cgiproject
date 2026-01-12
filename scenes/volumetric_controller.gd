@@ -55,7 +55,7 @@ func _ready():
 
 	# Run Simulation
 	# This queues the commands on the GPU but doesn't execute them instantly.
-	run_simulation_once()
+	#run_simulation_once()
 
 	# Build Brick Map
 	# Analyze voxel data and create brick occupancy map
