@@ -82,7 +82,7 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 				uvs.append(plane_uv[pvi])
 				normals.append(plane)
 				colors.append(Color.RED * outof * j)
-			
+
 			for index in PLANE_INDICES:
 				indices.append(index + ix)
 

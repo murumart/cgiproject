@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=32 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="Script" uid="uid://uauoj3dn61up" path="res://scenes/main.gd" id="1_o5qli"]
 [ext_resource type="Script" uid="uid://c0wpmlv3h3v1y" path="res://lives/stupit_tree.gd" id="2_0wfyh"]
@@ -7,6 +7,7 @@
 [ext_resource type="Material" uid="uid://dl42s6e68ocqk" path="res://shaders/lattice_material.tres" id="5_tefeu"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="6_o6xl0"]
 [ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/volumetric_controller.gd" id="6_tefeu"]
+[ext_resource type="Script" uid="uid://ba3tbmolvdy7o" path="res://scenes/texture_editor.gd" id="8_tipki"]
 
 [sub_resource type="Resource" id="Resource_sugp2"]
 script = ExtResource("2_0wfyh")
@@ -116,13 +117,13 @@ life = SubResource("Resource_sugp2")
 draw_parent = NodePath("Meshes")
 cell_materials = Array[Material]([SubResource("StandardMaterial3D_sugp2"), SubResource("StandardMaterial3D_jyhfs"), SubResource("StandardMaterial3D_tbgi4")])
 auto_process = true
-lattice = NodePath("LatticeMeshInstance")
+lattice = NodePath("Meshes/LatticeMeshInstance")
 
 [node name="VolControl" type="Node" parent="." node_paths=PackedStringArray("mesh_instance")]
 script = ExtResource("6_tefeu")
 grid_size = 16
-mesh_instance = NodePath("../LatticeMeshInstance")
-material = ExtResource("5_tefeu")
+mesh_instance = NodePath("../Meshes/RaytracedVolume")
+material = ExtResource("6_o6xl0")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.19199611, 0.8749372, -0.44454756, 0.6146486, 0.24592778, 0.7494844, 0.76507825, -0.41713855, -0.4905617, 0, 0, 0)
@@ -147,9 +148,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.50404036, 0)
 mesh = SubResource("BoxMesh_tbgi4")
 
 [node name="RaytracedVolume" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.789654, 50.1, 0)
-visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50.1, 0)
 mesh = SubResource("BoxMesh_tefeu")
+
+[node name="LatticeMeshInstance" type="MeshInstance3D" parent="Meshes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2125053, 0, 0)
+visible = false
+material_override = ExtResource("5_tefeu")
+skeleton = NodePath("../..")
+script = ExtResource("4_jyhfs")
+grid_size = 16
+metadata/_custom_type_script = "uid://o2qjsa51xmt1"
 
 [node name="ZAxis" type="MeshInstance3D" parent="."]
 transform = Transform3D(-0.05691886, 0.9950168, 0.08186516, 0.88379925, 0.08835773, -0.4594467, -0.46439058, 0.04620108, -0.8844246, 0, 0, 0.34553003)
@@ -159,9 +168,5 @@ mesh = SubResource("TorusMesh_tbgi4")
 transform = Transform3D(-0.46292895, 0.02286752, -0.8861004, 0.88233346, -0.08370005, -0.46312127, -0.08475698, -0.9962286, 0.018570222, 0.3974507, 0, 0)
 mesh = SubResource("TorusMesh_tipki")
 
-[node name="LatticeMeshInstance" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2125053, 0, 0)
-material_override = ExtResource("5_tefeu")
-script = ExtResource("4_jyhfs")
-grid_size = 16
-metadata/_custom_type_script = "uid://o2qjsa51xmt1"
+[node name="TextureEditor" type="Node" parent="."]
+script = ExtResource("8_tipki")
