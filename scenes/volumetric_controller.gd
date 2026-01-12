@@ -39,7 +39,7 @@ func _process(_delta):
 
 func _ready():
 	rd = RenderingServer.get_rendering_device()
-	if not rd: return
+	assert(rd, "Couldnt' get rendering device")
 
 	# Calculate brick grid dimensions
 	var brick_grid_size1 := int(ceil(float(grid_size) / float(brick_size)))
@@ -92,7 +92,9 @@ func create_texture():
 	fmt.usage_bits = (RenderingDevice.TEXTURE_USAGE_STORAGE_BIT
 		| RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
 		| RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
-		| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT)
+		| RenderingDevice.TEXTURE_USAGE_CPU_READ_BIT
+		| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
+	)
 
 	texture_rid = rd.texture_create(fmt, RDTextureView.new())
 	if not texture_rid.is_valid():
