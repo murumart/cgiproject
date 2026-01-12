@@ -134,6 +134,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 			// if the voxel is occupied
 			if (res.cell > 0u) { 
+				res.color = mix(res.color, my_color(res.cell), 0.01 * density);
 				//res.depth += t[res.stepped_axis]; // OLD INCORRECT logic
 				if (res.passed_through == 0.0) {
 					res.depth = t_current; // Set depth to the first hit distance
@@ -142,12 +143,9 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 					// Calculate normal
 					res.normal = vec3(0.0);
 					res.normal[res.stepped_axis] = -sgn_dir[res.stepped_axis];
-				}
 
-				res.color = mix(res.color, my_color(res.cell), 0.01 * density);
-
-				if (res.passed_through == 0.0) {
 					// Blinn-Phong Shading
+					/*
 					vec3 N = normalize(res.normal);
 					vec3 L = normalize(sun_direction);
 					vec3 V = -dir; // View direction is opposite to ray direction
@@ -162,6 +160,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 					// Apply lighting
 					vec3 lighting = ambient + lightColor * (diff * 0.8 + spec * 0.5);
 					res.color *= lighting;
+					*/
 				}
 				
 				res.alpha += 0.01 * density; // we add the density to the alpha
@@ -218,7 +217,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 		// Add a bias vector in the direction of travel. 
 		// This pushes the point physically INTO the next voxel.
-		vec3 bias = sgn_dir * 1e-3;
+		vec3 bias = sgn_dir * 1e-4;
 		
 		// Floor the biased position. 
 		// Because we pushed it forward, floor() is forced to snap to the next index.
@@ -248,11 +247,29 @@ void fragment() {
 	RayResult res = dda_ray_march(origin, dir);
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
+	vec3 sun_dir = normalize(sun_direction);
+
+	// Blinn-Phong Shading
+	vec3 N = normalize(res.normal);
+	vec3 L = sun_dir;
+	vec3 V = -dir; // View direction is opposite to ray direction
+	vec3 H = normalize(L + V);
+
+	float diff = max(dot(N, L), 0.0);
+	float spec = pow(max(dot(N, H), 0.0), 32.0); // Shininess 32
+		
+	vec3 ambient = vec3(0.3); // Ambient light
+	vec3 lightColor = vec3(1.0); // Sun color
+
+	// Apply lighting
+	vec3 lighting = ambient + lightColor * (diff * 0.8 + spec * 0.5);
+	res.color *= lighting;
+
 	if (rt_shading) {
 		// Add bias to avoid self-shadowing (acne)
 		// Move along the light direction to ensure we clear the current voxel boundary
-		vec3 sun_dir = normalize(sun_direction);
-		vec3 shadow_origin = res.position + sun_dir * 0.01;
+		vec3 shadow_origin = res.position + sun_dir * 0.001;
+
 		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir);
 		
 		// If the shadow ray hits something, darken the color (shadow)
