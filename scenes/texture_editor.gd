@@ -1,0 +1,122 @@
+class_name TextureEditor extends Node
+
+const HB := preload("res://scenes/ui/ui_button.gd")
+
+## Fly around the world and build bricks
+
+@export var camera: Camera3D
+@export var volcont: VolumetricController
+@export var volume: MeshInstance3D
+@export var highlight: MeshInstance3D
+
+var _tdata: PackedByteArray
+var _data_queueing := false
+var _data_updating := false
+
+var _rd := RenderingServer.get_rendering_device()
+
+var _debug_parent: Node3D
+
+var _selected_block := 0
+
+
+func _ready() -> void:
+	assert(is_instance_valid(camera), "Need ojbect set")
+	assert(is_instance_valid(volcont), "Need ojbect set")
+	_debug_parent = Node3D.new()
+	add_child(_debug_parent)
+	var t := create_tween().set_loops()
+	t.tween_interval(1)
+	t.tween_callback(_draw_data_b)
+	_data_queueing = true
+	_rd.texture_get_data_async(volcont.texture_rid, 0, _queue_cb)
+	get_tree().get_nodes_in_group("hotbar_buttons").map(func(n: HB) -> void:
+		n.selected.connect(func() -> void: _selected_block = n.icon)
+	)
+	get_tree().get_first_node_in_group("hotbar_buttons").press()
+
+
+func _queue_cb(d: PackedByteArray) -> void:
+	_data_queueing = false
+	_tdata = d
+
+
+func _physics_process(_delta: float) -> void:
+	if _data_queueing:
+		return
+
+	var gs := volcont.grid_size
+	var mpos := get_viewport().get_mouse_position()
+	var in_vol_pos := (
+		camera.project_ray_origin(mpos)
+		- volume.position
+		+ Vector3.ONE * 100 * 0.5
+	)
+	in_vol_pos /= 100.0 / volcont.grid_size
+	var raycast := BlockRaycast.cast_ray_fast_vh(
+		in_vol_pos,
+		camera.project_ray_normal(mpos),
+		512,
+		_tdata,
+		gs,
+	)
+	if raycast.failure:
+		highlight.hide()
+		return
+
+	var bpos := raycast.get_collision_point()
+	var normal := Vector3.ZERO
+
+	normal[raycast.xyz_axis] = -raycast.axis_direction
+	if Input.is_action_just_pressed("mouse_left"):
+		var addpos := bpos + normal
+		if _selected_block == 0:
+			addpos = bpos
+		_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
+		print("set data")
+		print(error_string(_rd.texture_update(volcont.texture_rid, 0, _tdata)))
+		volcont.build_brick_map()
+		_data_queueing = true
+		_rd.texture_get_data_async(volcont.texture_rid, 0, _queue_cb)
+
+	highlight.show()
+	highlight.scale = Vector3.ONE * 100 / gs
+	highlight.scale[raycast.xyz_axis] = 0.01
+	highlight.position = (
+		(bpos + normal * 0.5)
+			* 100.0 / gs
+		+ volume.position - Vector3.ONE * 100 * 0.5
+		+ Vector3.ONE * 100 / gs * 0.5
+	)
+
+
+
+func _draw_data_b() -> void:
+	return
+	if _tdata.is_empty():
+		print("empty")
+		return
+	var gs := volcont.grid_size
+	var mats: Array[StandardMaterial3D] = [
+		null,
+		StandardMaterial3D.new(),
+		StandardMaterial3D.new(),
+		StandardMaterial3D.new(),
+	]
+	mats[1].albedo_color = Color.RED
+	mats[2].albedo_color = Color.GREEN
+	mats[3].albedo_color = Color.BLUE
+	_debug_parent.get_children().map(func(a: Node) -> void: a.queue_free())
+	_debug_parent.scale = Vector3.ONE * 100.0 / 16.0
+	_debug_parent.global_position = volume.global_position - Vector3.ONE * 50
+	var m := BoxMesh.new()
+	for x in gs: for y in gs:
+		for z in gs:
+			var b := _tdata[x + y * gs + z * gs * gs]
+			if b == 0:
+				continue
+			var n := MeshInstance3D.new()
+			n.mesh = m
+			n.material_override = mats[b]
+			n.position = Vector3(x, y, z) + Vector3.ONE * 0.5
+			_debug_parent.add_child(n)

@@ -9,7 +9,7 @@ var input_bytes: PackedByteArray
 var output_bytes: PackedByteArray
 
 # Compute Shader
-var pipeline: RID 
+var pipeline: RID
 var uniform_set: RID
 
 # Celloral Automata
@@ -18,10 +18,10 @@ class CA:
 	var state_a: PackedFloat32Array
 	var state_b: PackedFloat32Array
 	var kernel: PackedFloat32Array
-	
+
 	enum WriteState { A, B }
 	var write_state: WriteState
-	
+
 	func _init(a: PackedFloat32Array, b: PackedFloat32Array, kernels: PackedFloat32Array, state: WriteState) -> void:
 		state_a = a
 		state_b = b
@@ -33,7 +33,7 @@ func _ready() -> void:
 	var shader_file := load("res://shaders/cell_shader_v1.glsl")
 	var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
 	var shader := rd.shader_create_from_spirv(shader_spirv)
-	
+
 	# Prepare our data. We use floats in the shader, so we need 32 bit.
 	var a = PackedFloat32Array([
 		0, 0, 0, 0, 0, 0, 0, 0,
