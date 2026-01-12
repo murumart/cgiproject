@@ -92,7 +92,7 @@ func create_texture():
 	fmt.usage_bits = (RenderingDevice.TEXTURE_USAGE_STORAGE_BIT
 		| RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
 		| RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
-		| RenderingDevice.TEXTURE_USAGE_CPU_READ_BIT
+		#| RenderingDevice.TEXTURE_USAGE_CPU_READ_BIT
 		| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
 	)
 
