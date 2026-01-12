@@ -14,6 +14,7 @@ uniform int render_setting : hint_range(0, 5) = 0; // from the controller, can c
 uniform float mesh_size : hint_range(1, 400);
 uniform int brick_size; // Size of each brick (must match VolumetricController)
 uniform vec3 sun_direction = vec3(0.5, 1.0, 0.5);
+uniform bool rt_shading = false;
 
 varying vec3 local_pos;
 
@@ -93,7 +94,6 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 		return res;
 	}
 	
-	// Move origin to entry point (or keep at camera position if inside)
 	vec3 curr_pos = origin + dir * max(tmin, 0.0);
 	
 	// Get starting voxel coordinate
@@ -172,7 +172,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 				}
 				res.passed_through += 1.0;
 			} else if (res.cell == 0u) {
-				// Empty voxel
+				res.passed_through = 0.0;
 			}
 		} else {
 			// If brick is empty, skip to next brick boundary
@@ -248,9 +248,17 @@ void fragment() {
 	RayResult res = dda_ray_march(origin, dir);
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
-	RayResult res2sun = dda_ray_march(res.position, sun_direction);
-	if (res2sun.alpha > 0.0) {
-		res.color *= 0.5;
+	if (rt_shading) {
+		// Add bias to avoid self-shadowing (acne)
+		// Move along the light direction to ensure we clear the current voxel boundary
+		vec3 sun_dir = normalize(sun_direction);
+		vec3 shadow_origin = res.position + sun_dir * 0.01;
+		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir);
+		
+		// If the shadow ray hits something, darken the color (shadow)
+		if (res2sun.alpha > 0.0) {
+			res.color *= 0.5;
+		}
 	}
 
 	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
