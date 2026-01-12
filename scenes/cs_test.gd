@@ -39,7 +39,7 @@ var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 @export var simulte: bool = false
 
 @export var typecount: int = 4 # Number of cell states
-@export var kernel_size: Vector3i = Vector3i(5, 5, 5) # Kernel dimensions
+@export var kernel_size: Vector3i = Vector3i(3, 3, 3) # Kernel dimensions
 
 @export var initial_state: PackedByteArray
 @export var kernels: PackedFloat32Array
@@ -147,8 +147,10 @@ func dispatch_cell_automata(compute_list: int):
 
 	# Push constants for cell automata
 	var push_constant := PackedByteArray()
-	push_constant.resize(16) # Padding to 16 bytes to match shader alignment
-	push_constant.encode_u32(0, sim_seed)
+	push_constant.resize(16)
+	push_constant.encode_u32(0, grid_size)
+	push_constant.encode_u32(4, kernel_size.x)
+	push_constant.encode_u32(8, typecount)
 	rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
 
 	# Dispatch automata shader
@@ -166,10 +168,11 @@ func dispatch_cell_aggregation(compute_list: int):
 
 
 	# Push constants for aggregation
-	var push_constant := PackedByteArray()
-	push_constant.resize(16) # Padding to 16 bytes to match shader alignment
-	push_constant.encode_u32(0, typecount) # example
-	rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
+	var pc := PackedByteArray()
+	pc.resize(8)
+	pc.encode_u32(0, grid_size)
+	pc.encode_u32(4, typecount)
+	rd.compute_list_set_push_constant(compute_list, pc, pc.size())
 
 	# Dispatch aggregation shader
 	rd.compute_list_dispatch(compute_list,
@@ -188,7 +191,6 @@ func dispatch_brick_map_generation(compute_list: int):
 	push_constant.encode_u32(0, brick_size)
 	rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
 
-
 	# Dispatch brick map shader
 	rd.compute_list_dispatch(compute_list,
 		brick_grid_size.x,
@@ -197,24 +199,38 @@ func dispatch_brick_map_generation(compute_list: int):
 	)
 
 func setup_cell_pipeline():
-	var shader_file = load("res://shaders/cell_shader_v2.glsl")
+	var shader_file: RDShaderFile = load("res://shaders/cell_shader_v2.glsl")
+	if shader_file == null:
+		push_error("Failed to load shader file")
+		return
 	var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
+	if shader_spirv == null:
+		push_error("Shader SPIR-V is null (compile error)")
+		return
 	shader_rid = rd.shader_create_from_spirv(shader_spirv)
 	pipeline_rid = rd.compute_pipeline_create(shader_rid)
 
+
+	if (initial_state):
+		# rd.storage_buffer_update(read_state_rid, 0, initial_state)
+		read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4, initial_state)
+	else:
+		read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
+
+
+	if (kernels):
+		# rd.storage_buffer_update(kernel_rid, 0, kernels)
+		kernel_rid = rd.storage_buffer_create(kernel_size.x * kernel_size.y * kernel_size.z * 4, kernels.to_byte_array())
+	else:
+		kernel_rid = rd.storage_buffer_create(kernel_size.x * kernel_size.y * kernel_size.z * 4)
+
+
 	read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
 	write_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
-	kernel_rid = rd.storage_buffer_create(kernel_size.x * kernel_size.y * kernel_size.z * 4)
 
 	if (not read_state_rid.is_valid() or not write_state_rid.is_valid() or not kernel_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers! Grid size ", grid_size, " might be too large for VRAM.")
 		return
-	
-	if (initial_state):
-		rd.storage_buffer_update(read_state_rid, 0, initial_state)
-	
-	if (kernels):
-		rd.storage_buffer_update(kernel_rid, 0, kernels)
 	
 	# Create uniforms for cell automata
 	var read_u := RDUniform.new()
@@ -244,11 +260,11 @@ func setup_aggregation_pipeline():
 	aggregate_shader_rid = rd.shader_create_from_spirv(shader_spirv)
 	aggregate_pipeline_rid = rd.compute_pipeline_create(aggregate_shader_rid)
 
-	aggregate_pipeline_rid = create_texture(Vector3i(grid_size, grid_size, grid_size))
+	cell_type_texture_rid = create_texture(Vector3i(grid_size, grid_size, grid_size))
 
 	# Bind SSBO with latest read_state
 	var read_uniform = RDUniform.new()
-	read_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+	read_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	read_uniform.binding = 0
 	read_uniform.add_id(read_state_rid)
 
@@ -289,7 +305,7 @@ func create_texture(size: Vector3i = Vector3i(-1, -1, -1)) -> RID:
 	fmt.width = size.x # No packing - each voxel gets its own texel
 	fmt.height = size.y
 	fmt.depth = size.z
-	fmt.format = RenderingDevice.DATA_FORMAT_R8_UNORM
+	fmt.format = RenderingDevice.DATA_FORMAT_R8_UINT
 	fmt.texture_type = RenderingDevice.TEXTURE_TYPE_3D
 	
 	# Usage bits: Storage (Compute Write) + Sampling (Shader Read)

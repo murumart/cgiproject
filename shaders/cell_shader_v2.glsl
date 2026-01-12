@@ -1,7 +1,7 @@
 #[compute]
 #version 450
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // 4D (cell_type * 3D state array) arrays for read and write buffers
 layout(set = 0, binding = 0, std430) restrict buffer ReadArray { float data[]; } read;
@@ -10,11 +10,8 @@ layout(set = 0, binding = 1, std430) restrict buffer WriteArray { float data[]; 
 layout(set = 0, binding = 2, std430) restrict buffer KernelArray { float data[]; } kernel;
 
 layout(push_constant) uniform PushConstants {
-	ivec3 size; // size.x, size.y, size.z: dimensions of the 3D grid; size.w: number of cell types
-	ivec3 kernel_size; // kernel_size.x, kernel_size.y, kernel_size.z: dimensions of the 3D kernel; kernel_size.w: unused
-	float mu; // desired average state
-	float sigma; // standard deviation for growth function
-	float dt; // time step
+	int grid_size; // size.x, size.y, size.z: dimensions of the 3D grid; size.w: number of cell types
+	int kernel_size; // kernel_size.x, kernel_size.y, kernel_size.z: dimensions of the 3D kernel; kernel_size.w: unused
 	int typecount;
 } pc;
 
@@ -44,12 +41,12 @@ void main() {
     int write_type = int(gid_z % pc.typecount);
     id.z = int(gid_z / pc.typecount);
 
-    if (id.x >= pc.size.x || id.y >= pc.size.y || id.z >= pc.size.z)
+    if (id.x >= pc.grid_size || id.y >= pc.grid_size || id.z >= pc.grid_size)
         return;
 
-    ivec4 size = ivec4(pc.size, pc.typecount);
-    ivec3 half_k = pc.kernel_size / 2;
-    float dsigma = 2.0 * pc.sigma * pc.sigma;
+    ivec4 size = ivec4(pc.grid_size, pc.grid_size, pc.grid_size, pc.typecount);
+    ivec3 half_k = ivec3(pc.kernel_size, pc.kernel_size, pc.kernel_size) / 2;
+    // float dsigma = 2.0 * pc.sigma * pc.sigma;
 
     int out_i = idx4D(write_type, id.x, id.y, id.z, size);
 
@@ -61,7 +58,7 @@ void main() {
                 for (int kx = -half_k.x; kx <= half_k.x; kx++) {
                     ivec3 nb = id + ivec3(kx, ky, kz);
                     if (nb.x < 0 || nb.y < 0 || nb.z < 0 ||
-                        nb.x >= pc.size.x || nb.y >= pc.size.y || nb.z >= pc.size.z)
+                        nb.x >= pc.grid_size || nb.y >= pc.grid_size || nb.z >= pc.grid_size)
                         continue;
 
                     int ni = idx4D(read_type, nb.x, nb.y, nb.z, size);
@@ -83,7 +80,7 @@ void main() {
     // float growth = exp(-pow(sum - pc.mu, 2.0) / dsigma) * 2.0 - 1.0;
     // float cur = read.data[out_i];
     // write.data[out_i] = clamp(cur + pc.dt * growth, 0.0, 1.0);
-    write.data[out_i] = clamp(sum, 0.0, 255.0);
+    write.data[out_i] = int(clamp(sum, 0.0, 255.0));
 }
 
 
