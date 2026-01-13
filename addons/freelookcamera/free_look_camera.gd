@@ -8,9 +8,12 @@ extends Camera3D
 @export var max_speed: float = 1000
 @export var min_speed: float = 0.2
 
-@export var volumetric_controller: VolumetricController
+@export var volumetric_controller: Node
 
 @onready var _velocity = default_velocity
+
+func _ready() -> void:
+	assert(volumetric_controller is VolumetricController || volumetric_controller is CS_Test)
 
 func _input(event):
 	if not current:
