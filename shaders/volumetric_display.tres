@@ -10,3 +10,5 @@ shader_parameter/density = 100.0
 shader_parameter/render_setting = 0
 shader_parameter/mesh_size = 100.0000047025
 shader_parameter/brick_size = 0
+shader_parameter/sun_direction = Vector3(0.75, 1, 0.9)
+shader_parameter/rt_shading = false

@@ -1,0 +1,41 @@
+[gd_scene load_steps=8 format=3 uid="uid://cah5smdn6c3en"]
+
+[ext_resource type="Script" uid="uid://dtcqdruvkpkrl" path="res://scenes/decor/particle_delete.gd" id="1_omvye"]
+[ext_resource type="Texture2D" uid="uid://capte2elmmr72" path="res://scenes/decor/sparkle.png" id="1_x23gk"]
+
+[sub_resource type="Curve" id="Curve_x23gk"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.04444444, 1), 0.0, 0.0, 0, 0, Vector2(0.53888893, 0.8876405), 0.0, 0.0, 0, 0, Vector2(0.9166666, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 5
+
+[sub_resource type="CurveTexture" id="CurveTexture_hmahh"]
+width = 32
+curve = SubResource("Curve_x23gk")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_hmahh"]
+emission_shape = 1
+emission_sphere_radius = 2.0
+direction = Vector3(0, 0, 0)
+spread = 180.0
+initial_velocity_max = 1.0
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("CurveTexture_hmahh")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ta1rc"]
+transparency = 1
+shading_mode = 0
+albedo_texture = ExtResource("1_x23gk")
+texture_filter = 0
+texture_repeat = false
+billboard_mode = 1
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_uknda"]
+material = SubResource("StandardMaterial3D_ta1rc")
+
+[node name="AddParticles" type="GPUParticles3D"]
+emitting = false
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_hmahh")
+draw_pass_1 = SubResource("QuadMesh_uknda")
+script = ExtResource("1_omvye")

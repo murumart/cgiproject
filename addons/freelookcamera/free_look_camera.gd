@@ -6,7 +6,7 @@ extends Camera3D
 @export_range(0, 10, 0.01) var speed_scale: float = 1.17
 @export_range(1, 100, 0.1) var boost_speed_multiplier: float = 3.0
 @export var max_speed: float = 1000
-@export var min_speed: float = 0.2
+@export var min_speed: float = 0.02
 
 @export var volumetric_controller: Node
 
@@ -57,3 +57,5 @@ func _process(delta):
 		translate(direction * _velocity * delta * boost_speed_multiplier)
 	else:
 		translate(direction * _velocity * delta)
+	if global_position.y < 0:
+		global_position.y = 0

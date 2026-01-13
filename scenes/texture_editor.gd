@@ -1,6 +1,8 @@
 class_name TextureEditor extends Node
 
 const HB := preload("res://scenes/ui/ui_button.gd")
+const BreakParticle := preload("res://scenes/decor/break_particles.tscn")
+const AddParticle := preload("res://scenes/decor/add_particles.tscn")
 
 ## Fly around the world and build bricks
 
@@ -68,13 +70,20 @@ func _physics_process(_delta: float) -> void:
 	var normal := Vector3.ZERO
 
 	normal[raycast.xyz_axis] = -raycast.axis_direction
-	if Input.is_action_just_pressed("mouse_left"):
+	var action_position := ((bpos + normal * 0.5) * 100.0 / gs
+		+ volume.position - Vector3.ONE * 100 * 0.5
+		+ Vector3.ONE * 100 / gs * 0.5)
+	if Input.is_action_pressed("mouse_left"):
 		var addpos := bpos + normal
 		if _selected_block == 0:
 			addpos = bpos
+			var oldblock := _tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs]
+			if oldblock > 0:
+				_particle(BreakParticle, action_position)
+		else:
+			_particle(AddParticle, action_position)
 		_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
-		print("set data")
-		print(error_string(_rd.texture_update(volcont.texture_rid, 0, _tdata)))
+		_rd.texture_update(volcont.texture_rid, 0, _tdata)
 		volcont.build_brick_map()
 		_data_queueing = true
 		_rd.texture_get_data_async(volcont.texture_rid, 0, _queue_cb)
@@ -82,12 +91,7 @@ func _physics_process(_delta: float) -> void:
 	highlight.show()
 	highlight.scale = Vector3.ONE * 100 / gs
 	highlight.scale[raycast.xyz_axis] = 0.01
-	highlight.position = (
-		(bpos + normal * 0.5)
-			* 100.0 / gs
-		+ volume.position - Vector3.ONE * 100 * 0.5
-		+ Vector3.ONE * 100 / gs * 0.5
-	)
+	highlight.position = action_position
 
 
 
@@ -120,3 +124,9 @@ func _draw_data_b() -> void:
 			n.material_override = mats[b]
 			n.position = Vector3(x, y, z) + Vector3.ONE * 0.5
 			_debug_parent.add_child(n)
+
+
+func _particle(type: PackedScene, pos: Vector3) -> void:
+	var p := type.instantiate()
+	add_child(p)
+	p.global_position = pos
