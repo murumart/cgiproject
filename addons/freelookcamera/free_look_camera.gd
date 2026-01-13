@@ -54,3 +54,5 @@ func _process(delta):
 		translate(direction * _velocity * delta * boost_speed_multiplier)
 	else:
 		translate(direction * _velocity * delta)
+	if global_position.y < 0:
+		global_position.y = 0

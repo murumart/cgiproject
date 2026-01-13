@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://ckebvitsc78ta"]
+
+[ext_resource type="Texture2D" uid="uid://isl3eagspnqk" path="res://scenes/decor/xsign.png" id="1_y7mvq"]
+[ext_resource type="Texture2D" uid="uid://cxfogxt4w1mx5" path="res://scenes/decor/backsign.png" id="2_prqmo"]
+
+[node name="Sign" type="Sprite3D"]
+double_sided = false
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("1_y7mvq")
+
+[node name="Back" type="Sprite3D" parent="."]
+transform = Transform3D(1, 0, -1.509958e-07, 0, 1, 0, -1.509958e-07, 0, -1, 0, 0, -0.0033682287)
+double_sided = false
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("2_prqmo")

@@ -4,11 +4,14 @@
 [ext_resource type="Script" uid="uid://c0wpmlv3h3v1y" path="res://lives/stupit_tree.gd" id="2_0wfyh"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://o2qjsa51xmt1" path="res://scenes/lattice_mesh.gd" id="4_jyhfs"]
+[ext_resource type="Texture2D" uid="uid://3sp4y4a4vg4k" path="res://scenes/decor/smoke.png" id="5_eb6dy"]
 [ext_resource type="Material" uid="uid://dl42s6e68ocqk" path="res://shaders/lattice_material.tres" id="5_tefeu"]
 [ext_resource type="PackedScene" uid="uid://bfnvaccj5chko" path="res://scenes/ui/ui_button.tscn" id="6_85g3d"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="6_o6xl0"]
 [ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/volumetric_controller.gd" id="6_tefeu"]
-[ext_resource type="Script" path="res://scenes/texture_editor.gd" id="8_tipki"]
+[ext_resource type="Script" uid="uid://ba3tbmolvdy7o" path="res://scenes/texture_editor.gd" id="8_tipki"]
+[ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
+[ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 
 [sub_resource type="Resource" id="Resource_sugp2"]
 script = ExtResource("2_0wfyh")
@@ -74,25 +77,20 @@ roughness = 0.98
 normal_enabled = true
 normal_texture = SubResource("NoiseTexture2D_jyhfs")
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0wfyh"]
-sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
-ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
+sky_curve = 0.04616783
+sky_cover = ExtResource("5_eb6dy")
+ground_curve = 0.07210009
+sun_curve = 0.07244537
 
 [sub_resource type="Sky" id="Sky_sugp2"]
-sky_material = SubResource("ProceduralSkyMaterial_0wfyh")
+sky_material = SubResource("ProceduralSkyMaterial_ya4ey")
 
 [sub_resource type="Environment" id="Environment_jyhfs"]
 background_mode = 2
 sky = SubResource("Sky_sugp2")
 tonemap_mode = 2
 glow_enabled = true
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wfyh"]
-albedo_color = Color(0.6496686, 0.40608382, 0.15865174, 1)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_sgp6g"]
-material = SubResource("StandardMaterial3D_0wfyh")
-size = Vector2(900, 900)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tipki"]
 transparency = 4
@@ -109,19 +107,20 @@ material = SubResource("StandardMaterial3D_tipki")
 material = ExtResource("6_o6xl0")
 size = Vector3(100, 100, 100)
 
-[sub_resource type="BoxMesh" id="BoxMesh_tbgi4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wfyh"]
+albedo_color = Color(0.6496686, 0.40608382, 0.15865174, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tefeu"]
-albedo_color = Color(0.003921569, 0.41960785, 1, 1)
+[sub_resource type="PlaneMesh" id="PlaneMesh_sgp6g"]
+material = SubResource("StandardMaterial3D_0wfyh")
+size = Vector2(900, 900)
 
-[sub_resource type="TorusMesh" id="TorusMesh_tbgi4"]
-material = SubResource("StandardMaterial3D_tefeu")
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_85g3d"]
+albedo_color = Color(0.4450649, 0.50761724, 0.15227985, 1)
+roughness = 0.57
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o6xl0"]
-albedo_color = Color(0.8117647, 0.14901961, 0.21568628, 1)
-
-[sub_resource type="TorusMesh" id="TorusMesh_tipki"]
-material = SubResource("StandardMaterial3D_o6xl0")
+[sub_resource type="BoxMesh" id="BoxMesh_eb6dy"]
+material = SubResource("StandardMaterial3D_85g3d")
+size = Vector3(100, 1, 100)
 
 [node name="Main" type="Node3D" node_paths=PackedStringArray("draw_parent", "lattice")]
 script = ExtResource("1_o5qli")
@@ -134,25 +133,28 @@ lattice = NodePath("Meshes/LatticeMeshInstance")
 [node name="VolControl" type="Node" parent="." node_paths=PackedStringArray("mesh_instance")]
 script = ExtResource("6_tefeu")
 brick_size = 8
-grid_size = 64
+grid_size = 32
 mesh_instance = NodePath("../Meshes/RaytracedVolume")
 material = ExtResource("6_o6xl0")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.19199611, 0.8749372, -0.44454756, 0.6146486, 0.24592778, 0.7494844, 0.76507825, -0.41713855, -0.4905617, 0, 0, 0)
+transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
 shadow_enabled = true
-sky_mode = 1
+shadow_bias = 0.035
+shadow_opacity = 0.5
+shadow_blur = 10.0
+directional_shadow_mode = 0
+directional_shadow_fade_start = 0.894
+directional_shadow_max_distance = 218.2
+directional_shadow_pancake_size = 127.5
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_jyhfs")
 
-[node name="Plane" type="MeshInstance3D" parent="."]
-mesh = SubResource("PlaneMesh_sgp6g")
-
 [node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("volumetric_controller")]
 transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 54.55, 94.71)
 script = ExtResource("3_sugp2")
-volumetric_controller = NodePath("../Meshes/RaytracedVolume")
+volumetric_controller = NodePath("../VolControl")
 
 [node name="Control" type="Control" parent="Camera3D"]
 layout_mode = 3
@@ -170,9 +172,25 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Control" type="Control" parent="Camera3D/Control/VBoxContainer"]
+[node name="Control" type="HBoxContainer" parent="Camera3D/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer/Control"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Control/MarginContainer"]
+layout_mode = 2
+text = "Controls:
+> Move: WASD, Q/E
+> Speed: SHIFT, Scroll
+> Select Block: 1-4"
+fit_content = true
+autowrap_mode = 0
 
 [node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer"]
 layout_mode = 2
@@ -211,12 +229,10 @@ mesh = SubResource("BoxMesh_85g3d")
 [node name="Meshes" type="Node3D" parent="."]
 
 [node name="RaytracedVolume" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50.01, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.971275, 50.009995, -0.13633156)
+cast_shadow = 0
 mesh = SubResource("BoxMesh_tefeu")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.50404036, 0)
-mesh = SubResource("BoxMesh_tbgi4")
+metadata/_edit_lock_ = true
 
 [node name="LatticeMeshInstance" type="MeshInstance3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2125053, 0, 0)
@@ -227,17 +243,28 @@ script = ExtResource("4_jyhfs")
 grid_size = 16
 metadata/_custom_type_script = "uid://o2qjsa51xmt1"
 
-[node name="ZAxis" type="MeshInstance3D" parent="."]
-transform = Transform3D(-0.05691886, 0.9950168, 0.08186516, 0.88379925, 0.08835773, -0.4594467, -0.46439058, 0.04620108, -0.8844246, 0, 0, 0.34553003)
-mesh = SubResource("TorusMesh_tbgi4")
-
-[node name="XAxis" type="MeshInstance3D" parent="."]
-transform = Transform3D(-0.46292895, 0.02286752, -0.8861004, 0.88233346, -0.08370005, -0.46312127, -0.08475698, -0.9962286, 0.018570222, 0.3974507, 0, 0)
-mesh = SubResource("TorusMesh_tipki")
-
 [node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "volcont", "volume", "highlight")]
 script = ExtResource("8_tipki")
 camera = NodePath("../Camera3D")
 volcont = NodePath("../VolControl")
 volume = NodePath("../Meshes/RaytracedVolume")
 highlight = NodePath("../HighlightBlock")
+
+[node name="Decor" type="Node3D" parent="."]
+
+[node name="GroundPlace" type="MeshInstance3D" parent="Decor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+mesh = SubResource("PlaneMesh_sgp6g")
+skeleton = NodePath("../..")
+
+[node name="VolumePlane" type="MeshInstance3D" parent="Decor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, -0.49827743, 0)
+mesh = SubResource("BoxMesh_eb6dy")
+skeleton = NodePath("../..")
+
+[node name="Sign" parent="Decor" instance=ExtResource("10_ya4ey")]
+transform = Transform3D(31.972, -1.3383468, 0, 1.3383468, 31.972, 0, 0, 0, 32, 94.06878, 8.100766, -60.873245)
+
+[node name="Sign2" parent="Decor" instance=ExtResource("10_ya4ey")]
+transform = Transform3D(-1.3987644e-06, 0, -32, -2.5452101, 31.898619, 1.1125467e-07, 31.898619, 2.5452101, -1.3943329e-06, 107.32261, 8.824197, -51.199734)
+texture = ExtResource("11_eb6dy")
