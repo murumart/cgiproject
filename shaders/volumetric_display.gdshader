@@ -23,7 +23,7 @@ uniform float ambient_power : hint_range(0.0, 1.0) = 1.0;
 //uniform vec3 diffuse_color = vec3(1.0, 1.0, 1.0);
 //uniform vec3 specular_color = vec3(1.0, 1.0, 1.0);
 uniform float shininess : hint_range(1, 128) = 32;
-uniform float screenGamma : hint_range(0.1, 10) = 2.2;
+//uniform float screenGamma : hint_range(0.1, 10) = 2.2;
 
 uniform float exposure : hint_range(0.1, 10) = 1.0;
 
