@@ -166,7 +166,9 @@ func dispatch_cell_aggregation(compute_list: int):
 	var pc := PackedByteArray()
 	pc.resize(16)
 	pc.encode_u32(0, grid_size)
-	pc.encode_u32(4, typecount)
+	pc.encode_u32(4, grid_size)
+	pc.encode_u32(8, grid_size)
+	pc.encode_u32(12, typecount)
 	rd.compute_list_set_push_constant(compute_list, pc, pc.size())
 
 	# Dispatch aggregation shader
