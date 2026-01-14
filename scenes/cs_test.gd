@@ -71,22 +71,22 @@ func _ready():
 	#print("Brick grid size: ", brick_grid_size)
 
 	# Init variables
-	
+
 
 	# Setup
 	setup_cell_pipeline()
 	setup_aggregation_pipeline()
 	setup_brick_pipeline()
-	
+
 	# Run Simulation
 	# This queues the commands on the GPU but doesn't execute them instantly.
-	run_simulation_once()
+	#run_simulation_once()
 
 
 func run_simulation_once():
 	if not texture_rid.is_valid():
 		return
-	
+
 	# var uniform_set = rd.uniform_set_create([], shader_rid, 0)
 	var compute_list = rd.compute_list_begin() # Begin compute list
 	# rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
@@ -113,7 +113,7 @@ func bind_texture_to_material():
 	else:
 		printerr("Cannot bind texture: Invalid RID")
 		return
-	
+
 	var brick_map_rd = Texture3DRD.new() # Create brick map texture wrapper
 	if brick_map_texture_rid.is_valid():
 		brick_map_rd.texture_rd_rid = brick_map_texture_rid # Set brick map texture ID
@@ -235,7 +235,7 @@ func setup_cell_pipeline():
 	if (not read_state_rid.is_valid() or not write_state_rid.is_valid() or not kernel_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers! Grid size ", grid_size, " might be too large for VRAM.")
 		return
-	
+
 	# Create uniforms for cell automata
 	var read_u := RDUniform.new()
 	read_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
@@ -327,14 +327,14 @@ func create_texture(size: Vector3i = Vector3i(-1, -1, -1)) -> RID:
 	fmt.depth = size.z
 	fmt.format = RenderingDevice.DATA_FORMAT_R8_UNORM
 	fmt.texture_type = RenderingDevice.TEXTURE_TYPE_3D
-	
+
 	# Usage bits: Storage (Compute Write) + Sampling (Shader Read)
 	fmt.usage_bits =\
 		RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | \
 		RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | \
 		RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT | \
 		RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
-	
+
 	var rid = rd.texture_create(fmt, RDTextureView.new())
 	if not rid.is_valid():
 		printerr("CRITICAL ERROR: Failed to create voxel texture! Grid size ", size, " might be too large for VRAM.")
