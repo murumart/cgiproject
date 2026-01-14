@@ -15,7 +15,7 @@
 [ext_resource type="Material" uid="uid://43lyjk060ru3" path="res://scenes/renderers/leafmat.tres" id="7_gqmmt"]
 [ext_resource type="Texture2D" uid="uid://0q8vy1pc0gmt" path="res://scenes/ui/icons/none.png" id="7_trceg"]
 [ext_resource type="Texture2D" uid="uid://dn5bo1crtqp0g" path="res://scenes/ui/icons/flesh.png" id="8_a8y0u"]
-[ext_resource type="Script" path="res://scenes/texture_editor.gd" id="8_tipki"]
+[ext_resource type="Script" uid="uid://ba3tbmolvdy7o" path="res://scenes/texture_editor.gd" id="8_tipki"]
 [ext_resource type="Material" uid="uid://cr5n400hw00n2" path="res://scenes/renderers/barkmat.tres" id="8_yc10j"]
 [ext_resource type="Texture2D" uid="uid://dcmtudcbcp6kh" path="res://scenes/ui/icons/leaf.png" id="9_jkv2x"]
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
@@ -89,7 +89,7 @@ pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HB
 [node name="Renderers" type="Node" parent="."]
 
 [node name="RaytracedRender" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
-editor_description = "This renderer uses a shader with voxel ray traversal algrithm. The voxel ray traversal algrithm only checks the edges of the cell boundries, if the cell is empty, it skips to the next cell boundry. It also uses a compute shader to calculate a brickmap, so it can skip larger space when there are no voxels nearby. The voxels are lit with Blinn-Phong and cast raytraced shadows."
+editor_description = "This renderer uses a shader with voxel ray traversal algrithm. The voxel ray traversal algrithm only checks cell boundries, if the cell is empty, it skips to the next cell boundry. It also uses a compute shader to calculate a brickmap, so it can skip larger space when there are no voxels nearby. The voxels are lit with Blinn-Phong and cast raytraced shadows."
 script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
