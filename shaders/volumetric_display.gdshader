@@ -85,13 +85,13 @@ vec3 my_color(uint cell) {
 Material my_material(uint cell){
 	switch (cell) {
 		case 0u:
-			return Material(vec3(1.0, 1.0, 1.0), vec3(1.0), 0.2, 1.0);
+			return Material(vec3(0.0), vec3(0.0), 0.0, 0.0);
 		case 1u:
-			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+			return Material(vec3(0.839, 0.537, 0.255), vec3(1.0), 0.2, 1.0);
 		case 2u:
-			return Material(vec3(0.2, 0.8, 1.0), vec3(1.0), 0.2, 1.0);
+			return Material(vec3(0.271, 1, 0.392), vec3(1.0), 0.2, 1.0);
 		case 3u:
-			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+			return Material(vec3(0.612, 0.424, 0.196), vec3(1.0), 0.2, 1.0);
 		case 4u:
 			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
 		case 5u:
