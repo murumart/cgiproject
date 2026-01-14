@@ -9,17 +9,40 @@ uniform sampler3D simulation_data : filter_nearest; // The texture from the comp
 uniform sampler3D brick_map : filter_nearest; // Brick occupancy map
 uniform vec4 color : source_color = vec4(0.2, 0.8, 1.0, 1.0);
 uniform float density : hint_range(0.1, 100) = 100;
-uniform int render_setting : hint_range(0, 5) = 0; // from the controller, can change in runtime
+uniform int render_setting : hint_range(0, 7) = 0; // from the controller, can change in runtime
 //uniform int max_steps = 128; // Reduce this if performance is low
 uniform float mesh_size : hint_range(1, 400);
 uniform int brick_size; // Size of each brick (must match VolumetricController)
+
+// lighting
 uniform vec3 sun_direction = vec3(0.5, 1.0, 0.5);
-uniform bool rt_shading = false;
+uniform vec3 sun_color = vec3(1.0, 1.0, 1.0);
+uniform float sun_power : hint_range(0.0, 1.0) = 1.0;
+//uniform vec3 ambient_color = vec3(0.1, 0.1, 0.1);
+uniform float ambient_power : hint_range(0.0, 1.0) = 1.0;
+//uniform vec3 diffuse_color = vec3(1.0, 1.0, 1.0);
+//uniform vec3 specular_color = vec3(1.0, 1.0, 1.0);
+uniform float shininess : hint_range(1, 128) = 32;
+//uniform float screenGamma : hint_range(0.1, 10) = 2.2;
+
+uniform float exposure : hint_range(0.1, 10) = 1.0;
+
+uniform bool rt_shadows = false;
+
+uniform uint ground_material = 7;
 
 varying vec3 local_pos;
 
+struct Material {
+	vec3 diffuse_color;
+	vec3 specular_color;
+	float roughness;
+	float opacity;
+};
+
 struct RayResult {
-	vec3 color;
+	Material material;
+	//vec3 color;
 	float alpha;
 	float depth;
 	int stepped_axis;
@@ -31,10 +54,13 @@ struct RayResult {
 	vec3 position;
 };
 
+
+
 void vertex() {
 	local_pos = VERTEX / mesh_size;
 }
 
+/*
 vec3 my_color(uint cell) {
 	switch (cell) {
 		case 0u:
@@ -54,11 +80,62 @@ vec3 my_color(uint cell) {
 		case 7u:
 			return vec3(0.2, 0.2, 0.2);
 	}
+}*/
+
+Material my_material(uint cell){
+	switch (cell) {
+		case 0u:
+			return Material(vec3(1.0, 1.0, 1.0), vec3(1.0), 0.2, 1.0);
+		case 1u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 2u:
+			return Material(vec3(0.2, 0.8, 1.0), vec3(1.0), 0.2, 1.0);
+		case 3u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 4u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 5u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 6u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 7u:
+			return Material(vec3(0.2, 0.6, 0.2), vec3(0.1), 0.2, 1.0);
+	}
+}
+
+vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
+	// Blinn-Phong Shading
+	normal = normalize(normal);
+	vec3 light_dir = normalize(sun_direction);
+	view_dir = normalize(view_dir);
+
+
+	float lambertian = max(dot(normal, light_dir), 0.0);
+	float specular = 0.0;
+	if (lambertian > 0.0) {
+		vec3 half_dir = normalize(light_dir + view_dir);
+		specular = pow(max(dot(normal, half_dir), 0.0), shininess);
+	}
+
+	vec3 specular_color = vec3(0.0);
+	if (specular > 0.0) {
+		specular_color = material.specular_color * specular * sun_color * sun_power;
+	}
+
+	vec3 diffuse_color = material.diffuse_color * lambertian * sun_color * sun_power;
+
+	vec3 ambient_color = material.diffuse_color * sun_color * ambient_power;
+
+	vec3 lightColor = (ambient_color + (diffuse_color) + (specular_color)/exposure);
+	//lightColor = pow(lightColor, vec3(1.0 / screenGamma));
+
+	return lightColor;
 }
 
 RayResult dda_ray_march(vec3 origin, vec3 dir) {
 	RayResult res;
-	res.color = vec3(0.0);
+	res.material = Material(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), 0.0, 0.0);
+	//res.color = vec3(0.0);
 	res.alpha = 0.0;
 	res.depth = 0.0;
 	res.stepped_axis = 0;
@@ -81,21 +158,21 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 	// Calculate intersection with voxel grid bounds
 	vec3 t1 = -origin * inv_dir; // t1 is the distance to the first intersection with the voxel grid
 	vec3 t2 = (voxel_resolution - origin) * inv_dir; // t2 is the distance to the second intersection with the voxel grid
-	
-	vec3 tmins = min(t1, t2); 
-	vec3 tmaxs = max(t1, t2); 
-	
+
+	vec3 tmins = min(t1, t2);
+	vec3 tmaxs = max(t1, t2);
+
 	// Don't clamp tmin to 0 - if camera is inside the volume, tmin will be negative
-	float tmin = max(tmins.x, max(tmins.y, tmins.z)); 
-	float tmax = min(tmaxs.x, min(tmaxs.y, tmaxs.z)); 
-	
+	float tmin = max(tmins.x, max(tmins.y, tmins.z));
+	float tmax = min(tmaxs.x, min(tmaxs.y, tmaxs.z));
+
 	// discard if the ray doesn't hit the volume
 	if (tmin > tmax){
 		return res;
 	}
-	
+
 	vec3 curr_pos = origin + dir * max(tmin, 0.0);
-	
+
 	// Get starting voxel coordinate
 	ivec3 coord = ivec3(clamp(floor(curr_pos), vec3(0), voxel_resolution - 1.0));
 
@@ -105,7 +182,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 	vec3 exit_pos = vec3(0.0);
 	float t_current = 0.0; // Track the current distance along the ray from curr_pos
-	
+
     // DDA traversal with brick map acceleration
 	// move the ray through the voxel grid until we reach the end or alpha is 1 (find the next occupied voxel)
 	uint max_steps = uint(voxel_resolution.x * 3.0); // Safety limit
@@ -115,6 +192,15 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 		// Check if we exited the volume
 		if (any(lessThan(coord, ivec3(0))) || any(greaterThanEqual(coord, ivec3(voxel_resolution)))) {
 			res.exited = 1.0;
+			// set ground if exited at bottom
+			if (res.stepped_axis == 1 && sgn_dir.y < 0.0) {
+				res.cell = ground_material;
+				res.material = my_material(ground_material);
+				res.alpha = 1.0;
+				res.position = curr_pos + dir * t_current;
+				res.normal = vec3(0.0, 1.0, 0.0);
+				res.depth = t_current;
+			}
 			break;
 		}
 
@@ -133,36 +219,21 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 			res.cell = uint(voxel_data_u.r * 255.0); // cell type
 
 			// if the voxel is occupied
-			if (res.cell > 0u) { 
-				res.color = mix(res.color, my_color(res.cell), 0.01 * density);
+			if (res.cell > 0u) {
+				res.material = my_material(res.cell);
+				//res.color = mix(res.color, my_color(res.cell), 0.01 * density);
 				//res.depth += t[res.stepped_axis]; // OLD INCORRECT logic
 				if (res.passed_through == 0.0) {
 					res.depth = t_current; // Set depth to the first hit distance
 					res.position = curr_pos + dir * t_current; // Exact world position (in voxel space)
-					
+
 					// Calculate normal
 					res.normal = vec3(0.0);
 					res.normal[res.stepped_axis] = -sgn_dir[res.stepped_axis];
 
-					// Blinn-Phong Shading
-					/*
-					vec3 N = normalize(res.normal);
-					vec3 L = normalize(sun_direction);
-					vec3 V = -dir; // View direction is opposite to ray direction
-					vec3 H = normalize(L + V);
 
-					float diff = max(dot(N, L), 0.0);
-					float spec = pow(max(dot(N, H), 0.0), 32.0); // Shininess 32
-					
-					vec3 ambient = vec3(0.3); // Ambient light
-					vec3 lightColor = vec3(1.0); // Sun color
-
-					// Apply lighting
-					vec3 lighting = ambient + lightColor * (diff * 0.8 + spec * 0.5);
-					res.color *= lighting;
-					*/
 				}
-				
+
 				res.alpha += 0.01 * density; // we add the density to the alpha
 				if (res.alpha >= 1.0) {
 					res.alpha = 1.0;
@@ -191,23 +262,23 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 			// Calculate the exact world position at the boundary
 			exit_pos = curr_pos + (dir * t_exit);
-			
-			// Add a bias vector in the direction of travel. 
+
+			// Add a bias vector in the direction of travel.
 			// This pushes the point physically INTO the next voxel.
 			vec3 bias = sgn_dir * 1e-3;
-			
-			// Floor the biased position. 
+
+			// Floor the biased position.
 			// Because we pushed it forward, floor() is forced to snap to the next index.
 			ivec3 next_coord = ivec3(floor(exit_pos + bias));
-			
-			coord = next_coord;	
+
+			coord = next_coord;
 			t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
-			
+
 			// Update t_current to the brick boundary
-			t_current = t_exit; 
-			continue; 
+			t_current = t_exit;
+			continue;
 		}
-		
+
 		// Find the closest exit point (min t)
 		float t_exit = min(t.x, min(t.y, t.z));
 
@@ -216,10 +287,10 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 		// Pure integer stepping to avoid precision issues
 		coord[res.stepped_axis] += int(sgn_dir[res.stepped_axis]);
-		
+
 		// Recalculate t for the new coordinate (to maintain precision relative to origin)
 		t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
-		
+
 		// Update t_current to the voxel boundary
 		t_current = t_exit;
 	}
@@ -234,49 +305,46 @@ void fragment() {
 
 	ivec3 tex_size = textureSize(simulation_data, 0);
 	vec3 voxel_resolution = vec3(tex_size);
-	
+
 	// Convert to voxel space (0 to voxel_resolution)
 	vec3 origin = (local_cam + 0.5) * voxel_resolution;
-	
+
 	RayResult res = dda_ray_march(origin, dir);
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
 	vec3 sun_dir = normalize(sun_direction);
 
-	// Blinn-Phong Shading
-	vec3 N = normalize(res.normal);
-	vec3 L = sun_dir;
-	vec3 V = -dir; // View direction is opposite to ray direction
-	vec3 H = normalize(L + V);
+	//vec3 lighting = blinn_phong(res.normal, -dir, res.material);
 
-	float diff = max(dot(N, L), 0.0);
-	float spec = pow(max(dot(N, H), 0.0), 32.0); // Shininess 32
-		
-	vec3 ambient = vec3(0.3); // Ambient light
-	vec3 lightColor = vec3(1.0); // Sun color
+	//res.color *= lighting;
+	vec3 my_color = vec3(0.0);
 
-	// Apply lighting
-	vec3 lighting = ambient + lightColor * (diff * 0.8 + spec * 0.5);
-	res.color *= lighting;
-
-	if (rt_shading) {
+	if (rt_shadows) {
 		// Add bias to avoid self-shadowing (acne)
 		// Move along the light direction to ensure we clear the current voxel boundary
 		vec3 shadow_origin = res.position + sun_dir * 0.001;
 
 		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir);
-		
+
 		// If the shadow ray hits something, darken the color (shadow)
 		if (res2sun.alpha > 0.0) {
-			res.color *= 0.5;
+			// gamma correct
+			my_color = res.material.diffuse_color * ambient_power * sun_color;
+			//my_color = pow(my_color, vec3(1.0 / screenGamma));
+		} else {
+			my_color = blinn_phong(res.normal, -dir, res.material);
 		}
+	} else {
+		my_color = blinn_phong(res.normal, -dir, res.material);
 	}
+
+	//my_color = pow(my_color, vec3(1.0 / screenGamma));
+	//my_color = pow(my_color, vec3(screenGamma));
 
 	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
 	switch (render_setting) {
 		case 0: // color
-			ALBEDO = res.color;
-			
+			ALBEDO = my_color;
 			ALPHA = res.alpha;
 			break;
 		case 1: // depth
@@ -303,13 +371,18 @@ void fragment() {
 			ALBEDO = vec3(float(res.steps)) / vec3(tex_size);
 			ALPHA = 1.0;
 			break;
-		case 4: 
+		case 4:
 			ALBEDO = vec3(res.passed_through);
 			ALPHA = 1.0;
 			break;
 		case 5: // exited
 			ALBEDO = vec3(res.exited);
 			ALPHA = 1.0;
+			break;
+		case 6:
+			ivec3 tex_size = textureSize(simulation_data, 0);
+			vec4 r = texelFetch(simulation_data, ivec3(int(sin(TIME) * 0.5 + 0.5) * tex_size.x), 0);
+			ALBEDO = vec3(r.r * 255.0);
 			break;
 	}
 }

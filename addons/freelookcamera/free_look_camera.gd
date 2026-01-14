@@ -8,12 +8,14 @@ extends Camera3D
 @export var max_speed: float = 1000
 @export var min_speed: float = 0.02
 
-@export var volumetric_controller: Node
+@export var renderer: Renderer
 
 @onready var _velocity = default_velocity
 
+
 func _ready() -> void:
-	assert(volumetric_controller is VolumetricController || volumetric_controller is CS_Test)
+	pass
+
 
 func _input(event):
 	if not current:
@@ -35,13 +37,12 @@ func _input(event):
 				_velocity = clamp(_velocity / speed_scale, min_speed, max_speed)
 
 	# arrow keys to change render setting
-	if volumetric_controller:
+	if renderer:
 		if Input.is_action_just_pressed("ui_right"):
-			volumetric_controller.render_setting = (volumetric_controller.render_setting + 1) % 6
-			print("Render setting: ", volumetric_controller.render_setting)
+			renderer.change_render_setting(1)
 		if Input.is_action_just_pressed("ui_left"):
-			volumetric_controller.render_setting = (volumetric_controller.render_setting - 1 + 6) % 6
-			print("Render setting: ", volumetric_controller.render_setting)
+			renderer.change_render_setting(-1)
+
 
 func _process(delta):
 	if not current:

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="1_jjfih"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="2_qjyat"]
-[ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/volumetric_controller.gd" id="3_lqk3y"]
+[ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/simulators/compute_simulator.gd" id="3_lqk3y"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_qjyat"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -33,11 +33,9 @@ size = Vector3(100, 100, 100)
 
 [node name="Node" type="Node" parent="." node_paths=PackedStringArray("mesh_instance")]
 script = ExtResource("3_lqk3y")
-render_setting = 3
 grid_size = 128
 mesh_instance = NodePath("../Meshes/MeshInstance3D3")
 material = ExtResource("2_qjyat")
-simulte = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
