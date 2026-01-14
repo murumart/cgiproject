@@ -64,7 +64,6 @@ size = Vector3(100, 1, 100)
 script = ExtResource("6_tefeu")
 compute_shader_file = ExtResource("2_eb6dy")
 grid_size = 64
-simulte = true
 
 [node name="ComputeRender" type="Node" parent="." node_paths=PackedStringArray("simulator", "mesh_instance")]
 script = ExtResource("3_ya4ey")
