@@ -27,25 +27,11 @@ var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 @export var simulte: bool = false
 
 
-func _process(_delta):
-	if simulte:
-		run_simulation_once()
-		if sim_seed >= int(PI * 1000):
-			sim_seed = 0
-		else:
-			sim_seed += 1
-		build_brick_map()
-		bind_texture_to_material()
-
 func _ready():
 	rd = RenderingServer.get_rendering_device()
 	assert(rd, "Couldnt' get rendering device")
 
-	# Calculate brick grid dimensions
-	var brick_grid_size1 := int(ceil(float(grid_size) / float(brick_size)))
-	brick_grid_size = Vector3i(brick_grid_size1, brick_grid_size1, brick_grid_size1)
-
-	#print("Brick grid size: ", brick_grid_size)
+	brick_grid_size = Vector3i.ONE * int(ceil(float(grid_size) / float(brick_size)))
 
 	# Setup
 	setup_compute_pipeline()
@@ -64,6 +50,39 @@ func _ready():
 	# Bind to Material
 	# We bind immediately. The GPU barrier is now handled automatically by the engine.
 	bind_texture_to_material()
+
+
+func _process(_delta):
+	if not simulte:
+		return
+	run_simulation_once()
+	if sim_seed >= int(PI * 1000):
+		sim_seed = 0
+	else:
+		sim_seed += 1
+	build_brick_map()
+	# bind_texture_to_material()
+
+
+func get_draw_data_async(callback: Callable) -> void:
+	rd.texture_get_data_async(texture_rid, 0, callback)
+
+
+func get_grid_size() -> int:
+	return grid_size
+
+
+func update_data(data: PackedByteArray) -> void:
+	rd.texture_update(texture_rid, 0, data)
+	build_brick_map()
+
+
+func is_sim_running() -> bool:
+	return simulte
+
+
+func sim_set_running(to: bool) -> void:
+	simulte = to
 
 
 func setup_compute_pipeline():
@@ -92,9 +111,7 @@ func create_texture():
 	fmt.usage_bits = (RenderingDevice.TEXTURE_USAGE_STORAGE_BIT
 		| RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
 		| RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
-		#| RenderingDevice.TEXTURE_USAGE_CPU_READ_BIT
-		| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT
-	)
+		| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT)
 
 	texture_rid = rd.texture_create(fmt, RDTextureView.new())
 	if not texture_rid.is_valid():
@@ -121,8 +138,7 @@ func create_brick_map_texture():
 
 
 func run_simulation_once():
-	if not texture_rid.is_valid():
-		return
+	assert(texture_rid.is_valid(), "invalid texture")
 
 	var uniform := RDUniform.new() # Create uniform for texture
 	uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE # Set uniform type to image
@@ -217,16 +233,3 @@ func bind_texture_to_material():
 		#material.set_shader_parameter("seed", sim_seed)
 	else:
 		printerr("ERROR: No ShaderMaterial found on VolumetricController")
-
-
-func get_draw_data_async(callback: Callable) -> void:
-	rd.texture_get_data_async(texture_rid, 0, callback)
-
-
-func get_grid_size() -> int:
-	return grid_size
-
-
-func update_data(data: PackedByteArray) -> void:
-	rd.texture_update(texture_rid, 0, data)
-	build_brick_map()
