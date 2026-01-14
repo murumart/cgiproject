@@ -97,8 +97,8 @@ func run_simulation_once():
 	dispatch_brick_map_generation(compute_list)
 
 	rd.compute_list_end() # End compute list
-	debug_read_ssbo(" After simulation")
-	# uniform_flip_flop = not uniform_flip_flop
+	# debug_read_ssbo(" After simulation")
+	uniform_flip_flop = not uniform_flip_flop
 
 
 func bind_texture_to_material():
