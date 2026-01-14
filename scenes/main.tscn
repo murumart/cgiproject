@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=35 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
 [ext_resource type="Script" uid="uid://psww1vs6csjx" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
@@ -21,6 +21,7 @@
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
+[ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
@@ -88,17 +89,20 @@ pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HB
 [node name="Renderers" type="Node" parent="."]
 
 [node name="ComputeRender" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
+editor_description = "This renderer uses a compute shader to compute a brickmap from the cell data and then (with a different shader on a big box) renders voxels using raycasting through the brickmap. The voxels are lit with Blinn-Phong and cast shadows on their floor."
 script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
 
 [node name="MesherRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instances", "sim")]
+editor_description = "This renderer creates a mesh (culled on the inside, no greedy meshing) on a different thread. There's a little fade out animation to make the mesh transitions a little less jarring."
 script = ExtResource("14_muem4")
 instances = [NodePath("../../Meshes/MesherMesh"), NodePath("../../Meshes/MesherMesh2")]
 sim = NodePath("../../Simulators/GDSim")
 disabled = true
 
 [node name="NaiveRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("parent", "sim")]
+editor_description = "This renderer manages a bunch of MeshInstances that each are a box. It hides or shows the boxes depending on the cell data. Needs to create boxes when switching to it, very bad on higher grid sizes."
 script = ExtResource("5_dp3eg")
 parent = NodePath("../../Meshes/NaiveParent")
 sim = NodePath("../../Simulators/GDSim")
@@ -124,13 +128,19 @@ transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 54.55, 9
 script = ExtResource("3_sugp2")
 renderer = NodePath("../Renderers/ComputeRender")
 
-[node name="Control" type="Control" parent="Camera3D"]
+[node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "camera", "fps_label", "renderer_switch", "renderer_description")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("12_y6deb")
+renderers = [NodePath("../../Renderers/ComputeRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+camera = NodePath("..")
+fps_label = NodePath("VBoxContainer/Hbox/Center/VBoxContainer/PanelContainer/FPSLabel")
+renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
+renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Camera3D/Control"]
 layout_mode = 1
@@ -140,18 +150,35 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Control" type="HBoxContainer" parent="Camera3D/Control/VBoxContainer"]
+[node name="Hbox" type="HBoxContainer" parent="Camera3D/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer/Control"]
+[node name="Center" type="VBoxContainer" parent="Camera3D/Control/VBoxContainer/Hbox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Camera3D/Control/VBoxContainer/Hbox/Center"]
+layout_mode = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="Camera3D/Control/VBoxContainer/Hbox/Center/VBoxContainer"]
+layout_mode = 2
+
+[node name="FPSLabel" type="Label" parent="Camera3D/Control/VBoxContainer/Hbox/Center/VBoxContainer/PanelContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Camera3D/Control/VBoxContainer/Hbox/Center"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer/Hbox/Center/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
-[node name="RichTextLabel" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Control/MarginContainer"]
+[node name="RichTextLabel" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Hbox/Center/HBoxContainer/MarginContainer"]
 layout_mode = 2
 text = "Controls:
 > Move: WASD, Q/E
@@ -159,6 +186,57 @@ text = "Controls:
 > Select Block: 1-4"
 fit_content = true
 autowrap_mode = 0
+
+[node name="PanelContainer" type="PanelContainer" parent="Camera3D/Control/VBoxContainer/Hbox"]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Renderer"
+
+[node name="RendererSwitch" type="OptionButton" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+selected = 0
+item_count = 2
+popup/item_0/text = "aadad"
+popup/item_0/id = 0
+popup/item_1/text = "bsfbfbsdb"
+popup/item_1/id = 1
+
+[node name="RendererDescription" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+fit_content = true
+
+[node name="HSeparator" type="HSeparator" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Simulation"
+
+[node name="SimulationSwitch" type="OptionButton" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+disabled = true
+selected = 0
+item_count = 2
+popup/item_0/id = 0
+popup/item_1/id = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer"]
 layout_mode = 2
