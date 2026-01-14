@@ -74,7 +74,7 @@ size = Vector3(100, 1, 100)
 
 [node name="Simulators" type="Node" parent="."]
 
-[node name="ComputeSim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
+[node name="DummySim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
 script = ExtResource("6_tefeu")
 compute_shader_file = ExtResource("2_eb6dy")
 grid_size = 64
@@ -88,8 +88,8 @@ pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HB
 
 [node name="Renderers" type="Node" parent="."]
 
-[node name="ComputeRender" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
-editor_description = "This renderer uses a compute shader to compute a brickmap from the cell data and then (with a different shader on a big box) renders voxels using raycasting through the brickmap. The voxels are lit with Blinn-Phong and cast shadows on their floor."
+[node name="RaytraceRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
+editor_description = "This renderer uses a compute shader to compute a brickmap from the cell data and then (with a regular shader on a big box) renders voxels using raycasting through the brickmap. The voxels are lit with Blinn-Phong and cast shadows on their floor."
 script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
@@ -126,7 +126,7 @@ environment = SubResource("Environment_jyhfs")
 [node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("renderer")]
 transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 54.55, 94.71)
 script = ExtResource("3_sugp2")
-renderer = NodePath("../Renderers/ComputeRender")
+renderer = NodePath("../Renderers/RaytraceRenderer")
 
 [node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "camera", "fps_label", "renderer_switch", "renderer_description")]
 layout_mode = 3
@@ -136,7 +136,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/ComputeRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+renderers = [NodePath("../../Renderers/RaytraceRenderer"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 camera = NodePath("..")
 fps_label = NodePath("VBoxContainer/Hbox/Center/VBoxContainer/PanelContainer/FPSLabel")
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
