@@ -74,7 +74,7 @@ size = Vector3(100, 1, 100)
 
 [node name="Simulators" type="Node" parent="."]
 
-[node name="ComputeSim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
+[node name="DummySim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
 script = ExtResource("6_tefeu")
 compute_shader_file = ExtResource("2_eb6dy")
 grid_size = 64
@@ -183,11 +183,14 @@ layout_mode = 2
 text = "Controls:
 > Move: WASD, Q/E
 > Speed: SHIFT, Scroll
-> Select Block: 1-4"
+> Select Block: 1-4
+You can place blocks on the green
+area when the simulation is paused (Space)"
 fit_content = true
 autowrap_mode = 0
 
 [node name="PanelContainer" type="PanelContainer" parent="Camera3D/Control/VBoxContainer/Hbox"]
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer"]
@@ -212,6 +215,7 @@ text = "Renderer"
 
 [node name="RendererSwitch" type="OptionButton" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 selected = 0
 item_count = 2
 popup/item_0/text = "aadad"
@@ -232,11 +236,17 @@ text = "Simulation"
 
 [node name="SimulationSwitch" type="OptionButton" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 disabled = true
 selected = 0
 item_count = 2
 popup/item_0/id = 0
 popup/item_1/id = 1
+
+[node name="SimulationDesc" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "This simulation is a cellular automaton with three cell states (wood, leaves, bark) (internally each state is a weight) run on a different thread in GDScript. Each cell type has kernels for each of the other cell types that determine its score for the next turn, for example, leaves get a bad score when something else is on top of them, bark gets a good score being next to both air and wood, etc."
+fit_content = true
 
 [node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer"]
 layout_mode = 2
@@ -277,15 +287,21 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Pause" parent="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer" instance=ExtResource("6_85g3d")]
+custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 key = 32
 text = "Pause Sim"
 
-[node name="PanelContainer" parent="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause/VBoxContainer" index="1"]
-custom_minimum_size = Vector2(150, 0)
-
 [node name="Button" parent="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause/VBoxContainer/PanelContainer/MarginContainer/Texture" index="0"]
 text = "Pause Sim"
+
+[node name="Clear" parent="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer" instance=ExtResource("6_85g3d")]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "Clear Board"
+
+[node name="Button" parent="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Clear/VBoxContainer/PanelContainer/MarginContainer/Texture" index="0"]
+text = "Clear Board"
 
 [node name="HighlightBlock" type="MeshInstance3D" parent="."]
 cast_shadow = 0
@@ -320,13 +336,14 @@ visibility_range_fade_mode = 1
 [node name="NaiveParent" type="Node3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
 
-[node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "simulator", "volume", "highlight", "block_select_buttons")]
+[node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "simulator", "volume", "highlight", "block_select_buttons", "clear_board_button")]
 script = ExtResource("8_tipki")
 camera = NodePath("../Camera3D")
 simulator = NodePath("../Simulators/GDSim")
 volume = NodePath("../Meshes/RaytracedVolume")
 highlight = NodePath("../HighlightBlock")
 block_select_buttons = [NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/UiButton"), NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/UiButton4"), NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/UiButton2"), NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/UiButton3")]
+clear_board_button = NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Clear")
 
 [node name="Decor" type="Node3D" parent="."]
 
@@ -366,3 +383,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.166393, 2.1527972, -43.06
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.008549, 2.1527972, -41.080513)
 
 [editable path="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause"]
+[editable path="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Clear"]
