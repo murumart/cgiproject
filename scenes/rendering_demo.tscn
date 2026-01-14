@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="1_jjfih"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="2_qjyat"]
-[ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/volumetric_controller.gd" id="3_lqk3y"]
+[ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/simulators/compute_simulator.gd" id="3_lqk3y"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_qjyat"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)

@@ -13,9 +13,6 @@ const AddParticle := preload("res://scenes/decor/add_particles.tscn")
 
 var _tdata: PackedByteArray
 var _data_queueing := false
-var _data_updating := false
-
-var _rd := RenderingServer.get_rendering_device()
 
 var _debug_parent: Node3D
 
@@ -80,18 +77,20 @@ func _physics_process(_delta: float) -> void:
 			var oldblock := _tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs]
 			if oldblock > 0:
 				_particle(BreakParticle, action_position)
-		else:
+		if (addpos.x < gs and addpos.x >= 0
+			and addpos.y < gs and addpos.y >= 0
+			and addpos.z < gs and addpos.z >= 0
+		):
 			_particle(AddParticle, action_position)
-		_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
-		simulator.update_data(_tdata)
-		_data_queueing = true
-		simulator.get_draw_data_async(_queue_cb)
+			_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
+			simulator.update_data(_tdata)
+			_data_queueing = true
+			simulator.get_draw_data_async(_queue_cb)
 
 	highlight.show()
 	highlight.scale = Vector3.ONE * 100 / gs
 	highlight.scale[raycast.xyz_axis] = 0.01
 	highlight.position = action_position
-
 
 
 func _draw_data_b() -> void:
@@ -110,7 +109,7 @@ func _draw_data_b() -> void:
 	mats[2].albedo_color = Color.GREEN
 	mats[3].albedo_color = Color.BLUE
 	_debug_parent.get_children().map(func(a: Node) -> void: a.queue_free())
-	_debug_parent.scale = Vector3.ONE * 100.0 / 16.0
+	_debug_parent.scale = Vector3.ONE * 100.0 / simulator.get_grid_size()
 	_debug_parent.global_position = volume.global_position - Vector3.ONE * 50
 	var m := BoxMesh.new()
 	for x in gs: for y in gs:

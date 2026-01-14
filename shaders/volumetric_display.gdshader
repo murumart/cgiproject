@@ -9,7 +9,7 @@ uniform sampler3D simulation_data : filter_nearest; // The texture from the comp
 uniform sampler3D brick_map : filter_nearest; // Brick occupancy map
 uniform vec4 color : source_color = vec4(0.2, 0.8, 1.0, 1.0);
 uniform float density : hint_range(0.1, 100) = 100;
-uniform int render_setting : hint_range(0, 5) = 0; // from the controller, can change in runtime
+uniform int render_setting : hint_range(0, 7) = 0; // from the controller, can change in runtime
 //uniform int max_steps = 128; // Reduce this if performance is low
 uniform float mesh_size : hint_range(1, 400);
 uniform int brick_size; // Size of each brick (must match VolumetricController)
@@ -81,21 +81,21 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 	// Calculate intersection with voxel grid bounds
 	vec3 t1 = -origin * inv_dir; // t1 is the distance to the first intersection with the voxel grid
 	vec3 t2 = (voxel_resolution - origin) * inv_dir; // t2 is the distance to the second intersection with the voxel grid
-	
-	vec3 tmins = min(t1, t2); 
-	vec3 tmaxs = max(t1, t2); 
-	
+
+	vec3 tmins = min(t1, t2);
+	vec3 tmaxs = max(t1, t2);
+
 	// Don't clamp tmin to 0 - if camera is inside the volume, tmin will be negative
-	float tmin = max(tmins.x, max(tmins.y, tmins.z)); 
-	float tmax = min(tmaxs.x, min(tmaxs.y, tmaxs.z)); 
-	
+	float tmin = max(tmins.x, max(tmins.y, tmins.z));
+	float tmax = min(tmaxs.x, min(tmaxs.y, tmaxs.z));
+
 	// discard if the ray doesn't hit the volume
 	if (tmin > tmax){
 		return res;
 	}
-	
+
 	vec3 curr_pos = origin + dir * max(tmin, 0.0);
-	
+
 	// Get starting voxel coordinate
 	ivec3 coord = ivec3(clamp(floor(curr_pos), vec3(0), voxel_resolution - 1.0));
 
@@ -105,7 +105,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 	vec3 exit_pos = vec3(0.0);
 	float t_current = 0.0; // Track the current distance along the ray from curr_pos
-	
+
     // DDA traversal with brick map acceleration
 	// move the ray through the voxel grid until we reach the end or alpha is 1 (find the next occupied voxel)
 	uint max_steps = uint(voxel_resolution.x * 3.0); // Safety limit
@@ -133,13 +133,13 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 			res.cell = uint(voxel_data_u.r * 255.0); // cell type
 
 			// if the voxel is occupied
-			if (res.cell > 0u) { 
+			if (res.cell > 0u) {
 				res.color = mix(res.color, my_color(res.cell), 0.01 * density);
 				//res.depth += t[res.stepped_axis]; // OLD INCORRECT logic
 				if (res.passed_through == 0.0) {
 					res.depth = t_current; // Set depth to the first hit distance
 					res.position = curr_pos + dir * t_current; // Exact world position (in voxel space)
-					
+
 					// Calculate normal
 					res.normal = vec3(0.0);
 					res.normal[res.stepped_axis] = -sgn_dir[res.stepped_axis];
@@ -153,7 +153,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 					float diff = max(dot(N, L), 0.0);
 					float spec = pow(max(dot(N, H), 0.0), 32.0); // Shininess 32
-					
+
 					vec3 ambient = vec3(0.3); // Ambient light
 					vec3 lightColor = vec3(1.0); // Sun color
 
@@ -162,7 +162,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 					res.color *= lighting;
 					*/
 				}
-				
+
 				res.alpha += 0.01 * density; // we add the density to the alpha
 				if (res.alpha >= 1.0) {
 					res.alpha = 1.0;
@@ -191,23 +191,23 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 			// Calculate the exact world position at the boundary
 			exit_pos = curr_pos + (dir * t_exit);
-			
-			// Add a bias vector in the direction of travel. 
+
+			// Add a bias vector in the direction of travel.
 			// This pushes the point physically INTO the next voxel.
 			vec3 bias = sgn_dir * 1e-3;
-			
-			// Floor the biased position. 
+
+			// Floor the biased position.
 			// Because we pushed it forward, floor() is forced to snap to the next index.
 			ivec3 next_coord = ivec3(floor(exit_pos + bias));
-			
-			coord = next_coord;	
+
+			coord = next_coord;
 			t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
-			
+
 			// Update t_current to the brick boundary
-			t_current = t_exit; 
-			continue; 
+			t_current = t_exit;
+			continue;
 		}
-		
+
 		// Find the closest exit point (min t)
 		float t_exit = min(t.x, min(t.y, t.z));
 
@@ -216,10 +216,10 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 		// Pure integer stepping to avoid precision issues
 		coord[res.stepped_axis] += int(sgn_dir[res.stepped_axis]);
-		
+
 		// Recalculate t for the new coordinate (to maintain precision relative to origin)
 		t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
-		
+
 		// Update t_current to the voxel boundary
 		t_current = t_exit;
 	}
@@ -234,10 +234,10 @@ void fragment() {
 
 	ivec3 tex_size = textureSize(simulation_data, 0);
 	vec3 voxel_resolution = vec3(tex_size);
-	
+
 	// Convert to voxel space (0 to voxel_resolution)
 	vec3 origin = (local_cam + 0.5) * voxel_resolution;
-	
+
 	RayResult res = dda_ray_march(origin, dir);
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
@@ -251,7 +251,7 @@ void fragment() {
 
 	float diff = max(dot(N, L), 0.0);
 	float spec = pow(max(dot(N, H), 0.0), 32.0); // Shininess 32
-		
+
 	vec3 ambient = vec3(0.3); // Ambient light
 	vec3 lightColor = vec3(1.0); // Sun color
 
@@ -265,7 +265,7 @@ void fragment() {
 		vec3 shadow_origin = res.position + sun_dir * 0.001;
 
 		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir);
-		
+
 		// If the shadow ray hits something, darken the color (shadow)
 		if (res2sun.alpha > 0.0) {
 			res.color *= 0.5;
@@ -276,7 +276,7 @@ void fragment() {
 	switch (render_setting) {
 		case 0: // color
 			ALBEDO = res.color;
-			
+
 			ALPHA = res.alpha;
 			break;
 		case 1: // depth
@@ -303,13 +303,18 @@ void fragment() {
 			ALBEDO = vec3(float(res.steps)) / vec3(tex_size);
 			ALPHA = 1.0;
 			break;
-		case 4: 
+		case 4:
 			ALBEDO = vec3(res.passed_through);
 			ALPHA = 1.0;
 			break;
 		case 5: // exited
 			ALBEDO = vec3(res.exited);
 			ALPHA = 1.0;
+			break;
+		case 6:
+			ivec3 tex_size = textureSize(simulation_data, 0);
+			vec4 r = texelFetch(simulation_data, ivec3(int(sin(TIME) * 0.5 + 0.5) * tex_size.x), 0);
+			ALBEDO = vec3(r.r * 255.0);
 			break;
 	}
 }

@@ -1,5 +1,6 @@
 @abstract class_name Simulator extends Node
 
+signal simulation_updated
 
 @abstract func get_grid_size() -> int
 @abstract func is_sim_running() -> bool
