@@ -35,7 +35,7 @@ func _process(_delta):
 		else:
 			sim_seed += 1
 		build_brick_map()
-		bind_texture_to_material()
+		# bind_texture_to_material()
 
 func _ready():
 	rd = RenderingServer.get_rendering_device()
