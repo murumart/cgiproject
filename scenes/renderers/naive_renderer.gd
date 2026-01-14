@@ -9,16 +9,27 @@ var _cells: PackedByteArray
 
 func _ready() -> void:
 	super()
-	sim.simulation_updated.connect(func() -> void:
-		sim.get_draw_data_async(_data_get)
-	)
+	var s := sim
+	sim = null
+	set_simulator(s)
 	parent.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
+
+
+func set_simulator(s: Simulator) -> void:
+	if sim:
+		sim.simulation_updated.disconnect(_sim_updated)
+	sim = s
+	sim.simulation_updated.connect(_sim_updated)
 
 
 func _data_get(d: PackedByteArray) -> void:
 	if disabled: return
 	_cells = d
 	_draw_life()
+
+
+func _sim_updated() -> void:
+	sim.get_draw_data_async(_data_get)
 
 
 func change_render_setting(_by: int) -> void: pass

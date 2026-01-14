@@ -13,11 +13,23 @@ var semaphore := Semaphore.new()
 
 func _ready() -> void:
 	super()
+	reset()
+
+
+func reset() -> void:
+	if thread.is_started():
+		semaphore.post()
+		_stop_thread = true
+		thread.wait_to_finish()
 	life = StupitTreeLife.new()
 	_cells = PackedByteArray()
 	life.init(_cells, grid_size)
-	if running:
-		thread.start(_simulate_thread)
+	(func() -> void:
+		if running:
+			_stop_thread = false
+			print("asdasasd")
+			thread.start(_simulate_thread)
+	).call_deferred()
 
 
 func _process(_delta: float) -> void:
@@ -38,6 +50,7 @@ func get_draw_data_async(callback: Callable) -> void:
 
 
 func get_grid_size() -> int: return grid_size
+func set_grid_size(to: int) -> void: grid_size = to
 
 
 func is_sim_running() -> bool: return running
@@ -81,8 +94,7 @@ func _simulate() -> void:
 var _simulating := false
 var _stop_thread := false
 func _simulate_thread() -> void:
-	while true:
-		if _stop_thread:
-			break
+	while not _stop_thread:
+		print("ass")
 		semaphore.wait()
 		_simulate()
