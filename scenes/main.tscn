@@ -1,6 +1,7 @@
-[gd_scene load_steps=35 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=36 format=3 uid="uid://dpnrjriihffnj"]
 
-[ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
+[ext_resource type="RDShaderFile" uid="uid://j3p2ilye6g5q" path="res://shaders/cell_shader_v2.glsl" id="2_og1vs"]
+[ext_resource type="RDShaderFile" uid="uid://2ewgaogko88k" path="res://shaders/state_argmax.glsl" id="3_2wyq8"]
 [ext_resource type="Script" uid="uid://psww1vs6csjx" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://dfn07uje00brv" path="res://scenes/renderers/compute_renderer.gd" id="3_ya4ey"]
@@ -21,7 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
-[ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
+[ext_resource type="Script" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
@@ -76,8 +77,10 @@ size = Vector3(100, 1, 100)
 
 [node name="ComputeSim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
 script = ExtResource("6_tefeu")
-compute_shader_file = ExtResource("2_eb6dy")
-grid_size = 64
+simulate = true
+grid_size = 256
+compute_shader_file = ExtResource("2_og1vs")
+aggregator_shader_file = ExtResource("3_2wyq8")
 pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause")
 
 [node name="GDSim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]

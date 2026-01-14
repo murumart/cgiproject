@@ -375,9 +375,6 @@ func create_texture(size: Vector3i = Vector3i(-1, -1, -1)) -> RID:
 	return rid
 
 
-
-
-
 func debug_read_ssbo(label := ""):
 	if (not uniform_flip_flop):
 		var bytes := rd.buffer_get_data(write_state_rid)
@@ -387,11 +384,3 @@ func debug_read_ssbo(label := ""):
 		var bytes := rd.buffer_get_data(read_state_rid)
 		var vals := bytes.to_int32_array()
 		print(label, " %s last 32: " % "read's'", vals.slice(0, 32))
-
-
-
-func setup_compute_pipeline():
-	var shader_file := load("res://shaders/dummy_simulation.glsl")
-	var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
-	shader_rid = rd.shader_create_from_spirv(shader_spirv)
-	pipeline_rid = rd.compute_pipeline_create(shader_rid)
