@@ -13,13 +13,36 @@ uniform int render_setting : hint_range(0, 5) = 0; // from the controller, can c
 //uniform int max_steps = 128; // Reduce this if performance is low
 uniform float mesh_size : hint_range(1, 400);
 uniform int brick_size; // Size of each brick (must match VolumetricController)
+
+// lighting
 uniform vec3 sun_direction = vec3(0.5, 1.0, 0.5);
-uniform bool rt_shading = false;
+uniform vec3 sun_color = vec3(1.0, 1.0, 1.0);
+uniform float sun_power : hint_range(0.0, 1.0) = 1.0;
+//uniform vec3 ambient_color = vec3(0.1, 0.1, 0.1);
+uniform float ambient_power : hint_range(0.0, 1.0) = 1.0;
+//uniform vec3 diffuse_color = vec3(1.0, 1.0, 1.0);
+//uniform vec3 specular_color = vec3(1.0, 1.0, 1.0);
+uniform float shininess : hint_range(1, 128) = 32;
+uniform float screenGamma : hint_range(0.1, 10) = 2.2;
+
+uniform float exposure : hint_range(0.1, 10) = 1.0;
+
+uniform bool rt_shadows = false;
+
+uniform vec3 ground_color = vec3(0.2, 0.2, 0.2);
 
 varying vec3 local_pos;
 
+struct Material {
+	vec3 diffuse_color;
+	vec3 specular_color;
+	float roughness;
+	float opacity;
+};
+
 struct RayResult {
-	vec3 color;
+	Material material;
+	//vec3 color;
 	float alpha;
 	float depth;
 	int stepped_axis;
@@ -31,10 +54,13 @@ struct RayResult {
 	vec3 position;
 };
 
+
+
 void vertex() {
 	local_pos = VERTEX / mesh_size;
 }
 
+/*
 vec3 my_color(uint cell) {
 	switch (cell) {
 		case 0u:
@@ -54,11 +80,62 @@ vec3 my_color(uint cell) {
 		case 7u:
 			return vec3(0.2, 0.2, 0.2);
 	}
+}*/
+
+Material my_material(uint cell){
+	switch (cell) {
+		case 0u:
+			return Material(vec3(1.0, 1.0, 1.0), vec3(1.0), 0.2, 1.0);
+		case 1u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 2u:
+			return Material(vec3(0.2, 0.8, 1.0), vec3(1.0), 0.2, 1.0);
+		case 3u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 4u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 5u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 6u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+		case 7u:
+			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+	}
+}
+
+vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
+	// Blinn-Phong Shading
+	normal = normalize(normal);
+	vec3 light_dir = normalize(sun_direction);
+	view_dir = normalize(view_dir);
+	
+
+	float lambertian = max(dot(normal, light_dir), 0.0);
+	float specular = 0.0;
+	if (lambertian > 0.0) {
+		vec3 half_dir = normalize(light_dir + view_dir);
+		specular = pow(max(dot(normal, half_dir), 0.0), shininess);
+	}
+
+	vec3 specular_color = vec3(0.0);
+	if (specular > 0.0) {
+		specular_color = material.specular_color * specular * sun_color * sun_power;
+	}
+
+	vec3 diffuse_color = material.diffuse_color * lambertian * sun_color * sun_power;
+
+	vec3 ambient_color = material.diffuse_color * sun_color * ambient_power;
+
+	vec3 lightColor = (ambient_color + (diffuse_color) + (specular_color)/exposure);
+	//lightColor = pow(lightColor, vec3(1.0 / screenGamma));
+
+	return lightColor;
 }
 
 RayResult dda_ray_march(vec3 origin, vec3 dir) {
 	RayResult res;
-	res.color = vec3(0.0);
+	res.material = Material(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), 0.0, 0.0);
+	//res.color = vec3(0.0);
 	res.alpha = 0.0;
 	res.depth = 0.0;
 	res.stepped_axis = 0;
@@ -134,7 +211,8 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 
 			// if the voxel is occupied
 			if (res.cell > 0u) { 
-				res.color = mix(res.color, my_color(res.cell), 0.01 * density);
+				res.material = my_material(res.cell);
+				//res.color = mix(res.color, my_color(res.cell), 0.01 * density);
 				//res.depth += t[res.stepped_axis]; // OLD INCORRECT logic
 				if (res.passed_through == 0.0) {
 					res.depth = t_current; // Set depth to the first hit distance
@@ -243,40 +321,37 @@ void fragment() {
 
 	vec3 sun_dir = normalize(sun_direction);
 
-	// Blinn-Phong Shading
-	vec3 N = normalize(res.normal);
-	vec3 L = sun_dir;
-	vec3 V = -dir; // View direction is opposite to ray direction
-	vec3 H = normalize(L + V);
+	//vec3 lighting = blinn_phong(res.normal, -dir, res.material);
 
-	float diff = max(dot(N, L), 0.0);
-	float spec = pow(max(dot(N, H), 0.0), 32.0); // Shininess 32
-		
-	vec3 ambient = vec3(0.3); // Ambient light
-	vec3 lightColor = vec3(1.0); // Sun color
+	//res.color *= lighting;
+	vec3 my_color = vec3(0.0);
 
-	// Apply lighting
-	vec3 lighting = ambient + lightColor * (diff * 0.8 + spec * 0.5);
-	res.color *= lighting;
-
-	if (rt_shading) {
+	if (rt_shadows) {
 		// Add bias to avoid self-shadowing (acne)
 		// Move along the light direction to ensure we clear the current voxel boundary
 		vec3 shadow_origin = res.position + sun_dir * 0.001;
 
 		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir);
 		
-		// If the shadow ray hits something, darken the color (shadow)
+		// If the shadow ray hits something
 		if (res2sun.alpha > 0.0) {
-			res.color *= 0.5;
+			// gamma correct
+			my_color = res.material.diffuse_color * ambient_power * sun_color;
+			//my_color = pow(my_color, vec3(1.0 / screenGamma));
+		} else {
+			my_color = blinn_phong(res.normal, -dir, res.material);
 		}
+	} else {
+		my_color = blinn_phong(res.normal, -dir, res.material);
 	}
+
+	//my_color = pow(my_color, vec3(1.0 / screenGamma));
+	//my_color = pow(my_color, vec3(screenGamma));
 
 	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
 	switch (render_setting) {
 		case 0: // color
-			ALBEDO = res.color;
-			
+			ALBEDO = my_color;
 			ALPHA = res.alpha;
 			break;
 		case 1: // depth
