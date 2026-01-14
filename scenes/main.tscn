@@ -64,7 +64,7 @@ brick_size = 8
 grid_size = 32
 mesh_instance = NodePath("../Meshes/RaytracedVolume")
 material = ExtResource("6_o6xl0")
-simulte = true
+run_simulation_once_b = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)

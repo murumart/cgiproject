@@ -25,6 +25,7 @@ var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 @export var material: ShaderMaterial
 @export var sim_seed: int = int(PI * 250)
 @export var simulte: bool = false
+@export var run_simulation_once_b: bool = false
 
 
 func _ready():
@@ -41,7 +42,8 @@ func _ready():
 
 	# Run Simulation
 	# This queues the commands on the GPU but doesn't execute them instantly.
-	run_simulation_once()
+	if run_simulation_once_b:
+		run_simulation_once()
 
 	# Build Brick Map
 	# Analyze voxel data and create brick occupancy map
