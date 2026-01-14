@@ -1,4 +1,4 @@
-class_name VolumetricController extends Node
+class_name VolumetricController extends Simulator
 
 var rd: RenderingDevice
 var texture_rid: RID
@@ -217,3 +217,16 @@ func bind_texture_to_material():
 		#material.set_shader_parameter("seed", sim_seed)
 	else:
 		printerr("ERROR: No ShaderMaterial found on VolumetricController")
+
+
+func get_draw_data_async(callback: Callable) -> void:
+	rd.texture_get_data_async(texture_rid, 0, callback)
+
+
+func get_grid_size() -> int:
+	return grid_size
+
+
+func update_data(data: PackedByteArray) -> void:
+	rd.texture_update(texture_rid, 0, data)
+	build_brick_map()

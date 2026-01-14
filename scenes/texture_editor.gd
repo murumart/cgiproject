@@ -7,7 +7,7 @@ const AddParticle := preload("res://scenes/decor/add_particles.tscn")
 ## Fly around the world and build bricks
 
 @export var camera: Camera3D
-@export var volcont: VolumetricController
+@export var simulator: Simulator
 @export var volume: MeshInstance3D
 @export var highlight: MeshInstance3D
 
@@ -24,14 +24,14 @@ var _selected_block := 0
 
 func _ready() -> void:
 	assert(is_instance_valid(camera), "Need ojbect set")
-	assert(is_instance_valid(volcont), "Need ojbect set")
+	assert(is_instance_valid(simulator), "Need simulator set")
 	_debug_parent = Node3D.new()
 	add_child(_debug_parent)
 	var t := create_tween().set_loops()
 	t.tween_interval(1)
 	t.tween_callback(_draw_data_b)
 	_data_queueing = true
-	_rd.texture_get_data_async(volcont.texture_rid, 0, _queue_cb)
+	simulator.get_draw_data_async(_queue_cb)
 	get_tree().get_nodes_in_group("hotbar_buttons").map(func(n: HB) -> void:
 		n.selected.connect(func() -> void: _selected_block = n.icon)
 	)
@@ -47,14 +47,14 @@ func _physics_process(_delta: float) -> void:
 	if _data_queueing:
 		return
 
-	var gs := volcont.grid_size
+	var gs := simulator.get_grid_size()
 	var mpos := get_viewport().get_mouse_position()
 	var in_vol_pos := (
 		camera.project_ray_origin(mpos)
 		- volume.position
 		+ Vector3.ONE * 100 * 0.5
 	)
-	in_vol_pos /= 100.0 / volcont.grid_size
+	in_vol_pos /= 100.0 / simulator.get_grid_size()
 	var raycast := BlockRaycast.cast_ray_fast_vh(
 		in_vol_pos,
 		camera.project_ray_normal(mpos),
@@ -83,10 +83,9 @@ func _physics_process(_delta: float) -> void:
 		else:
 			_particle(AddParticle, action_position)
 		_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
-		_rd.texture_update(volcont.texture_rid, 0, _tdata)
-		volcont.build_brick_map()
+		simulator.update_data(_tdata)
 		_data_queueing = true
-		_rd.texture_get_data_async(volcont.texture_rid, 0, _queue_cb)
+		simulator.get_draw_data_async(_queue_cb)
 
 	highlight.show()
 	highlight.scale = Vector3.ONE * 100 / gs
@@ -100,7 +99,7 @@ func _draw_data_b() -> void:
 	if _tdata.is_empty():
 		print("empty")
 		return
-	var gs := volcont.grid_size
+	var gs := simulator.get_grid_size()
 	var mats: Array[StandardMaterial3D] = [
 		null,
 		StandardMaterial3D.new(),

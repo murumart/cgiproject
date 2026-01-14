@@ -243,10 +243,10 @@ script = ExtResource("4_jyhfs")
 grid_size = 16
 metadata/_custom_type_script = "uid://o2qjsa51xmt1"
 
-[node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "volcont", "volume", "highlight")]
+[node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "simulator", "volume", "highlight")]
 script = ExtResource("8_tipki")
 camera = NodePath("../Camera3D")
-volcont = NodePath("../VolControl")
+simulator = NodePath("../VolControl")
 volume = NodePath("../Meshes/RaytracedVolume")
 highlight = NodePath("../HighlightBlock")
 
