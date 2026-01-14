@@ -18,9 +18,9 @@ var current_instance := 0
 func _ready() -> void:
 	super()
 	_thread.start(_threaded_meshing)
-	sim.simulation_updated.connect(func() -> void:
-		sim.get_draw_data_async(_data_get)
-	)
+	var s := sim
+	sim = null
+	set_simulator(s)
 	for inst in instances:
 		inst.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
 	#inst.position -= Vector3.ONE * 100.0 / sim.get_grid_size() * 0.5
@@ -32,6 +32,16 @@ func _process(delta: float) -> void:
 		_data = _data_wait
 		_semaph.post()
 	_last_mesh += delta
+
+
+func _sim_updated() -> void:
+	sim.get_draw_data_async(_data_get)
+
+func set_simulator(simulator: Simulator) -> void:
+	if sim:
+		sim.simulation_updated.disconnect(_sim_updated)
+	sim = simulator
+	sim.simulation_updated.connect(_sim_updated)
 
 
 func _data_get(d: PackedByteArray) -> void:

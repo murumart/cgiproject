@@ -20,6 +20,10 @@ func _ready() -> void:
 	assert(rd, "Couldnt' get rendering device")
 
 	# Setup
+	reset()
+
+
+func reset() -> void:
 	data_texture_rid = create_texture(rd, grid_size)
 	setup_compute_pipeline()
 
@@ -38,8 +42,8 @@ func get_draw_data_async(callback: Callable) -> void:
 	rd.texture_get_data_async(data_texture_rid, 0, callback)
 
 
-func get_grid_size() -> int:
-	return grid_size
+func get_grid_size() -> int: return grid_size
+func set_grid_size(to: int) -> void: grid_size = to
 
 
 func update_data(data: PackedByteArray) -> void:

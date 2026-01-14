@@ -74,17 +74,16 @@ size = Vector3(100, 1, 100)
 
 [node name="Simulators" type="Node" parent="."]
 
-[node name="DummySim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
+[node name="DummySim" type="Node" parent="Simulators"]
 script = ExtResource("6_tefeu")
 compute_shader_file = ExtResource("2_eb6dy")
 grid_size = 64
-pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause")
 
-[node name="GDSim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
+[node name="GDSim" type="Node" parent="Simulators"]
+editor_description = "This simulation is a cellular automaton with three cell states (wood, leaves, bark) (internally each state is a weight) run on a different thread in GDScript. Each cell type has kernels for each of the other cell types that determine its score for the next turn, for example, leaves get a bad score when something else is on top of them, bark gets a good score being next to both air and wood, etc."
 script = ExtResource("3_pm3ni")
 grid_size = 32
 running = true
-pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause")
 
 [node name="Renderers" type="Node" parent="."]
 
@@ -128,7 +127,7 @@ transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 54.55, 9
 script = ExtResource("3_sugp2")
 renderer = NodePath("../Renderers/RaytraceRenderer")
 
-[node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "camera", "fps_label", "renderer_switch", "renderer_description")]
+[node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "simulators", "renderer_switch", "renderer_description", "simulator_switch", "simulator_description", "editor", "camera", "fps_label", "pause_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -137,10 +136,16 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
 renderers = [NodePath("../../Renderers/RaytraceRenderer"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
-camera = NodePath("..")
-fps_label = NodePath("VBoxContainer/Hbox/Center/VBoxContainer/PanelContainer/FPSLabel")
+simulators = [NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
+simulator_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationSwitch")
+simulator_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationDesc")
+grid_size = 32
+editor = NodePath("../../TextureEditor")
+camera = NodePath("..")
+fps_label = NodePath("VBoxContainer/Hbox/Center/VBoxContainer/PanelContainer/FPSLabel")
+pause_button = NodePath("VBoxContainer/MarginContainer/HBoxContainer/Pause")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Camera3D/Control"]
 layout_mode = 1
@@ -237,7 +242,6 @@ text = "Simulation"
 [node name="SimulationSwitch" type="OptionButton" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 focus_mode = 0
-disabled = true
 selected = 0
 item_count = 2
 popup/item_0/id = 0
@@ -245,7 +249,6 @@ popup/item_1/id = 1
 
 [node name="SimulationDesc" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
-text = "This simulation is a cellular automaton with three cell states (wood, leaves, bark) (internally each state is a weight) run on a different thread in GDScript. Each cell type has kernels for each of the other cell types that determine its score for the next turn, for example, leaves get a bad score when something else is on top of them, bark gets a good score being next to both air and wood, etc."
 fit_content = true
 
 [node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer"]

@@ -32,16 +32,9 @@ func _ready() -> void:
 
 	data_texture = ComputeSimulator.create_texture(rd, simulator.get_grid_size())
 
-	if simulator is ComputeSimulator:
-		(simulator as ComputeSimulator).simulation_updated_texture.connect(func(d: RID) -> void:
-			data_texture = d
-			build_brick_map()
-			bind_texture_to_material()
-		)
-	else:
-		simulator.simulation_updated.connect(func() -> void:
-			simulator.get_draw_data_async(_data_got)
-		)
+	var s := simulator
+	simulator = null
+	set_simulator(s)
 
 	setup_brick_pipeline()
 	create_brick_map_texture()
@@ -53,6 +46,29 @@ func _data_got(data: PackedByteArray) -> void:
 	rd.texture_update(data_texture, 0, data)
 	build_brick_map()
 	bind_texture_to_material()
+
+
+func _sim_updated() -> void:
+	simulator.get_draw_data_async(_data_got)
+
+
+func _sim_updated_tex(tex: RID) -> void:
+	data_texture = tex
+	build_brick_map()
+	bind_texture_to_material()
+
+
+func set_simulator(sim: Simulator) -> void:
+	if simulator:
+		if simulator is ComputeSimulator:
+			(simulator as ComputeSimulator).simulation_updated_texture.disconnect(_sim_updated_tex)
+		else:
+			simulator.simulation_updated.disconnect(_sim_updated)
+	simulator = sim
+	if simulator is ComputeSimulator:
+		(simulator as ComputeSimulator).simulation_updated_texture.connect(_sim_updated_tex)
+	else:
+		simulator.simulation_updated.connect(_sim_updated)
 
 
 func _input(event: InputEvent) -> void:

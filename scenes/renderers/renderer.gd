@@ -4,6 +4,7 @@
 
 @abstract func change_render_setting(by: int) -> void
 @abstract func set_disabled(to: bool) -> void
+@abstract func set_simulator(sim: Simulator) -> void
 
 
 func _ready() -> void:
