@@ -84,14 +84,12 @@ vec3 my_color(uint cell) {
 
 Material my_material(uint cell){
 	switch (cell) {
-		case 0u:
-			return Material(vec3(1.0, 1.0, 1.0), vec3(1.0), 0.2, 1.0);
 		case 1u:
-			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+			return Material(vec3(0.8, 0.5, 0.3), vec3(1.0), 0.3, 1.0);
 		case 2u:
-			return Material(vec3(0.2, 0.8, 1.0), vec3(1.0), 0.2, 1.0);
+			return Material(vec3(0.25, 1.0, 0.2), vec3(1.0), 0.2, 1.0);
 		case 3u:
-			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+			return Material(vec3(0.4, 0.20, 0.15), vec3(1.0), 0.9, 1.0);
 		case 4u:
 			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
 		case 5u:
@@ -114,7 +112,7 @@ vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
 	float specular = 0.0;
 	if (lambertian > 0.0) {
 		vec3 half_dir = normalize(light_dir + view_dir);
-		specular = pow(max(dot(normal, half_dir), 0.0), shininess);
+		specular = pow(max(dot(normal, half_dir), 0.0), shininess) * pow(1.0 - material.roughness, 1.0);
 	}
 
 	vec3 specular_color = vec3(0.0);
@@ -126,7 +124,7 @@ vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
 
 	vec3 ambient_color = material.diffuse_color * sun_color * ambient_power;
 
-	vec3 lightColor = (ambient_color + (diffuse_color) + (specular_color)/exposure);
+	vec3 lightColor = (ambient_color + (diffuse_color) + (specular_color)/(exposure));
 	//lightColor = pow(lightColor, vec3(1.0 / screenGamma));
 
 	return lightColor;
