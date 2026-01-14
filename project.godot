@@ -20,6 +20,10 @@ config/features=PackedStringArray("4.5", "Forward Plus")
 file_logging/enable_file_logging=true
 file_logging/log_path="res.//../log.log"
 
+[display]
+
+window/vsync/vsync_mode=0
+
 [global_group]
 
 hotbar_buttons="buttons that can be sleected and emit a thing"
