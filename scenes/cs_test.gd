@@ -78,7 +78,7 @@ func _ready():
 
 
 func run_simulation_once():
-	debug_read_ssbo("Before simulation")
+	# debug_read_ssbo("Before simulation")
 	if not texture_rid.is_valid():
 		return
 
@@ -98,7 +98,7 @@ func run_simulation_once():
 
 	rd.compute_list_end() # End compute list
 	debug_read_ssbo(" After simulation")
-	uniform_flip_flop = not uniform_flip_flop
+	# uniform_flip_flop = not uniform_flip_flop
 
 
 func bind_texture_to_material():

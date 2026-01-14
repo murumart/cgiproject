@@ -58,7 +58,7 @@ void main() {
             for (int ky = -half_k.y; ky <= half_k.y; ky++) {
                 for (int kx = -half_k.x; kx <= half_k.x; kx++) {
                     ivec3 nb = id + ivec3(kx, ky, kz);
-                    if (any(lessThan(nb, ivec3(0,0,0))) || any(greaterThanEqual(nb, pc.grid_size)))
+                    if (any(lessThan(nb, ivec3(0))) || any(greaterThanEqual(nb, pc.grid_size)))
                         continue;
 
                     int ni = idx4D(read_type, nb.x, nb.y, nb.z, size);
@@ -68,7 +68,7 @@ void main() {
                         kx + half_k.x,
                         ky + half_k.y,
                         kz + half_k.z,
-                        size
+                        pc.kernel_size
                     );
 
                     sum += kernel.data[ki] * read.data[ni];
