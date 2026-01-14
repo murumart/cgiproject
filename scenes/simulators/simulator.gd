@@ -18,6 +18,8 @@ func _ready() -> void:
 	pause_button.selected.connect(func() -> void:
 		if is_sim_running():
 			sim_set_running(false)
+			pause_button.text = "Play Simulation"
 		else:
 			sim_set_running(true)
+			pause_button.text = "Pause Simulation"
 	)

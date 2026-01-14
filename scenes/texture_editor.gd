@@ -11,6 +11,7 @@ const AddParticle := preload("res://scenes/decor/add_particles.tscn")
 @export var volume: MeshInstance3D
 @export var highlight: MeshInstance3D
 @export var block_select_buttons: Array[HB]
+@export var clear_board_button: HB
 
 var _tdata: PackedByteArray
 var _data_queueing := false
@@ -35,6 +36,11 @@ func _ready() -> void:
 			continue
 		n.selected.connect(func(r: Variant) -> void: _selected_block = int(r))
 	get_tree().get_first_node_in_group("hotbar_buttons").press()
+	clear_board_button.selected.connect(func() -> void:
+		_tdata.clear()
+		_tdata.resize(int(pow(simulator.get_grid_size(), 3)))
+		simulator.update_data(_tdata)
+	)
 
 
 func _queue_cb(d: PackedByteArray) -> void:
