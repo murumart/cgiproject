@@ -87,7 +87,7 @@ func run_simulation_once():
 	# rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 	# Simulate cell automata
-	dispatch_cell_automata(compute_list)
+	# dispatch_cell_automata(compute_list)
 
 	# Aggregate automata result into cells
 	dispatch_cell_aggregation(compute_list)
@@ -100,6 +100,7 @@ func run_simulation_once():
 
 	# Swap read and write buffers for next iteration
 	swap_read_write()
+
 
 func bind_texture_to_material():
 	# Create texture wrappers
@@ -142,10 +143,14 @@ func dispatch_cell_automata(compute_list: int):
 
 	# Push constants for cell automata
 	var push_constant := PackedByteArray()
-	push_constant.resize(16)
+	push_constant.resize(32)
 	push_constant.encode_u32(0, grid_size)
-	push_constant.encode_u32(4, kernel_size.x)
-	push_constant.encode_u32(8, typecount)
+	push_constant.encode_u32(4, grid_size)
+	push_constant.encode_u32(8, grid_size)
+	push_constant.encode_u32(12, kernel_size.x)
+	push_constant.encode_u32(16, kernel_size.y)
+	push_constant.encode_u32(20, kernel_size.z)
+	push_constant.encode_u32(24, typecount)
 	rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
 
 	# Dispatch automata shader
@@ -217,7 +222,12 @@ func setup_cell_pipeline():
 		assert(initial_state.size() == size, "initial state size %s != %s" % [initial_state.size(), size])
 		read_state_rid = rd.storage_buffer_create(size* 4, initial_state.to_byte_array())
 	else:
-		read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
+		var size = grid_size * grid_size * grid_size
+		initial_state.resize(size)
+		for i in int(initial_state.size()/2.0):
+			initial_state[i] = 255
+		read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4, initial_state.to_byte_array())
+		# read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
 
 
 	if (kernels):
@@ -278,7 +288,7 @@ func setup_aggregation_pipeline():
 	var read_uniform = RDUniform.new()
 	read_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	read_uniform.binding = 0
-	read_uniform.add_id(write_state_rid)
+	read_uniform.add_id(read_state_rid)
 
 	# Bind image3D to write cell type indices
 	var cell_uniform = RDUniform.new()

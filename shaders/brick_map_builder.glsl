@@ -9,7 +9,7 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // Input: Full voxel grid (e.g., 512^3) - R8 UNORM format (cell type)
-layout(set = 0, binding = 0, r8ui) uniform restrict readonly uimage3D voxel_data;
+layout(set = 0, binding = 0, r8) uniform restrict readonly image3D voxel_data;
 
 // Output: Brick occupancy map (e.g., 64^3 for 512^3 voxels with 8^3 bricks)
 layout(set = 0, binding = 1, r8) uniform restrict writeonly image3D brick_map;
@@ -58,7 +58,7 @@ void main()
 		
 		ivec3 voxel_pos = brick_start + ivec3(x, y, z);
 		
-		uint cell = imageLoad(voxel_data, voxel_pos).r;
+		float cell = imageLoad(voxel_data, voxel_pos).r;
 		
 		// Check occupancy (cell type > 0)
 		// uint cell_type = uint(voxel.r * 255.0 + 0.5);
