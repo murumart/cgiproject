@@ -15,13 +15,13 @@
 [ext_resource type="Material" uid="uid://43lyjk060ru3" path="res://scenes/renderers/leafmat.tres" id="7_gqmmt"]
 [ext_resource type="Texture2D" uid="uid://0q8vy1pc0gmt" path="res://scenes/ui/icons/none.png" id="7_trceg"]
 [ext_resource type="Texture2D" uid="uid://dn5bo1crtqp0g" path="res://scenes/ui/icons/flesh.png" id="8_a8y0u"]
-[ext_resource type="Script" uid="uid://ba3tbmolvdy7o" path="res://scenes/texture_editor.gd" id="8_tipki"]
+[ext_resource type="Script" path="res://scenes/texture_editor.gd" id="8_tipki"]
 [ext_resource type="Material" uid="uid://cr5n400hw00n2" path="res://scenes/renderers/barkmat.tres" id="8_yc10j"]
 [ext_resource type="Texture2D" uid="uid://dcmtudcbcp6kh" path="res://scenes/ui/icons/leaf.png" id="9_jkv2x"]
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
-[ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
+[ext_resource type="Script" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
@@ -88,8 +88,8 @@ pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HB
 
 [node name="Renderers" type="Node" parent="."]
 
-[node name="ComputeRender" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
-editor_description = "This renderer uses a compute shader to compute a brickmap from the cell data and then (with a different shader on a big box) renders voxels using raycasting through the brickmap. The voxels are lit with Blinn-Phong and cast shadows on their floor."
+[node name="RaytracedRender" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
+editor_description = "This renderer uses a shader with voxel ray traversal algrithm. The voxel ray traversal algrithm only checks the edges of the cell boundries, if the cell is empty, it skips to the next cell boundry. It also uses a compute shader to calculate a brickmap, so it can skip larger space when there are no voxels nearby. The voxels are lit with Blinn-Phong and cast raytraced shadows."
 script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
@@ -126,7 +126,7 @@ environment = SubResource("Environment_jyhfs")
 [node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("renderer")]
 transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 54.55, 94.71)
 script = ExtResource("3_sugp2")
-renderer = NodePath("../Renderers/ComputeRender")
+renderer = NodePath("../Renderers/RaytracedRender")
 
 [node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "camera", "fps_label", "renderer_switch", "renderer_description")]
 layout_mode = 3
@@ -136,7 +136,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/ComputeRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 camera = NodePath("..")
 fps_label = NodePath("VBoxContainer/Hbox/Center/VBoxContainer/PanelContainer/FPSLabel")
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
