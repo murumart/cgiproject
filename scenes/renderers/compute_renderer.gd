@@ -12,8 +12,6 @@ var brick_pipeline_rid: RID
 
 @export var mesh_instance: MeshInstance3D
 
-@export var grid_size := 512
-
 @export var brick_size: int = 16 # 16x16x16 voxels per brick
 var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 
@@ -30,9 +28,9 @@ var data_texture: RID
 
 
 func _ready() -> void:
-	brick_grid_size = Vector3i.ONE * int(ceil(float(grid_size) / float(brick_size)))
+	brick_grid_size = Vector3i.ONE * int(ceil(float(simulator.get_grid_size()) / float(brick_size)))
 
-	data_texture = ComputeSimulator.create_texture(rd, grid_size)
+	data_texture = ComputeSimulator.create_texture(rd, simulator.get_grid_size())
 
 	(simulator as ComputeSimulator).simulation_updated_texture.connect(func(d: RID) -> void:
 		data_texture = d
@@ -51,8 +49,14 @@ func _input(event: InputEvent) -> void:
 		print("ö")
 		var d := rd.texture_get_data(data_texture, 0)
 		#var img := Image.create_from_data(brick_grid_size.x, brick_grid_size.y * brick_grid_size.z, false, Image.FORMAT_R8, d)
-		var img := Image.create_from_data(grid_size, grid_size * grid_size, false, Image.FORMAT_R8, d)
+		var img := Image.create_from_data(simulator.get_grid_size(), simulator.get_grid_size() * simulator.get_grid_size(), false, Image.FORMAT_R8, d)
 		img.save_png("res://coolimage.png")
+
+
+func set_disabled(to: bool) -> void:
+	disabled = to
+	if mesh_instance:
+		mesh_instance.visible = not disabled
 
 
 func change_render_setting(by: int) -> void:
