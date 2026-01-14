@@ -6,7 +6,11 @@ signal selected(what: Variant)
 
 @export var key: Key
 @export var icon: Texture2D
-@export var text: String
+@export var text: String:
+	set(to):
+		text = to
+		if not button: return
+		button.text = to
 @export var selected_output: Variant
 
 @onready var selected_panel: Panel = %Selected
