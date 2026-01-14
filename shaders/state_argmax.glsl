@@ -2,9 +2,9 @@
 #version 450
 layout(local_size_x=8, local_size_y=8, local_size_z=8) in;
 
-layout(set=0, binding=0, std430) buffer restrict readonly State { uint data[]; } state;
+layout(set=0, binding=0, std430) buffer readonly State { uint data[]; } state;
 
-layout(set=0, binding=1, r8) uniform restrict writeonly image3D out_types;
+layout(set=0, binding=1, r8) uniform writeonly image3D out_types;
 
 layout(push_constant) uniform Params {
     ivec3 size;
@@ -38,5 +38,6 @@ void main() {
         }
     }
 
-    imageStore(out_types, id, vec4(best_type, 0, 0, 0));
+    imageStore(out_types, id, vec4(float(best_type)/255.0, 0, 0, 0));
+    // imageStore(out_types, id, vec4(2/255.0, 0, 0, 0));
 }
