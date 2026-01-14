@@ -164,6 +164,12 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 	float tmin = max(tmins.x, max(tmins.y, tmins.z));
 	float tmax = min(tmaxs.x, min(tmaxs.y, tmaxs.z));
 
+	// Determine which axis we entered through (which component of tmins is maximum)
+	//(t_brick.x <= t_brick.y && t_brick.x <= t_brick.z) ? 0 : (t_brick.y <= t_brick.z ? 1 : 2)
+	//(t.x <= t.y && t.x <= t.z) ? 0 : (t.y <= t.z ? 1 : 2)
+	int entry_axis = (tmins.x >= tmins.y && tmins.x >= tmins.z) ? 0 : (tmins.y >= tmins.z ? 1 : 2);
+	res.stepped_axis = entry_axis;
+
 	// discard if the ray doesn't hit the volume
 	if (tmin > tmax){
 		return res;
@@ -327,20 +333,15 @@ void fragment() {
 
 		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir);
 
-		// If the shadow ray hits something, darken the color (shadow)
-		if (res2sun.alpha > 0.0) {
-			// gamma correct
+		// If the shadow ray hits something BEFORE exiting the volume, apply shadow
+		if (res2sun.alpha > 0.0 && res.steps > 1u) {
 			my_color = res.material.diffuse_color * ambient_power * sun_color;
-			//my_color = pow(my_color, vec3(1.0 / screenGamma));
 		} else {
 			my_color = blinn_phong(res.normal, -dir, res.material);
 		}
 	} else {
 		my_color = blinn_phong(res.normal, -dir, res.material);
 	}
-
-	//my_color = pow(my_color, vec3(1.0 / screenGamma));
-	//my_color = pow(my_color, vec3(screenGamma));
 
 	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
 	switch (render_setting) {
