@@ -2,13 +2,12 @@ extends PanelContainer
 
 const UB := preload("res://scenes/ui/ui_button.gd")
 
-signal selected
-
-enum Icon {NONE, FLESH, LEAF, BARK}
-const TEXTURES := [preload("res://scenes/ui/icons/none.png"), preload("res://scenes/ui/icons/flesh.png"), preload("res://scenes/ui/icons/leaf.png"), preload("res://scenes/ui/icons/bark.png")]
+signal selected(what: Variant)
 
 @export var key: Key
-@export var icon: Icon
+@export var icon: Texture2D
+@export var text: String
+@export var selected_output: Variant
 
 @onready var selected_panel: Panel = %Selected
 @onready var label: Label = %Label
@@ -18,7 +17,9 @@ const TEXTURES := [preload("res://scenes/ui/icons/none.png"), preload("res://sce
 
 
 func _ready() -> void:
-	texture.texture = TEXTURES[icon]
+	texture.texture = icon
+	if text:
+		button.text = text
 	label.text = OS.get_keycode_string(key)
 	button.pressed.connect(press)
 	selected_panel.hide()
@@ -38,7 +39,8 @@ var _is_pressed := false
 func press() -> void:
 	if _is_pressed:
 		return
-	selected.emit()
+	if selected_output == null: selected.emit()
+	else: selected.emit(selected_output)
 	var tw := create_tween().set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	tw.tween_property(flash, "color", Color.WHITE, 0.1)
 	tw.tween_property(flash, "color", Color.TRANSPARENT, 0.2)

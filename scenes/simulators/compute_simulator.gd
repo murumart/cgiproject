@@ -16,6 +16,7 @@ var pipeline_rid: RID
 
 
 func _ready() -> void:
+	super()
 	assert(rd, "Couldnt' get rendering device")
 
 	# Setup

@@ -10,6 +10,7 @@ const AddParticle := preload("res://scenes/decor/add_particles.tscn")
 @export var simulator: Simulator
 @export var volume: MeshInstance3D
 @export var highlight: MeshInstance3D
+@export var block_select_buttons: Array[HB]
 
 var _tdata: PackedByteArray
 var _data_queueing := false
@@ -29,9 +30,10 @@ func _ready() -> void:
 	t.tween_callback(_draw_data_b)
 	_data_queueing = true
 	simulator.get_draw_data_async(_queue_cb)
-	get_tree().get_nodes_in_group("hotbar_buttons").map(func(n: HB) -> void:
-		n.selected.connect(func() -> void: _selected_block = n.icon)
-	)
+	for n in block_select_buttons:
+		if n.selected_output == null:
+			continue
+		n.selected.connect(func(r: Variant) -> void: _selected_block = int(r))
 	get_tree().get_first_node_in_group("hotbar_buttons").press()
 
 
@@ -70,22 +72,25 @@ func _physics_process(_delta: float) -> void:
 	var action_position := ((bpos + normal * 0.5) * 100.0 / gs
 		+ volume.position - Vector3.ONE * 100 * 0.5
 		+ Vector3.ONE * 100 / gs * 0.5)
-	if Input.is_action_pressed("mouse_left"):
+	if Input.is_action_pressed("mouse_left") and not simulator.is_sim_running():
 		var addpos := bpos + normal
 		if _selected_block == 0:
 			addpos = bpos
 			var oldblock := _tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs]
+			_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
+			simulator.update_data(_tdata)
 			if oldblock > 0:
 				_particle(BreakParticle, action_position)
-		if (addpos.x < gs and addpos.x >= 0
+		elif (addpos.x < gs and addpos.x >= 0
 			and addpos.y < gs and addpos.y >= 0
 			and addpos.z < gs and addpos.z >= 0
 		):
-			_particle(AddParticle, action_position)
 			_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
 			simulator.update_data(_tdata)
-			_data_queueing = true
-			simulator.get_draw_data_async(_queue_cb)
+			_particle(AddParticle, action_position)
+
+	_data_queueing = true
+	simulator.get_draw_data_async(_queue_cb)
 
 	highlight.show()
 	highlight.scale = Vector3.ONE * 100 / gs
