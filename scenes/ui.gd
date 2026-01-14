@@ -45,6 +45,7 @@ func _ready() -> void:
 	for s in simulators:
 		simulator_switch.add_item(s.name)
 		if s.is_sim_running():
+			assert(current_simulator == null, "Only enable one simulator at a time")
 			_simulator_selected(i)
 		i += 1
 	simulator_switch.item_selected.connect(_simulator_selected)

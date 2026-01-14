@@ -22,7 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
-[ext_resource type="Script" path="res://scenes/ui.gd" id="12_y6deb"]
+[ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
@@ -77,11 +77,9 @@ size = Vector3(100, 1, 100)
 
 [node name="DummySim" type="Node" parent="Simulators"]
 script = ExtResource("6_tefeu")
-simulate = true
 grid_size = 256
 compute_shader_file = ExtResource("2_og1vs")
 aggregator_shader_file = ExtResource("3_2wyq8")
-pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause")
 
 [node name="GDSim" type="Node" parent="Simulators"]
 editor_description = "This simulation is a cellular automaton with three cell states (wood, leaves, bark) (internally each state is a weight) run on a different thread in GDScript. Each cell type has kernels for each of the other cell types that determine its score for the next turn, for example, leaves get a bad score when something else is on top of them, bark gets a good score being next to both air and wood, etc."
@@ -139,7 +137,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/RaytraceRenderer"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 simulators = [NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")

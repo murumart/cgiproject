@@ -124,7 +124,7 @@ func setup_compute_pipeline() -> void:
 	read_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	read_u.binding = 0
 	read_u.add_id(read_state_rid)
-	
+
 	# Create uniforms for cell automata
 	var read_u2 := RDUniform.new()
 	read_u2.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER

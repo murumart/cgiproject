@@ -27,6 +27,7 @@ func reset() -> void:
 	(func() -> void:
 		if running:
 			_stop_thread = false
+			print("asdasasd")
 			thread.start(_simulate_thread)
 	).call_deferred()
 
