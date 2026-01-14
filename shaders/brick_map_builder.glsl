@@ -9,7 +9,7 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // Input: Full voxel grid (e.g., 512^3) - R8 UNORM format (cell type)
-layout(set = 0, binding = 0, r8) uniform restrict readonly image3D voxel_data;
+layout(set = 0, binding = 0, r8ui) uniform restrict readonly uimage3D voxel_data;
 
 // Output: Brick occupancy map (e.g., 64^3 for 512^3 voxels with 8^3 bricks)
 layout(set = 0, binding = 1, r8) uniform restrict writeonly image3D brick_map;
@@ -58,15 +58,16 @@ void main()
 		
 		ivec3 voxel_pos = brick_start + ivec3(x, y, z);
 		
-		vec4 voxel = imageLoad(voxel_data, voxel_pos);
+		uint cell = imageLoad(voxel_data, voxel_pos).r;
 		
 		// Check occupancy (cell type > 0)
 		// uint cell_type = uint(voxel.r * 255.0 + 0.5);
-		bool is_occupied = voxel.r > 0;
+		// bool is_occupied = cell > 0;
 		
 		// If this voxel is occupied, mark the shared flag
-		if (is_occupied) {
-			atomicOr(brick_occupied_shared, 1);
+		if (cell > 0) {
+			brick_occupied_shared |= 1;
+			// atomicOr(brick_occupied_shared, 1);
 		}
 	}
 	
@@ -75,7 +76,7 @@ void main()
 	
 	// Thread 0 writes the result for the entire brick
 	if (gl_LocalInvocationIndex == 0) {
-		float occupancy = (brick_occupied_shared > 0) ? 1.0 : 0.0;
-		imageStore(brick_map, brick_id, vec4(occupancy, 0.0, 0.0, 1.0));
+		// uint occupancy = (brick_occupied_shared > 0) ? 1 : 0;
+		imageStore(brick_map, brick_id, vec4(brick_occupied_shared, 0, 0, 1));
 	}
 }
