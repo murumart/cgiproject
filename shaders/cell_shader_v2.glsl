@@ -4,10 +4,10 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // 4D (cell_type * 3D state array) arrays for read and write buffers
-layout(set = 0, binding = 0, std430) restrict buffer ReadArray { float data[]; } read;
-layout(set = 0, binding = 1, std430) restrict buffer WriteArray { float data[]; } write;
+layout(set = 0, binding = 0, std430) restrict buffer readonly ReadArray { uint data[]; } read;
+layout(set = 0, binding = 1, std430) restrict buffer writeonly WriteArray { uint data[]; } write;
 // 5D (cell_type * cell_type * 3D kernel) kernel array
-layout(set = 0, binding = 2, std430) restrict buffer KernelArray { float data[]; } kernel;
+layout(set = 0, binding = 2, std430) restrict buffer readonly KernelArray { float data[]; } kernel;
 
 layout(push_constant) uniform PushConstants {
 	int grid_size; // size.x, size.y, size.z: dimensions of the 3D grid; size.w: number of cell types

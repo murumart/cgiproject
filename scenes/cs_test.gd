@@ -2,7 +2,7 @@ class_name CS_Test extends Node
 
 # Cell automata CS
 var rd: RenderingDevice
-# var shader_rid: RID
+var shader_rid: RID
 var pipeline_rid: RID
 var cell_uniform_set: RID
 var read_state_rid: RID
@@ -10,17 +10,17 @@ var write_state_rid: RID
 var kernel_rid: RID
 
 # Aggregation CS (get state value)
-var cell_type_texture_rid: RID
+var texture_rid: RID
 # var aggregate_shader_rid: RID
 var aggregate_pipeline_rid: RID
 var aggregate_uniform: RID
 
 # Brick map optimization
 var brick_map_texture_rid: RID
-var texture_rid: RID
-# var brick_shader_rid: RID
+# var texture_rid: RID
+var brick_shader_rid: RID
 var brick_pipeline_rid: RID
-var brick_uniform: RID
+var brick_uniform_set: RID
 
 @export var render_setting: int = 0:
 	set(value):
@@ -47,8 +47,6 @@ var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 
 
 func _process(_delta):
-	if mesh_instance == null:
-		return
 	if simulte:
 		run_simulation_once()
 		# print("Simulation step: ", i)
@@ -57,8 +55,6 @@ func _process(_delta):
 		# 	sim_seed = 0
 		# else:
 		# 	sim_seed += 1
-	bind_texture_to_material()
-
 
 func _ready():
 	rd = RenderingServer.get_rendering_device()
@@ -68,19 +64,18 @@ func _ready():
 	var brick_grid_size1 = int(ceil(float(grid_size) / float(brick_size)))
 	brick_grid_size = Vector3i(brick_grid_size1, brick_grid_size1, brick_grid_size1)
 
-	#print("Brick grid size: ", brick_grid_size)
-
-	# Init variables
-
-
-	# Setup
+	# Setup shaders
 	setup_cell_pipeline()
+	# setup_compute_pipeline()
 	setup_aggregation_pipeline()
 	setup_brick_pipeline()
 
 	# Run Simulation
 	# This queues the commands on the GPU but doesn't execute them instantly.
-	#run_simulation_once()
+	run_simulation_once()
+
+	# Bind result texture to material
+	bind_texture_to_material()
 
 
 func run_simulation_once():
@@ -91,7 +86,10 @@ func run_simulation_once():
 	var compute_list = rd.compute_list_begin() # Begin compute list
 	# rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
+	# Simulate cell automata
 	dispatch_cell_automata(compute_list)
+
+	# Aggregate automata result into cells
 	dispatch_cell_aggregation(compute_list)
 
 	# Build Brick Map
@@ -99,11 +97,9 @@ func run_simulation_once():
 	dispatch_brick_map_generation(compute_list)
 
 	rd.compute_list_end() # End compute list
-	# rd.submit() # Submit compute list to GPU
 
 	# Swap read and write buffers for next iteration
 	swap_read_write()
-
 
 func bind_texture_to_material():
 	# Create texture wrappers
@@ -134,6 +130,7 @@ func bind_texture_to_material():
 	else:
 		push_error("ERROR: No ShaderMaterial found on CS_Test")
 
+
 func swap_read_write():
 	var temp = read_state_rid
 	read_state_rid = write_state_rid
@@ -153,9 +150,9 @@ func dispatch_cell_automata(compute_list: int):
 
 	# Dispatch automata shader
 	rd.compute_list_dispatch(compute_list,
-		int(ceil(grid_size / 8.0)), # grid_size / workgroup size
-		int(ceil(grid_size / 8.0)),
-		int(ceil(grid_size / 8.0))
+		int((grid_size + 7) / 8.0), # grid_size / workgroup size
+		int((grid_size + 7) / 8.0),
+		int((grid_size + 7) / 8.0)
 	)
 
 func dispatch_cell_aggregation(compute_list: int):
@@ -174,14 +171,15 @@ func dispatch_cell_aggregation(compute_list: int):
 
 	# Dispatch aggregation shader
 	rd.compute_list_dispatch(compute_list,
-		grid_size,
-		grid_size,
-		grid_size
+		int((grid_size + 7) / 8.0), # grid_size / workgroup size
+		int((grid_size + 7) / 8.0),
+		int((grid_size * typecount + 7) / 8.0)
 	)
 
 func dispatch_brick_map_generation(compute_list: int):
+	# var compute_list = rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, brick_pipeline_rid) # Bind compute pipeline
-	rd.compute_list_bind_uniform_set(compute_list, brick_uniform, 0) # Bind uniform set
+	rd.compute_list_bind_uniform_set(compute_list, brick_uniform_set, 0) # Bind uniform set
 
 	# Push constants for brick map generation
 	var push_constant := PackedByteArray()
@@ -205,7 +203,7 @@ func setup_cell_pipeline():
 	if shader_spirv == null:
 		push_error("Shader SPIR-V is null (compile error)")
 		return
-	var shader_rid = rd.shader_create_from_spirv(shader_spirv)
+	shader_rid = rd.shader_create_from_spirv(shader_spirv)
 	if shader_rid == null:
 		push_error("Shader is null(SPIR-V shader failed)")
 	pipeline_rid = rd.compute_pipeline_create(shader_rid)
@@ -229,7 +227,7 @@ func setup_cell_pipeline():
 		kernel_rid = rd.storage_buffer_create(typecount * typecount * kernel_size.x * kernel_size.y * kernel_size.z * 4)
 
 
-	read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
+	# read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
 	write_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
 
 	if (not read_state_rid.is_valid() or not write_state_rid.is_valid() or not kernel_rid.is_valid()):
@@ -272,19 +270,19 @@ func setup_aggregation_pipeline():
 		push_error("Shader is null(SPIR-V shader failed)")
 	aggregate_pipeline_rid = rd.compute_pipeline_create(aggregate_shader_rid)
 
-	cell_type_texture_rid = create_texture(Vector3i(grid_size, grid_size, grid_size))
+	texture_rid = create_texture(Vector3i(grid_size, grid_size, grid_size))
 
 	# Bind SSBO with latest read_state
 	var read_uniform = RDUniform.new()
 	read_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	read_uniform.binding = 0
-	read_uniform.add_id(read_state_rid)
+	read_uniform.add_id(write_state_rid)
 
 	# Bind image3D to write cell type indices
 	var cell_uniform = RDUniform.new()
 	cell_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
 	cell_uniform.binding = 1
-	cell_uniform.add_id(cell_type_texture_rid)
+	cell_uniform.add_id(texture_rid)
 
 	aggregate_uniform = rd.uniform_set_create([read_uniform, cell_uniform], aggregate_shader_rid, 0)
 
@@ -297,20 +295,20 @@ func setup_brick_pipeline():
 	if shader_spirv == null:
 		push_error("Failed to load shader file")
 		return
-	var brick_shader_rid = rd.shader_create_from_spirv(shader_spirv)
+	brick_shader_rid = rd.shader_create_from_spirv(shader_spirv)
 	if brick_shader_rid == null:
 		push_error("Shader is null(SPIR-V shader failed)")
 	brick_pipeline_rid = rd.compute_pipeline_create(brick_shader_rid)
 
 	# create_brick_map_texture()
 	brick_map_texture_rid = create_texture(brick_grid_size)
-	texture_rid = create_texture(Vector3i(grid_size, grid_size, grid_size))
+	# texture_rid = create_texture(Vector3i(grid_size, grid_size, grid_size))
 
 	# Bind type image as input
 	var cell_uniform = RDUniform.new()
 	cell_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
 	cell_uniform.binding = 0
-	cell_uniform.add_id(cell_type_texture_rid)
+	cell_uniform.add_id(texture_rid)
 
 	# Bind output buffer / image for bricks
 	var brick_u = RDUniform.new()
@@ -318,7 +316,7 @@ func setup_brick_pipeline():
 	brick_u.binding = 1
 	brick_u.add_id(brick_map_texture_rid)
 
-	brick_uniform = rd.uniform_set_create([cell_uniform, brick_u], brick_shader_rid, 0)
+	brick_uniform_set = rd.uniform_set_create([cell_uniform, brick_u], brick_shader_rid, 0)
 
 func create_texture(size: Vector3i = Vector3i(-1, -1, -1)) -> RID:
 	var fmt = RDTextureFormat.new()
@@ -340,3 +338,12 @@ func create_texture(size: Vector3i = Vector3i(-1, -1, -1)) -> RID:
 		printerr("CRITICAL ERROR: Failed to create voxel texture! Grid size ", size, " might be too large for VRAM.")
 		return RID()
 	return rid
+
+
+
+
+func setup_compute_pipeline():
+	var shader_file := load("res://shaders/dummy_simulation.glsl")
+	var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
+	shader_rid = rd.shader_create_from_spirv(shader_spirv)
+	pipeline_rid = rd.compute_pipeline_create(shader_rid)
