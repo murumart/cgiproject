@@ -1,10 +1,13 @@
 class_name CS_Test extends Node
 
+var uniform_flip_flop: bool = false
+
 # Cell automata CS
 var rd: RenderingDevice
 var shader_rid: RID
 var pipeline_rid: RID
-var cell_uniform_set: RID
+var cell_uniform_set_1: RID
+var cell_uniform_set_2: RID
 var read_state_rid: RID
 var write_state_rid: RID
 var kernel_rid: RID
@@ -13,7 +16,8 @@ var kernel_rid: RID
 var texture_rid: RID
 # var aggregate_shader_rid: RID
 var aggregate_pipeline_rid: RID
-var aggregate_uniform: RID
+var aggregate_uniform_set_1: RID
+var aggregate_uniform_set_2: RID
 
 # Brick map optimization
 var brick_map_texture_rid: RID
@@ -49,12 +53,7 @@ var brick_grid_size: Vector3i # Calculated as grid_size / brick_size
 func _process(_delta):
 	if simulte:
 		run_simulation_once()
-		# print("Simulation step: ", i)
-		# i += 1
-		# if sim_seed >= int(PI * 1000):
-		# 	sim_seed = 0
-		# else:
-		# 	sim_seed += 1
+
 
 func _ready():
 	rd = RenderingServer.get_rendering_device()
@@ -87,7 +86,7 @@ func run_simulation_once():
 	# rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 	# Simulate cell automata
-	# dispatch_cell_automata(compute_list)
+	dispatch_cell_automata(compute_list)
 
 	# Aggregate automata result into cells
 	dispatch_cell_aggregation(compute_list)
@@ -97,9 +96,8 @@ func run_simulation_once():
 	dispatch_brick_map_generation(compute_list)
 
 	rd.compute_list_end() # End compute list
-
-	# Swap read and write buffers for next iteration
-	swap_read_write()
+	uniform_flip_flop = not uniform_flip_flop
+	# debug_read_ssbo("After simulation")
 
 
 func bind_texture_to_material():
@@ -132,14 +130,10 @@ func bind_texture_to_material():
 		push_error("ERROR: No ShaderMaterial found on CS_Test")
 
 
-func swap_read_write():
-	var temp = read_state_rid
-	read_state_rid = write_state_rid
-	write_state_rid = temp
-
 func dispatch_cell_automata(compute_list: int):
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_rid) # Bind compute pipeline
-	rd.compute_list_bind_uniform_set(compute_list, cell_uniform_set, 0) # Bind uniform set
+	var uniform_set = cell_uniform_set_2 if uniform_flip_flop else cell_uniform_set_1
+	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 	# Push constants for cell automata
 	var push_constant := PackedByteArray()
@@ -160,11 +154,11 @@ func dispatch_cell_automata(compute_list: int):
 		int((grid_size + 7) / 8.0)
 	)
 
+
 func dispatch_cell_aggregation(compute_list: int):
 	rd.compute_list_bind_compute_pipeline(compute_list, aggregate_pipeline_rid) # Bind compute pipeline
-	# rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
-
-	rd.compute_list_bind_uniform_set(compute_list, aggregate_uniform, 0) # Bind uniform set
+	var uniform_set = aggregate_uniform_set_1 if uniform_flip_flop else aggregate_uniform_set_2
+	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 
 	# Push constants for aggregation
@@ -180,8 +174,9 @@ func dispatch_cell_aggregation(compute_list: int):
 	rd.compute_list_dispatch(compute_list,
 		int((grid_size + 7) / 8.0), # grid_size / workgroup size
 		int((grid_size + 7) / 8.0),
-		int((grid_size * typecount + 7) / 8.0)
+		int((grid_size + 7) / 8.0)
 	)
+
 
 func dispatch_brick_map_generation(compute_list: int):
 	# var compute_list = rd.compute_list_begin()
@@ -201,6 +196,7 @@ func dispatch_brick_map_generation(compute_list: int):
 		brick_grid_size.z
 	)
 
+
 func setup_cell_pipeline():
 	var shader_file: RDShaderFile = load("res://shaders/cell_shader_v2.glsl")
 	if shader_file == null:
@@ -218,15 +214,15 @@ func setup_cell_pipeline():
 
 	if (initial_state):
 		# rd.storage_buffer_update(read_state_rid, 0, initial_state)
-		var size = grid_size * grid_size * grid_size
+		var size = grid_size * grid_size * grid_size * typecount
 		assert(initial_state.size() == size, "initial state size %s != %s" % [initial_state.size(), size])
 		read_state_rid = rd.storage_buffer_create(size* 4, initial_state.to_byte_array())
 	else:
-		var size = grid_size * grid_size * grid_size
+		var size = grid_size * grid_size * grid_size * typecount
 		initial_state.resize(size)
-		for i in int(initial_state.size()/2.0):
-			initial_state[i] = 255
-		read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4, initial_state.to_byte_array())
+		for i in range(int(initial_state.size()/3.0), initial_state.size(), 4):
+			initial_state[i] = 10
+		read_state_rid = rd.storage_buffer_create(size * 4, initial_state.to_byte_array())
 		# read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
 
 
@@ -240,7 +236,7 @@ func setup_cell_pipeline():
 
 
 	# read_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
-	write_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * 4)
+	write_state_rid = rd.storage_buffer_create(grid_size * grid_size * grid_size * typecount * 4)
 
 	if (not read_state_rid.is_valid() or not write_state_rid.is_valid() or not kernel_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers! Grid size ", grid_size, " might be too large for VRAM.")
@@ -262,11 +258,17 @@ func setup_cell_pipeline():
 	kernel_u.binding = 2
 	kernel_u.add_id(kernel_rid)
 
-	cell_uniform_set = rd.uniform_set_create(
+	cell_uniform_set_1 = rd.uniform_set_create(
 		[read_u, write_u, kernel_u],
 		shader_rid,
 		0
 	)
+	cell_uniform_set_2 = rd.uniform_set_create(
+		[write_u, read_u, kernel_u],
+		shader_rid,
+		0
+	)
+
 
 func setup_aggregation_pipeline():
 	var shader_file: RDShaderFile = load("res://shaders/state_argmax.glsl")
@@ -290,13 +292,20 @@ func setup_aggregation_pipeline():
 	read_uniform.binding = 0
 	read_uniform.add_id(read_state_rid)
 
+	var write_uniform = RDUniform.new()
+	write_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	write_uniform.binding = 0
+	write_uniform.add_id(write_state_rid)
+
 	# Bind image3D to write cell type indices
 	var cell_uniform = RDUniform.new()
 	cell_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
 	cell_uniform.binding = 1
 	cell_uniform.add_id(texture_rid)
 
-	aggregate_uniform = rd.uniform_set_create([read_uniform, cell_uniform], aggregate_shader_rid, 0)
+	aggregate_uniform_set_1 = rd.uniform_set_create([write_uniform, cell_uniform], aggregate_shader_rid, 0)
+	aggregate_uniform_set_2 = rd.uniform_set_create([read_uniform, cell_uniform], aggregate_shader_rid, 0)
+
 
 func setup_brick_pipeline():
 	var shader_file: RDShaderFile = load("res://shaders/brick_map_builder.glsl")
@@ -330,6 +339,7 @@ func setup_brick_pipeline():
 
 	brick_uniform_set = rd.uniform_set_create([cell_uniform, brick_u], brick_shader_rid, 0)
 
+
 func create_texture(size: Vector3i = Vector3i(-1, -1, -1)) -> RID:
 	var fmt = RDTextureFormat.new()
 	fmt.width = size.x # No packing - each voxel gets its own texel
@@ -351,6 +361,17 @@ func create_texture(size: Vector3i = Vector3i(-1, -1, -1)) -> RID:
 		return RID()
 	return rid
 
+
+
+
+
+func debug_read_ssbo(label := ""):
+	var bytes := rd.buffer_get_data(read_state_rid)
+	var ints := bytes.to_int32_array()
+
+	print(label, " last 16 values:")
+	for i in range(ints.size()-16, ints.size()):
+		print(ints[i])
 
 
 
