@@ -90,9 +90,9 @@ class TreeCell:
 	static var NULL := new(0, 0, 0, 0)
 
 	var type: int
-	var energy: int # vestigial ? might be removed
-	var water: int # vestigial ? might be removed
-	var hp: int # vestigial ? might be removed
+	var flesh: int # vestigial ? might be removed
+	var leaf: int # vestigial ? might be removed
+	var bark: int # vestigial ? might be removed
 
 	var k_vals: PackedByteArray = [0xb0, 0, 0, 0]
 
@@ -126,14 +126,14 @@ class TreeCell:
 			else: return CELL_BARK
 
 
-	func _init(type_: int, energy_: int, water_: int, hp_: int) -> void:
+	func _init(type_: int, flesh_: int, leaf_: int, bark_: int) -> void:
 		type = type_
-		energy = energy_
-		water = water_
-		hp = hp_
-		k_vals[1] = energy_
-		k_vals[2] = water_
-		k_vals[3] = hp_
+		flesh = flesh_
+		leaf = leaf_
+		bark = bark_
+		k_vals[1] = flesh_
+		k_vals[2] = leaf_
+		k_vals[3] = bark_
 
 
 	static func from_bytes(
@@ -163,7 +163,7 @@ class TreeCell:
 
 
 	func _to_string() -> String:
-		return "T:" + NAMES[type].lpad(6, " ") + " F:" + str(energy).lpad(4, " ") + " L:" + str(water).lpad(4, " ") + " B:" + str(hp).lpad(4, " ")
+		return "T:" + NAMES[type].lpad(6, " ") + " F:" + str(flesh).lpad(4, " ") + " L:" + str(leaf).lpad(4, " ") + " B:" + str(bark).lpad(4, " ")
 
 
 const ENERGY_DIMS: PackedByteArray = [
@@ -185,9 +185,9 @@ func init(cells: PackedByteArray, size: int) -> void:
 	var layer_length := size * size * size
 
 	var celltypes: PackedByteArray = []; celltypes.resize(layer_length)
-	var energy: PackedByteArray = []; energy.resize(layer_length)
-	var water: PackedByteArray = []; water.resize(layer_length)
-	var hp: PackedByteArray = []; hp.resize(layer_length)
+	var flesh: PackedByteArray = []; flesh.resize(layer_length)
+	var leaf: PackedByteArray = []; leaf.resize(layer_length)
+	var bark: PackedByteArray = []; bark.resize(layer_length)
 
 	@warning_ignore("integer_division")
 	var centre := size / 2
@@ -198,13 +198,13 @@ func init(cells: PackedByteArray, size: int) -> void:
 				var zc := z - centre
 				if xc * xc + zc * zc <= 2 * 2:
 					celltypes[ix3d(x, y, z, size)] = CELL_FLESH
-					energy[ix3d(x, y, z, size)] = 255
+					flesh[ix3d(x, y, z, size)] = 255
 
 	cells.resize(layer_length * 4)
 	for i in range(0, layer_length):
 		cells[i] = celltypes[i]
 	for i in range(layer_length, layer_length * 2):
-		cells[i] = energy[i - layer_length]
+		cells[i] = flesh[i - layer_length]
 
 
 func generation(old: PackedByteArray, size: int) -> PackedByteArray:
@@ -212,10 +212,10 @@ func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 
 	#print("SEED GENERATION: ", old.size(), old)
 
-	var cells: PackedByteArray = []; cells.resize(layer_length)
-	var energy: PackedByteArray = []; energy.resize(layer_length)
-	var water: PackedByteArray = []; water.resize(layer_length)
-	var hp: PackedByteArray = []; hp.resize(layer_length)
+	var celltypes: PackedByteArray = []; celltypes.resize(layer_length)
+	var fleshstr: PackedByteArray = []; fleshstr.resize(layer_length)
+	var leafstr: PackedByteArray = []; leafstr.resize(layer_length)
+	var barkstr: PackedByteArray = []; barkstr.resize(layer_length)
 
 	var first_slice := old.slice(layer_length, layer_length * 2)
 	var second_slice := old.slice(layer_length * 2, layer_length * 3)
@@ -227,48 +227,48 @@ func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 		second_slice,
 		third_slice,
 
-		cells,
-		energy,
-		water,
-		hp,
+		celltypes,
+		fleshstr,
+		leafstr,
+		barkstr,
 
 		size,
 	)
 
 	var allcells := PackedByteArray()
-	allcells.append_array(cells)
-	allcells.append_array(energy)
-	allcells.append_array(water)
-	allcells.append_array(hp)
+	allcells.append_array(celltypes)
+	allcells.append_array(fleshstr)
+	allcells.append_array(leafstr)
+	allcells.append_array(barkstr)
 	#print("ALL CELLS AFTER GENERATION: ", allcells)
 
 	return allcells
 
 
 func _generation_with_arrays(
-	oldcells: PackedByteArray,
-	oldenergy: PackedByteArray,
-	oldwater: PackedByteArray,
-	oldhp: PackedByteArray,
+	oldcelltypes: PackedByteArray,
+	oldfleshstrength: PackedByteArray,
+	oldleafstrength: PackedByteArray,
+	oldbarkstrength: PackedByteArray,
 
-	newcells: PackedByteArray,
-	newenergy: PackedByteArray,
-	newwater: PackedByteArray,
-	newhp: PackedByteArray,
+	newcelltypes: PackedByteArray,
+	newfleshstrength: PackedByteArray,
+	newleafstrength: PackedByteArray,
+	newbarkstrength: PackedByteArray,
 
 	size: int
 ) -> void:
-	var treecells := TreeCell.from_bytes(oldcells, oldenergy, oldwater, oldhp, size)
+	var treecells := TreeCell.from_bytes(oldcelltypes, oldfleshstrength, oldleafstrength, oldbarkstrength, size)
 	#for t in treecells.values():
 		#prints("input:", t)
 	var newgen := _generation_with_objects(treecells, size)
 
 	var ix = 0;
 	for t in newgen.values():
-		newcells[ix] = t.type
-		newenergy[ix] = t.k_vals[1]
-		newwater[ix] = t.k_vals[2]
-		newhp[ix] = t.k_vals[3]
+		newcelltypes[ix] = t.type
+		newfleshstrength[ix] = t.k_vals[1]
+		newleafstrength[ix] = t.k_vals[2]
+		newbarkstrength[ix] = t.k_vals[3]
 		ix += 1
 
 

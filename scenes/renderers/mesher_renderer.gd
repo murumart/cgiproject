@@ -1,5 +1,7 @@
 extends Renderer
 
+const MESH_WAIT := 0.1
+
 var _thread := Thread.new()
 var _semaph := Semaphore.new()
 
@@ -8,24 +10,28 @@ var _data_wait: PackedByteArray
 var _genning := false
 var _should_mesh := false
 
-@export var inst: MeshInstance3D
+@export var instances: Array[MeshInstance3D]
+var current_instance := 0
 @export var sim: Simulator
 
 
 func _ready() -> void:
+	super()
 	_thread.start(_threaded_meshing)
 	sim.simulation_updated.connect(func() -> void:
 		sim.get_draw_data_async(_data_get)
 	)
-	inst.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
+	for inst in instances:
+		inst.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
 	#inst.position -= Vector3.ONE * 100.0 / sim.get_grid_size() * 0.5
 
 
-func _process(_delta: float) -> void:
-	if _should_mesh and not _genning:
+func _process(delta: float) -> void:
+	if _should_mesh and not _genning and _last_mesh >= MESH_WAIT:
 		_should_mesh = false
 		_data = _data_wait
 		_semaph.post()
+	_last_mesh += delta
 
 
 func _data_get(d: PackedByteArray) -> void:
@@ -37,6 +43,14 @@ func change_render_setting(_by: int) -> void:
 	pass
 
 
+func set_disabled(to: bool) -> void:
+	disabled = to
+	set_process(not to)
+	for i in instances:
+		i.visible = not to
+
+
+var _last_mesh := 0.0
 func _threaded_meshing() -> void:
 	while true:
 		_semaph.wait()
@@ -44,11 +58,21 @@ func _threaded_meshing() -> void:
 		var m := ArrayMesh.new()
 		_create_mesh(m)
 		_genning = false
-		(func() -> void:
-			inst.mesh = m
-			if m.get_surface_count() != 0:
-				m.surface_set_material(0, preload("res://scenes/renderers/meshblocks.tres"))
-		).call_deferred()
+		_mesh_ready.call_deferred(m)
+
+
+func _mesh_ready(mesh: Mesh) -> void:
+	var inst := instances[current_instance]
+	var tw := create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_interval(MESH_WAIT)
+	#tw.tween_property(inst, ^"transparency", 1.0, MESH_WAIT)
+	current_instance = wrapi(current_instance + 1, 0, instances.size())
+	inst = instances[current_instance]
+	inst.mesh = mesh
+	if mesh.get_surface_count() != 0:
+		mesh.surface_set_material(0, preload("res://scenes/renderers/meshblocks.tres"))
+	tw.parallel().tween_property(inst, ^"transparency", 0.0, MESH_WAIT).from(1.0)
+	_last_mesh = 0.0
 
 
 func _create_mesh(m: ArrayMesh) -> void:

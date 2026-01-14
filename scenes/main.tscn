@@ -1,22 +1,28 @@
-[gd_scene load_steps=28 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=34 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
+[ext_resource type="Script" uid="uid://psww1vs6csjx" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://dfn07uje00brv" path="res://scenes/renderers/compute_renderer.gd" id="3_ya4ey"]
 [ext_resource type="Script" uid="uid://o2qjsa51xmt1" path="res://scenes/lattice_mesh.gd" id="4_jyhfs"]
+[ext_resource type="Script" uid="uid://cx2kw01uyi1ko" path="res://scenes/renderers/naive_renderer.gd" id="5_dp3eg"]
 [ext_resource type="Texture2D" uid="uid://3sp4y4a4vg4k" path="res://scenes/decor/smoke.png" id="5_eb6dy"]
 [ext_resource type="Material" uid="uid://dl42s6e68ocqk" path="res://shaders/lattice_material.tres" id="5_tefeu"]
+[ext_resource type="Material" uid="uid://dx6c5rrjvdgb" path="res://scenes/renderers/fleshmat.tres" id="6_0ld40"]
 [ext_resource type="PackedScene" uid="uid://bfnvaccj5chko" path="res://scenes/ui/ui_button.tscn" id="6_85g3d"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="6_o6xl0"]
 [ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/simulators/compute_simulator.gd" id="6_tefeu"]
+[ext_resource type="Material" uid="uid://43lyjk060ru3" path="res://scenes/renderers/leafmat.tres" id="7_gqmmt"]
 [ext_resource type="Texture2D" uid="uid://0q8vy1pc0gmt" path="res://scenes/ui/icons/none.png" id="7_trceg"]
 [ext_resource type="Texture2D" uid="uid://dn5bo1crtqp0g" path="res://scenes/ui/icons/flesh.png" id="8_a8y0u"]
 [ext_resource type="Script" uid="uid://ba3tbmolvdy7o" path="res://scenes/texture_editor.gd" id="8_tipki"]
+[ext_resource type="Material" uid="uid://cr5n400hw00n2" path="res://scenes/renderers/barkmat.tres" id="8_yc10j"]
 [ext_resource type="Texture2D" uid="uid://dcmtudcbcp6kh" path="res://scenes/ui/icons/leaf.png" id="9_jkv2x"]
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
 sky_curve = 0.04616783
@@ -65,24 +71,39 @@ size = Vector3(100, 1, 100)
 
 [node name="Main" type="Node3D"]
 
-[node name="ComputeSim" type="Node" parent="." node_paths=PackedStringArray("pause_button")]
+[node name="Simulators" type="Node" parent="."]
+
+[node name="ComputeSim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
 script = ExtResource("6_tefeu")
 compute_shader_file = ExtResource("2_eb6dy")
 grid_size = 64
-simulte = true
-pause_button = NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause")
+pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause")
 
-[node name="ComputeRender" type="Node" parent="." node_paths=PackedStringArray("simulator", "mesh_instance")]
+[node name="GDSim" type="Node" parent="Simulators" node_paths=PackedStringArray("pause_button")]
+script = ExtResource("3_pm3ni")
+grid_size = 32
+running = true
+pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause")
+
+[node name="Renderers" type="Node" parent="."]
+
+[node name="ComputeRender" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
 script = ExtResource("3_ya4ey")
-simulator = NodePath("../ComputeSim")
-mesh_instance = NodePath("../Meshes/RaytracedVolume")
-grid_size = 64
-brick_size = 8
+simulator = NodePath("../../Simulators/GDSim")
+mesh_instance = NodePath("../../Meshes/RaytracedVolume")
 
-[node name="MesherRenderer" type="Node" parent="." node_paths=PackedStringArray("inst", "sim")]
+[node name="MesherRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instances", "sim")]
 script = ExtResource("14_muem4")
-inst = NodePath("../Meshes/MesherMesh")
-sim = NodePath("../ComputeSim")
+instances = [NodePath("../../Meshes/MesherMesh"), NodePath("../../Meshes/MesherMesh2")]
+sim = NodePath("../../Simulators/GDSim")
+disabled = true
+
+[node name="NaiveRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("parent", "sim")]
+script = ExtResource("5_dp3eg")
+parent = NodePath("../../Meshes/NaiveParent")
+sim = NodePath("../../Simulators/GDSim")
+cell_materials = Array[BaseMaterial3D]([ExtResource("6_0ld40"), ExtResource("7_gqmmt"), ExtResource("8_yc10j")])
+disabled = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
@@ -101,7 +122,7 @@ environment = SubResource("Environment_jyhfs")
 [node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("renderer")]
 transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 54.55, 94.71)
 script = ExtResource("3_sugp2")
-renderer = NodePath("../ComputeRender")
+renderer = NodePath("../Renderers/ComputeRender")
 
 [node name="Control" type="Control" parent="Camera3D"]
 layout_mode = 3
@@ -196,8 +217,7 @@ mesh = SubResource("BoxMesh_85g3d")
 [node name="Meshes" type="Node3D" parent="."]
 
 [node name="RaytracedVolume" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 49.971275, 50.009995, -0.13633156)
-visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 50.01, 0)
 cast_shadow = 0
 mesh = SubResource("BoxMesh_tefeu")
 metadata/_edit_lock_ = true
@@ -212,12 +232,20 @@ grid_size = 16
 metadata/_custom_type_script = "uid://o2qjsa51xmt1"
 
 [node name="MesherMesh" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.03, 0, -50.15)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+visibility_range_fade_mode = 1
+
+[node name="MesherMesh2" type="MeshInstance3D" parent="Meshes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+visibility_range_fade_mode = 1
+
+[node name="NaiveParent" type="Node3D" parent="Meshes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
 
 [node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "simulator", "volume", "highlight", "block_select_buttons")]
 script = ExtResource("8_tipki")
 camera = NodePath("../Camera3D")
-simulator = NodePath("../ComputeSim")
+simulator = NodePath("../Simulators/GDSim")
 volume = NodePath("../Meshes/RaytracedVolume")
 highlight = NodePath("../HighlightBlock")
 block_select_buttons = [NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/UiButton"), NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/UiButton4"), NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/UiButton2"), NodePath("../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/UiButton3")]
@@ -240,5 +268,23 @@ transform = Transform3D(31.972, -1.3383468, 0, 1.3383468, 31.972, 0, 0, 0, 32, 9
 [node name="Sign2" parent="Decor" instance=ExtResource("10_ya4ey")]
 transform = Transform3D(-1.3987644e-06, 0, -32, -2.5452101, 31.898619, 1.1125467e-07, 31.898619, 2.5452101, -1.3943329e-06, 107.32261, 8.824197, -51.199734)
 texture = ExtResource("11_eb6dy")
+
+[node name="Tree" parent="Decor" instance=ExtResource("22_jscy8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.788635, 2.1527953, -28.75173)
+
+[node name="Tree2" parent="Decor" instance=ExtResource("22_jscy8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.778743, 2.1527953, -37.85262)
+
+[node name="Tree3" parent="Decor" instance=ExtResource("22_jscy8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.8212385, 2.1527953, -25.962175)
+
+[node name="Tree4" parent="Decor" instance=ExtResource("22_jscy8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.043934, 2.1527953, -61.776382)
+
+[node name="Tree5" parent="Decor" instance=ExtResource("22_jscy8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.166393, 2.1527972, -43.069153)
+
+[node name="Tree6" parent="Decor" instance=ExtResource("22_jscy8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.008549, 2.1527972, -41.080513)
 
 [editable path="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause"]
