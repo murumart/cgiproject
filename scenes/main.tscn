@@ -1,7 +1,5 @@
-[gd_scene load_steps=35 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=21 format=3 uid="uid://dpnrjriihffnj"]
 
-[ext_resource type="Script" uid="uid://uauoj3dn61up" path="res://scenes/main.gd" id="1_o5qli"]
-[ext_resource type="Script" uid="uid://c0wpmlv3h3v1y" path="res://lives/stupit_tree.gd" id="2_0wfyh"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://o2qjsa51xmt1" path="res://scenes/lattice_mesh.gd" id="4_jyhfs"]
 [ext_resource type="Texture2D" uid="uid://3sp4y4a4vg4k" path="res://scenes/decor/smoke.png" id="5_eb6dy"]
@@ -12,70 +10,6 @@
 [ext_resource type="Script" uid="uid://ba3tbmolvdy7o" path="res://scenes/texture_editor.gd" id="8_tipki"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
-
-[sub_resource type="Resource" id="Resource_sugp2"]
-script = ExtResource("2_0wfyh")
-metadata/_custom_type_script = "uid://c0wpmlv3h3v1y"
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_0wfyh"]
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_sugp2"]
-width = 32
-height = 128
-noise = SubResource("FastNoiseLite_0wfyh")
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_jyhfs"]
-fractal_octaves = 2
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_tbgi4"]
-width = 32
-height = 256
-noise = SubResource("FastNoiseLite_jyhfs")
-as_normal_map = true
-normalize = false
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sugp2"]
-albedo_color = Color(1, 0.4745098, 0.3882353, 1)
-albedo_texture = SubResource("NoiseTexture2D_sugp2")
-roughness = 0.62
-normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_tbgi4")
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_tefeu"]
-fractal_type = 2
-fractal_octaves = 3
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_o6xl0"]
-width = 128
-height = 64
-noise = SubResource("FastNoiseLite_tefeu")
-seamless = true
-as_normal_map = true
-normalize = false
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jyhfs"]
-albedo_color = Color(0.6117647, 1, 0.44705883, 1)
-roughness = 0.3
-normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_o6xl0")
-subsurf_scatter_enabled = true
-subsurf_scatter_strength = 0.87
-subsurf_scatter_transmittance_enabled = true
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_sugp2"]
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_jyhfs"]
-width = 243
-height = 9
-noise = SubResource("FastNoiseLite_sugp2")
-as_normal_map = true
-bump_strength = 24.6
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tbgi4"]
-albedo_color = Color(0.5294118, 0.33333334, 0.1764706, 1)
-roughness = 0.98
-normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_jyhfs")
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
 sky_curve = 0.04616783
@@ -122,13 +56,7 @@ roughness = 0.57
 material = SubResource("StandardMaterial3D_85g3d")
 size = Vector3(100, 1, 100)
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("draw_parent", "lattice")]
-script = ExtResource("1_o5qli")
-life = SubResource("Resource_sugp2")
-draw_parent = NodePath("Meshes")
-cell_materials = Array[Material]([SubResource("StandardMaterial3D_sugp2"), SubResource("StandardMaterial3D_jyhfs"), SubResource("StandardMaterial3D_tbgi4")])
-auto_process = true
-lattice = NodePath("Meshes/LatticeMeshInstance")
+[node name="Main" type="Node3D"]
 
 [node name="VolControl" type="Node" parent="." node_paths=PackedStringArray("mesh_instance")]
 script = ExtResource("6_tefeu")
@@ -136,6 +64,7 @@ brick_size = 8
 grid_size = 32
 mesh_instance = NodePath("../Meshes/RaytracedVolume")
 material = ExtResource("6_o6xl0")
+simulte = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
