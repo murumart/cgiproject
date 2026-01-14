@@ -32,14 +32,25 @@ func _ready() -> void:
 
 	data_texture = ComputeSimulator.create_texture(rd, simulator.get_grid_size())
 
-	(simulator as ComputeSimulator).simulation_updated_texture.connect(func(d: RID) -> void:
-		data_texture = d
-		build_brick_map()
-		bind_texture_to_material()
-	)
+	if simulator is ComputeSimulator:
+		(simulator as ComputeSimulator).simulation_updated_texture.connect(func(d: RID) -> void:
+			data_texture = d
+			build_brick_map()
+			bind_texture_to_material()
+		)
+	else:
+		simulator.simulation_updated.connect(func() -> void:
+			simulator.get_draw_data_async(_data_got)
+		)
 
 	setup_brick_pipeline()
 	create_brick_map_texture()
+	build_brick_map()
+	bind_texture_to_material()
+
+
+func _data_got(data: PackedByteArray) -> void:
+	rd.texture_update(data_texture, 0, data)
 	build_brick_map()
 	bind_texture_to_material()
 

@@ -7,11 +7,11 @@ extends Node3D
 @export var auto_process := false
 @export var lattice: LatticeMeshInstance
 
-var _cells: PackedByteArray
 
-var thread := Thread.new()
+
+
 var mutex := Mutex.new()
-var semaphore := Semaphore.new()
+
 
 
 func _ready() -> void:
@@ -37,19 +37,3 @@ func _notification(what: int) -> void:
 		_stop_thread = true
 		semaphore.post()
 		thread.wait_to_finish()
-
-
-func _simulate() -> void:
-	var newc := life.generation(PackedByteArray(_cells), board_size)
-	_cells = newc
-	_simulated = true
-
-
-var _simulated := false
-var _stop_thread := false
-func _simulate_thread() -> void:
-	while true:
-		if _stop_thread:
-			break
-		semaphore.wait()
-		_simulate()
