@@ -29,7 +29,7 @@ uniform float exposure : hint_range(0.1, 10) = 1.0;
 
 uniform bool rt_shadows = false;
 
-uniform vec3 ground_color = vec3(0.2, 0.2, 0.2);
+uniform uint ground_material = 7;
 
 varying vec3 local_pos;
 
@@ -99,7 +99,7 @@ Material my_material(uint cell){
 		case 6u:
 			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
 		case 7u:
-			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+			return Material(vec3(0.2, 0.6, 0.2), vec3(0.1), 0.2, 1.0);
 	}
 }
 
@@ -192,6 +192,15 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 		// Check if we exited the volume
 		if (any(lessThan(coord, ivec3(0))) || any(greaterThanEqual(coord, ivec3(voxel_resolution)))) {
 			res.exited = 1.0;
+			// set ground if exited at bottom
+			if (res.stepped_axis == 1 && sgn_dir.y < 0.0) {
+				res.cell = ground_material;
+				res.material = my_material(ground_material);
+				res.alpha = 1.0;
+				res.position = curr_pos + dir * t_current;
+				res.normal = vec3(0.0, 1.0, 0.0);
+				res.depth = t_current;
+			}
 			break;
 		}
 
@@ -222,23 +231,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 					res.normal = vec3(0.0);
 					res.normal[res.stepped_axis] = -sgn_dir[res.stepped_axis];
 
-					// Blinn-Phong Shading
-					/*
-					vec3 N = normalize(res.normal);
-					vec3 L = normalize(sun_direction);
-					vec3 V = -dir; // View direction is opposite to ray direction
-					vec3 H = normalize(L + V);
 
-					float diff = max(dot(N, L), 0.0);
-					float spec = pow(max(dot(N, H), 0.0), 32.0); // Shininess 32
-					
-					vec3 ambient = vec3(0.3); // Ambient light
-					vec3 lightColor = vec3(1.0); // Sun color
-
-					// Apply lighting
-					vec3 lighting = ambient + lightColor * (diff * 0.8 + spec * 0.5);
-					res.color *= lighting;
-					*/
 				}
 				
 				res.alpha += 0.01 * density; // we add the density to the alpha
