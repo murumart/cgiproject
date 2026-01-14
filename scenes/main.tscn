@@ -1,6 +1,7 @@
-[gd_scene load_steps=35 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=36 format=3 uid="uid://dpnrjriihffnj"]
 
-[ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
+[ext_resource type="RDShaderFile" uid="uid://j3p2ilye6g5q" path="res://shaders/cell_shader_v2.glsl" id="2_og1vs"]
+[ext_resource type="RDShaderFile" uid="uid://2ewgaogko88k" path="res://shaders/state_argmax.glsl" id="3_2wyq8"]
 [ext_resource type="Script" uid="uid://psww1vs6csjx" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://dfn07uje00brv" path="res://scenes/renderers/compute_renderer.gd" id="3_ya4ey"]
@@ -21,7 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
-[ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
+[ext_resource type="Script" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
@@ -76,8 +77,11 @@ size = Vector3(100, 1, 100)
 
 [node name="DummySim" type="Node" parent="Simulators"]
 script = ExtResource("6_tefeu")
-compute_shader_file = ExtResource("2_eb6dy")
-grid_size = 64
+simulate = true
+grid_size = 256
+compute_shader_file = ExtResource("2_og1vs")
+aggregator_shader_file = ExtResource("3_2wyq8")
+pause_button = NodePath("../../Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause")
 
 [node name="GDSim" type="Node" parent="Simulators"]
 editor_description = "This simulation is a cellular automaton with three cell states (wood, leaves, bark) (internally each state is a weight) run on a different thread in GDScript. Each cell type has kernels for each of the other cell types that determine its score for the next turn, for example, leaves get a bad score when something else is on top of them, bark gets a good score being next to both air and wood, etc."
@@ -87,8 +91,8 @@ running = true
 
 [node name="Renderers" type="Node" parent="."]
 
-[node name="RaytraceRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
-editor_description = "This renderer uses a compute shader to compute a brickmap from the cell data and then (with a regular shader on a big box) renders voxels using raycasting through the brickmap. The voxels are lit with Blinn-Phong and cast shadows on their floor."
+[node name="RaytracedRender" type="Node" parent="Renderers" node_paths=PackedStringArray("simulator", "mesh_instance")]
+editor_description = "This renderer uses a shader with voxel ray traversal algrithm. The voxel ray traversal algrithm only checks cell boundries, if the cell is empty, it skips to the next cell boundry. It also uses a compute shader to calculate a brickmap, so it can skip larger space when there are no voxels nearby. The voxels are lit with Blinn-Phong and cast raytraced shadows."
 script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
@@ -125,7 +129,7 @@ environment = SubResource("Environment_jyhfs")
 [node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("renderer")]
 transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 54.55, 94.71)
 script = ExtResource("3_sugp2")
-renderer = NodePath("../Renderers/RaytraceRenderer")
+renderer = NodePath("../Renderers/RaytracedRender")
 
 [node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "simulators", "renderer_switch", "renderer_description", "simulator_switch", "simulator_description", "editor", "camera", "fps_label", "pause_button")]
 layout_mode = 3
