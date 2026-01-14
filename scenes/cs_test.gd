@@ -133,7 +133,7 @@ func bind_texture_to_material():
 
 func dispatch_cell_automata(compute_list: int):
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_rid) # Bind compute pipeline
-	var uniform_set = cell_uniform_set_2 if uniform_flip_flop else cell_uniform_set_1
+	var uniform_set = cell_uniform_set_1 if uniform_flip_flop else cell_uniform_set_2
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 	# Push constants for cell automata
@@ -253,18 +253,18 @@ func setup_cell_pipeline():
 	# Create uniforms for cell automata
 	var read_u2 := RDUniform.new()
 	read_u2.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	read_u2.binding = 1
+	read_u2.binding = 0
 	read_u2.add_id(write_state_rid)
 
 	var write_u := RDUniform.new()
 	write_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	write_u.binding = 1
-	write_u.add_id(read_state_rid)
+	write_u.add_id(write_state_rid)
 
 	var write_u2 := RDUniform.new()
 	write_u2.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	write_u2.binding = 0
-	write_u2.add_id(write_state_rid)
+	write_u2.binding = 1
+	write_u2.add_id(read_state_rid)
 
 	var kernel_u := RDUniform.new()
 	kernel_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
@@ -316,8 +316,8 @@ func setup_aggregation_pipeline():
 	cell_uniform.binding = 1
 	cell_uniform.add_id(texture_rid)
 
-	aggregate_uniform_set_1 = rd.uniform_set_create([read_uniform, cell_uniform], aggregate_shader_rid, 0)
-	aggregate_uniform_set_2 = rd.uniform_set_create([write_uniform, cell_uniform], aggregate_shader_rid, 0)
+	aggregate_uniform_set_2 = rd.uniform_set_create([read_uniform, cell_uniform], aggregate_shader_rid, 0)
+	aggregate_uniform_set_1 = rd.uniform_set_create([write_uniform, cell_uniform], aggregate_shader_rid, 0)
 
 
 func setup_brick_pipeline():
@@ -379,14 +379,14 @@ func create_texture(size: Vector3i = Vector3i(-1, -1, -1)) -> RID:
 
 
 func debug_read_ssbo(label := ""):
-	if (uniform_flip_flop):
+	if (not uniform_flip_flop):
 		var bytes := rd.buffer_get_data(write_state_rid)
 		var ints := bytes.to_int32_array()
-		print(label, " %s last 32: " % "write's", ints.slice(ints.size()-32, ints.size()))
+		print(label, " %s last 32: " % "write's", ints.slice(0, 32))
 	else:
-		var bytes := rd.buffer_get_data(kernel_rid)
-		var vals := bytes.to_float32_array()
-		print(label, " %s last 32: " % "kernels'", vals.slice(vals.size()-32, vals.size()))
+		var bytes := rd.buffer_get_data(read_state_rid)
+		var vals := bytes.to_int32_array()
+		print(label, " %s last 32: " % "read's'", vals.slice(0, 32))
 
 
 

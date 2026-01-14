@@ -33,7 +33,7 @@ size = Vector3(100, 100, 100)
 
 [node name="Node" type="Node" parent="." node_paths=PackedStringArray("mesh_instance")]
 script = ExtResource("1_ayjdf")
-grid_size = 128
+grid_size = 256
 mesh_instance = NodePath("../Meshes/MeshInstance3D3")
 material = ExtResource("2_1t7rw")
 simulte = true
