@@ -61,8 +61,8 @@ void main()
 		vec4 voxel = imageLoad(voxel_data, voxel_pos);
 		
 		// Check occupancy (cell type > 0)
-		uint cell_type = uint(voxel.r * 255.0 + 0.5);
-		bool is_occupied = cell_type > 0u;
+		// uint cell_type = uint(voxel.r * 255.0 + 0.5);
+		bool is_occupied = voxel.r > 0;
 		
 		// If this voxel is occupied, mark the shared flag
 		if (is_occupied) {
