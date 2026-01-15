@@ -60,11 +60,13 @@ material = ExtResource("6_o6xl0")
 size = Vector3(100, 100, 100)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wfyh"]
-albedo_color = Color(0.6496686, 0.40608382, 0.15865174, 1)
+transparency = 1
+albedo_color = Color(0.7554169, 0.53611076, 0.2716998, 1)
+albedo_texture = ExtResource("5_eb6dy")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_sgp6g"]
 material = SubResource("StandardMaterial3D_0wfyh")
-size = Vector2(900, 900)
+size = Vector2(2400, 2400)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_85g3d"]
 albedo_color = Color(0.4450649, 0.50761724, 0.15227985, 1)
@@ -421,23 +423,127 @@ transform = Transform3D(31.972, -1.3383468, 0, 1.3383468, 31.972, 0, 0, 0, 32, 9
 transform = Transform3D(-1.3987644e-06, 0, -32, -2.5452101, 31.898619, 1.1125467e-07, 31.898619, 2.5452101, -1.3943329e-06, 107.32261, 8.824197, -51.199734)
 texture = ExtResource("11_eb6dy")
 
-[node name="Tree" parent="Decor" instance=ExtResource("22_jscy8")]
+[node name="Trees" type="Node3D" parent="Decor"]
+
+[node name="Tree" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.788635, 2.1527953, -28.75173)
+skeleton = NodePath("../..")
 
-[node name="Tree2" parent="Decor" instance=ExtResource("22_jscy8")]
+[node name="Tree2" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.778743, 2.1527953, -37.85262)
+skeleton = NodePath("../..")
 
-[node name="Tree3" parent="Decor" instance=ExtResource("22_jscy8")]
+[node name="Tree3" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.8212385, 2.1527953, -25.962175)
+skeleton = NodePath("../..")
 
-[node name="Tree4" parent="Decor" instance=ExtResource("22_jscy8")]
+[node name="Tree4" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -28.043934, 2.1527953, -61.776382)
+skeleton = NodePath("../..")
 
-[node name="Tree5" parent="Decor" instance=ExtResource("22_jscy8")]
+[node name="Tree5" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.166393, 2.1527972, -43.069153)
+skeleton = NodePath("../..")
 
-[node name="Tree6" parent="Decor" instance=ExtResource("22_jscy8")]
+[node name="Tree6" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.008549, 2.1527972, -41.080513)
+skeleton = NodePath("../..")
+
+[node name="Tree7" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20338543, 0, -0.97909874, 0, 1, 0, 0.97909874, 0, 0.20338543, 143.21, 2.1527915, 50.5253)
+skeleton = NodePath("../..")
+
+[node name="Tree8" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20338543, 0, -0.97909874, 0, 1, 0, 0.97909874, 0, 0.20338543, 153.13962, 2.1527915, 53.579487)
+skeleton = NodePath("../..")
+
+[node name="Tree9" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20338543, 0, -0.97909874, 0, 1, 0, 0.97909874, 0, 0.20338543, 141.69244, 2.1527915, 56.935318)
+skeleton = NodePath("../..")
+
+[node name="Tree10" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20338543, 0, -0.97909874, 0, 1, 0, 0.97909874, 0, 0.20338543, 173.45862, 2.1527915, 33.76762)
+skeleton = NodePath("../..")
+
+[node name="Tree11" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20338543, 0, -0.97909874, 0, 1, 0, 0.97909874, 0, 0.20338543, 154.91411, 2.1527934, 36.473392)
+skeleton = NodePath("../..")
+
+[node name="Tree12" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20338543, 0, -0.97909874, 0, 1, 0, 0.97909874, 0, 0.20338543, 154.21945, 2.1527934, 42.906998)
+skeleton = NodePath("../..")
+
+[node name="Tree13" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.5586141, 0, -0.82942784, 0, 1, 0, 0.82942784, 0, 0.5586141, 63.949097, 2.1527877, -87.6785)
+skeleton = NodePath("../..")
+
+[node name="Tree14" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.5586141, 0, -0.82942784, 0, 1, 0, 0.82942784, 0, 0.5586141, 74.29622, 2.1527877, -88.60704)
+skeleton = NodePath("../..")
+
+[node name="Tree15" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.5586141, 0, -0.82942784, 0, 1, 0, 0.82942784, 0, 0.5586141, 64.968834, 2.1527877, -81.17069)
+skeleton = NodePath("../..")
+
+[node name="Tree16" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.5586141, 0, -0.82942784, 0, 1, 0, 0.82942784, 0, 0.5586141, 85.6119, 2.1527877, -114.632545)
+skeleton = NodePath("../..")
+
+[node name="Tree17" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.5586141, 0, -0.82942784, 0, 1, 0, 0.82942784, 0, 0.5586141, 69.46859, 2.1527896, -105.11344)
+skeleton = NodePath("../..")
+
+[node name="Tree18" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.5586141, 0, -0.82942784, 0, 1, 0, 0.82942784, 0, 0.5586141, 71.25902, 2.1527896, -98.895065)
+skeleton = NodePath("../..")
+
+[node name="Tree19" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20275319, 0, -0.97923, 0, 1, 0, 0.97923, 0, 0.20275319, -39.63556, 2.1527877, 36.45294)
+skeleton = NodePath("../..")
+
+[node name="Tree20" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20275319, 0, -0.97923, 0, 1, 0, 0.97923, 0, 0.20275319, -29.707928, 2.1527877, 39.51354)
+skeleton = NodePath("../..")
+
+[node name="Tree21" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20275319, 0, -0.97923, 0, 1, 0, 0.97923, 0, 0.20275319, -41.157265, 2.1527877, 42.861984)
+skeleton = NodePath("../..")
+
+[node name="Tree22" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20275319, 0, -0.97923, 0, 1, 0, 0.97923, 0, 0.20275319, -9.376139, 2.1527877, 19.714806)
+skeleton = NodePath("../..")
+
+[node name="Tree23" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20275319, 0, -0.97923, 0, 1, 0, 0.97923, 0, 0.20275319, -27.922386, 2.1527896, 22.408596)
+skeleton = NodePath("../..")
+
+[node name="Tree24" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20275319, 0, -0.97923, 0, 1, 0, 0.97923, 0, 0.20275319, -28.6212, 2.1527896, 28.841751)
+skeleton = NodePath("../..")
+
+[node name="Tree25" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(-0.033765644, 0, -0.99942994, 0, 1, 0, 0.99942994, 0, -0.033765644, 43.831383, 2.1527877, 77.64011)
+skeleton = NodePath("../..")
+
+[node name="Tree26" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(-0.033765644, 0, -0.99942994, 0, 1, 0, 0.99942994, 0, -0.033765644, 52.757915, 2.1527877, 82.95444)
+skeleton = NodePath("../..")
+
+[node name="Tree27" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(-0.033765644, 0, -0.99942994, 0, 1, 0, 0.99942994, 0, -0.033765644, 40.841927, 2.1527877, 83.5099)
+skeleton = NodePath("../..")
+
+[node name="Tree28" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(-0.033765644, 0, -0.99942994, 0, 1, 0, 0.99942994, 0, -0.033765644, 77.18347, 2.1527877, 68.50576)
+skeleton = NodePath("../..")
+
+[node name="Tree29" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(-0.033765644, 0, -0.99942994, 0, 1, 0, 0.99942994, 0, -0.033765644, 58.524822, 2.1527896, 66.752266)
+skeleton = NodePath("../..")
+
+[node name="Tree30" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
+transform = Transform3D(-0.033765644, 0, -0.99942994, 0, 1, 0, 0.99942994, 0, -0.033765644, 56.329388, 2.1527896, 72.83946)
+skeleton = NodePath("../..")
 
 [editable path="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause"]
 [editable path="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Clear"]
