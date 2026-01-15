@@ -317,6 +317,7 @@ void fragment() {
 	vec3 origin = (local_cam + 0.5) * voxel_resolution;
 
 	RayResult res = dda_ray_march(origin, dir);
+	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
 	vec3 sun_dir = normalize(sun_direction);
@@ -336,6 +337,7 @@ void fragment() {
 		// If the shadow ray hits something BEFORE exiting the volume, apply shadow
 		if (res2sun.alpha > 0.0 && res.steps > 1u) {
 			my_color = res.material.diffuse_color * ambient_power * sun_color;
+			my_color += depth * 0.01;
 		} else {
 			my_color = blinn_phong(res.normal, -dir, res.material);
 		}
@@ -343,7 +345,7 @@ void fragment() {
 		my_color = blinn_phong(res.normal, -dir, res.material);
 	}
 
-	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
+	
 	switch (render_setting) {
 		case 0: // color
 			ALBEDO = my_color;
