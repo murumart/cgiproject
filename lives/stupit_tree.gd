@@ -86,84 +86,84 @@ static var KERNELS := [ {}, FLESH_KERNELS, LEAF_KERNELS, BARK_KERNELS]
 const NAMES: PackedStringArray = ["NONE", "FLESH", "LEAF", "BARK", "MAX"]
 
 
-class TreeCell:
-	static var NULL := new(0, 0, 0, 0)
-
-	var type: int
-	var flesh: int # vestigial ? might be removed
-	var leaf: int # vestigial ? might be removed
-	var bark: int # vestigial ? might be removed
-
-	var k_vals: PackedByteArray = [0xb0, 0, 0, 0]
-
-
-	func get_k_value(ix: int) -> int:
-		return k_vals[ix]
-		#match ix:
-			#CELL_FLESH: return energy
-			#CELL_LEAF: return water
-			#CELL_BARK: return hp
-			#_: assert(false, "invalid cell typ asdadsadadadsadsdsdad"); return -1
-
-
-	func set_k_value(ix: int, to: int) -> void:
-		k_vals[ix] = to
-		#match ix:
-			#CELL_FLESH: energy = to
-			#CELL_LEAF: water = to
-			#CELL_BARK: hp = to
-			#_: assert(false, "invalid cell typ asdadsadadadsadsdsdad")
-
-
-	func get_highest_k_value() -> int:
-		if k_vals[1] == k_vals[2] and k_vals[2] == k_vals[3] and k_vals[3] == 0:
-			return CELL_NONE
-		if k_vals[1] > k_vals[2]:
-			if k_vals[1] > k_vals[3]: return CELL_FLESH
-			else: return CELL_BARK
-		else:
-			if k_vals[2] > k_vals[3]: return CELL_LEAF
-			else: return CELL_BARK
-
-
-	func _init(type_: int, flesh_: int, leaf_: int, bark_: int) -> void:
-		type = type_
-		flesh = flesh_
-		leaf = leaf_
-		bark = bark_
-		k_vals[1] = flesh_
-		k_vals[2] = leaf_
-		k_vals[3] = bark_
-
-
-	static func from_bytes(
-		oldcells: PackedByteArray,
-		oldenergy: PackedByteArray,
-		oldwater: PackedByteArray,
-		oldhp: PackedByteArray,
-		size: int,
-	) -> Dictionary[Vector3i, TreeCell]:
-		var tc: Dictionary[Vector3i, TreeCell]
-		var i = 0
-		for x in size:
-			for y in size:
-				for z in size:
-					# var i := Life.ix3d(x, y, z, size)
-					if oldcells[i] == 0:
-						tc[Vector3i(x, y, z)] = NULL
-					else:
-						tc[Vector3i(x, y, z)] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
-					i += 1
-		return tc
-
-
-	# a kernel is used to sum a "value" of the current cell based on the surrounding cells
-	static func get_kernel(tyyp: int, ct: int) -> PackedVector4Array:
-		return StupitTreeLife.KERNELS[tyyp][ct]
-
-
-	func _to_string() -> String:
-		return "T:" + NAMES[type].lpad(6, " ") + " F:" + str(flesh).lpad(4, " ") + " L:" + str(leaf).lpad(4, " ") + " B:" + str(bark).lpad(4, " ")
+#class TreeCell:
+#	static var NULL := new(0, 0, 0, 0)
+#
+#	var type: int
+#	var flesh: int # vestigial ? might be removed
+#	var leaf: int # vestigial ? might be removed
+#	var bark: int # vestigial ? might be removed
+#
+#	var k_vals: PackedByteArray = [0xb0, 0, 0, 0]
+#
+#
+#	func get_k_value(ix: int) -> int:
+#		return k_vals[ix]
+#		#match ix:
+#			#CELL_FLESH: return energy
+#			#CELL_LEAF: return water
+#			#CELL_BARK: return hp
+#			#_: assert(false, "invalid cell typ asdadsadadadsadsdsdad"); return -1
+#
+#
+#	func set_k_value(ix: int, to: int) -> void:
+#		k_vals[ix] = to
+#		#match ix:
+#			#CELL_FLESH: energy = to
+#			#CELL_LEAF: water = to
+#			#CELL_BARK: hp = to
+#			#_: assert(false, "invalid cell typ asdadsadadadsadsdsdad")
+#
+#
+#	func get_highest_k_value() -> int:
+#		if k_vals[1] == k_vals[2] and k_vals[2] == k_vals[3] and k_vals[3] == 0:
+#			return CELL_NONE
+#		if k_vals[1] > k_vals[2]:
+#			if k_vals[1] > k_vals[3]: return CELL_FLESH
+#			else: return CELL_BARK
+#		else:
+#			if k_vals[2] > k_vals[3]: return CELL_LEAF
+#			else: return CELL_BARK
+#
+#
+#	func _init(type_: int, flesh_: int, leaf_: int, bark_: int) -> void:
+#		type = type_
+#		flesh = flesh_
+#		leaf = leaf_
+#		bark = bark_
+#		k_vals[1] = flesh_
+#		k_vals[2] = leaf_
+#		k_vals[3] = bark_
+#
+#
+#	static func from_bytes(
+#		oldcells: PackedByteArray,
+#		oldenergy: PackedByteArray,
+#		oldwater: PackedByteArray,
+#		oldhp: PackedByteArray,
+#		size: int,
+#	) -> Dictionary[Vector3i, TreeCell]:
+#		var tc: Dictionary[Vector3i, TreeCell]
+#		var i = 0
+#		for x in size:
+#			for y in size:
+#				for z in size:
+#					# var i := Life.ix3d(x, y, z, size)
+#					if oldcells[i] == 0:
+#						tc[Vector3i(x, y, z)] = NULL
+#					else:
+#						tc[Vector3i(x, y, z)] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
+#					i += 1
+#		return tc
+#
+#
+#	# a kernel is used to sum a "value" of the current cell based on the surrounding cells
+#	static func get_kernel(tyyp: int, ct: int) -> PackedVector4Array:
+#		return StupitTreeLife.KERNELS[tyyp][ct]
+#
+#
+#	func _to_string() -> String:
+#		return "T:" + NAMES[type].lpad(6, " ") + " F:" + str(flesh).lpad(4, " ") + " L:" + str(leaf).lpad(4, " ") + " B:" + str(bark).lpad(4, " ")
 
 
 const ENERGY_DIMS: PackedByteArray = [
@@ -221,16 +221,15 @@ func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 	var second_slice := old.slice(layer_length * 2, layer_length * 3)
 	var third_slice := old.slice(layer_length * 3, layer_length * 4)
 
-	_generation_with_arrays(
-		old.slice(0, layer_length),
+	_generation(
 		first_slice,
 		second_slice,
 		third_slice,
 
-		celltypes,
 		fleshstr,
 		leafstr,
 		barkstr,
+		celltypes,
 
 		size,
 	)
@@ -245,38 +244,21 @@ func generation(old: PackedByteArray, size: int) -> PackedByteArray:
 	return allcells
 
 
-func _generation_with_arrays(
-	oldcelltypes: PackedByteArray,
-	oldfleshstrength: PackedByteArray,
-	oldleafstrength: PackedByteArray,
-	oldbarkstrength: PackedByteArray,
-
-	newcelltypes: PackedByteArray,
-	newfleshstrength: PackedByteArray,
-	newleafstrength: PackedByteArray,
-	newbarkstrength: PackedByteArray,
-
+func _generation(
+	oldf: PackedByteArray,
+	oldl: PackedByteArray,
+	oldb: PackedByteArray,
+	newf: PackedByteArray,
+	newl: PackedByteArray,
+	newb: PackedByteArray,
+	newtype: PackedByteArray,
 	size: int
 ) -> void:
-	var treecells := TreeCell.from_bytes(oldcelltypes, oldfleshstrength, oldleafstrength, oldbarkstrength, size)
-	#for t in treecells.values():
-		#prints("input:", t)
-	var newgen := _generation_with_objects(treecells, size)
 
-	var ix = 0;
-	for t in newgen.values():
-		newcelltypes[ix] = t.type
-		newfleshstrength[ix] = t.k_vals[1]
-		newleafstrength[ix] = t.k_vals[2]
-		newbarkstrength[ix] = t.k_vals[3]
-		ix += 1
+	var okvals: Array[PackedByteArray] = [[], oldf, oldl, oldb]
+	var nkvals: Array[PackedByteArray] = [[], newf, newl, newb]
 
-
-func _generation_with_objects(cells: Dictionary[Vector3i, TreeCell], size: int) -> Dictionary[Vector3i, TreeCell]:
-	var ngen: Dictionary[Vector3i, TreeCell] = {}
-
-	for k in cells:
-		ngen[k] = TreeCell.new(0, 0, 0, 0)
+	var side_len := size * size * size
 
 	var coord := Vector3i(0, 0, 0)
 	var sum: float = 0.0;
@@ -285,10 +267,11 @@ func _generation_with_objects(cells: Dictionary[Vector3i, TreeCell], size: int) 
 		#print(NAMES[ct])
 		for ct2 in range(CELL_FLESH, CELL_MAX):
 			#print("  ", NAMES[ct2])
-			var kernel := TreeCell.get_kernel(ct, ct2)
+			var kernel: PackedVector4Array = StupitTreeLife.KERNELS[ct][ct2]
 			#print("  kernel: ", kernel)
 			if kernel.is_empty(): continue # :) optimisising
 
+			var coori := 0
 			for x in size:
 				coord.x = x
 				for y in size:
@@ -296,26 +279,45 @@ func _generation_with_objects(cells: Dictionary[Vector3i, TreeCell], size: int) 
 					for z in size:
 						coord.z = z
 						#prints(NAMES[ct][0], NAMES[ct2][0], "AT", coord)
-						sum = ngen[coord].k_vals[ct]
+						#sum = ngen[coord].k_vals[ct]
+						coori = x + y * size + z * size * size
+						sum = nkvals[ct][coori]
 						for k_add in kernel:
 							@warning_ignore("narrowing_conversion")
-							var kcoord := Vector3i(k_add.x + x, k_add.y + y, k_add.z + z)
-							var c: TreeCell = cells.get(kcoord, TreeCell.NULL)
+							#var kcoord := Vector3i(k_add.x + x, k_add.y + y, k_add.z + z)
+							#var kcoori := coori + k_add.x + k_add.y * size + k_add.z * size * size
+							var kcoori := (x + k_add.x) + (y + k_add.y) * size + (z + k_add.z) * size * size
+							if kcoori < side_len and kcoori >= 0:
+								var add := okvals[ct2][kcoori]
+								sum += add * k_add.w
+							#var c: TreeCell = cells.get(kcoord, TreeCell.NULL)
 							# var add := (c.k_vals(ct2) * k_add.w) / 255.0
-							# sum += add
-							sum += c.k_vals[ct2] * k_add.w
+							#sum += c.k_vals[ct2] * k_add.w
 							#prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.k_vals[ct]), k_add.w, add, kcoord)
 						# var prev := ngen[coord].k_vals[ct]
 						# sum = prev / 255.0 + sum
 						sum = clampf(sum, 0, 255)
-						ngen[coord].k_vals[ct] = int(sum)
+						nkvals[ct][coori] = int(sum)
+						#ngen[coord].k_vals[ct] = int(sum)
 						#prints(NAMES[ct][0], NAMES[ct2][0], "og   ", cells[coord].k_vals[ct])
 						#prints(NAMES[ct][0], NAMES[ct2][0], "prevn", prev)
 						#prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[coord].k_vals[ct], "\n")
+						#coori += 1
+					#coori += 1
+				#coori += 1
 
 	#print("NEW GEN:")
-	for t in ngen.values():
-		t.type = t.get_highest_k_value()
+	for t in size:
+		newtype[t] = _get_highest_k_value(nkvals, t)
 		#print("   this cell at ", k, " is ", ngen[k])
 
-	return ngen
+
+func _get_highest_k_value(k_vals: Array[PackedByteArray], ix: int) -> int:
+	if k_vals[1][ix] == k_vals[2][ix] and k_vals[2][ix] == k_vals[3][ix] and k_vals[3][ix] == 0:
+		return CELL_NONE
+	if k_vals[1][ix] > k_vals[2][ix]:
+		if k_vals[1][ix] > k_vals[3][ix]: return CELL_FLESH
+		else: return CELL_BARK
+	else:
+		if k_vals[2][ix] > k_vals[3][ix]: return CELL_LEAF
+		else: return CELL_BARK
