@@ -3,14 +3,14 @@
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
 [ext_resource type="RDShaderFile" uid="uid://j3p2ilye6g5q" path="res://shaders/cell_shader_v2.glsl" id="2_og1vs"]
 [ext_resource type="RDShaderFile" uid="uid://2ewgaogko88k" path="res://shaders/state_argmax.glsl" id="3_2wyq8"]
-[ext_resource type="Script" uid="uid://psww1vs6csjx" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
+[ext_resource type="Script" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://dfn07uje00brv" path="res://scenes/renderers/compute_renderer.gd" id="3_ya4ey"]
 [ext_resource type="Script" uid="uid://o2qjsa51xmt1" path="res://scenes/lattice_mesh.gd" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://dfal1x20mt0gc" path="res://scenes/simulators/CS_cellular_automata.gd" id="4_vxglm"]
-[ext_resource type="Script" uid="uid://cx2kw01uyi1ko" path="res://scenes/renderers/naive_renderer.gd" id="5_dp3eg"]
+[ext_resource type="Script" path="res://scenes/renderers/naive_renderer.gd" id="5_dp3eg"]
 [ext_resource type="Texture2D" uid="uid://3sp4y4a4vg4k" path="res://scenes/decor/smoke.png" id="5_eb6dy"]
-[ext_resource type="Material" path="res://shaders/lattice_material.tres" id="5_tefeu"]
+[ext_resource type="Material" uid="uid://dl42s6e68ocqk" path="res://shaders/lattice_material.tres" id="5_tefeu"]
 [ext_resource type="Material" uid="uid://dx6c5rrjvdgb" path="res://scenes/renderers/fleshmat.tres" id="6_0ld40"]
 [ext_resource type="PackedScene" uid="uid://bfnvaccj5chko" path="res://scenes/ui/ui_button.tscn" id="6_85g3d"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="6_o6xl0"]
@@ -25,7 +25,7 @@
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" path="res://scenes/ui.gd" id="12_y6deb"]
-[ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="Script" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
@@ -139,7 +139,7 @@ transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 54.55, 9
 script = ExtResource("3_sugp2")
 renderer = NodePath("../Renderers/RaytracedRender")
 
-[node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "simulators", "renderer_switch", "renderer_description", "simulator_switch", "simulator_description", "editor", "camera", "fps_label", "pause_button")]
+[node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "simulators", "renderer_switch", "renderer_description", "simulator_switch", "simulator_description", "grid_size_switch", "editor", "camera", "fps_label", "pause_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -153,7 +153,8 @@ renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/Sc
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
 simulator_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationSwitch")
 simulator_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationDesc")
-grid_size = 64
+grid_size = 32
+grid_size_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/GridSizeSwitch")
 editor = NodePath("../../TextureEditor")
 camera = NodePath("..")
 fps_label = NodePath("VBoxContainer/Hbox/Center/VBoxContainer/PanelContainer/FPSLabel")
@@ -201,7 +202,7 @@ text = "Controls:
 > Move: WASD, Q/E
 > Speed: SHIFT, Scroll
 > Select Block: 1-4
-You can place blocks on the green
+You can place blocks (click) on the green
 area when the simulation is paused (Space)"
 fit_content = true
 autowrap_mode = 0
@@ -261,6 +262,40 @@ popup/item_1/id = 1
 
 [node name="SimulationDesc" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
+fit_content = true
+
+[node name="HSeparator2" type="HSeparator" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Grid Size (Danger!)"
+
+[node name="GridSizeSwitch" type="OptionButton" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+selected = 0
+item_count = 8
+popup/item_0/text = "8"
+popup/item_0/id = 0
+popup/item_1/text = "16"
+popup/item_1/id = 1
+popup/item_2/text = "32"
+popup/item_2/id = 2
+popup/item_3/text = "48"
+popup/item_3/id = 3
+popup/item_4/text = "64"
+popup/item_4/id = 4
+popup/item_5/text = "128 (!!)"
+popup/item_5/id = 5
+popup/item_6/text = "256 (!!!)"
+popup/item_6/id = 6
+popup/item_7/text = "512 (!!!!)"
+popup/item_7/id = 7
+
+[node name="SimulationDesc2" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Higher grid sizes can be slow or dangerous, there is no warranty!"
 fit_content = true
 
 [node name="MarginContainer" type="MarginContainer" parent="Camera3D/Control/VBoxContainer"]

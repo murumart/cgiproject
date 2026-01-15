@@ -60,6 +60,10 @@ func _physics_process(_delta: float) -> void:
 		+ Vector3.ONE * 100 * 0.5
 	)
 	in_vol_pos /= 100.0 / simulator.get_grid_size()
+	if _tdata.size() != int(pow(simulator.get_grid_size(), 3)):
+		_data_queueing = true
+		simulator.get_draw_data_async(_queue_cb)
+		return
 	var raycast := BlockRaycast.cast_ray_fast_vh(
 		in_vol_pos,
 		camera.project_ray_normal(mpos),

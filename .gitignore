@@ -3,5 +3,6 @@
 /android/
 .vscode/
 
+.build/
 log*.log
 coolimage.*
