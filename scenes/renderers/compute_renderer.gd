@@ -28,11 +28,11 @@ var data_texture: RID
 
 
 func _ready() -> void:
-	brick_grid_size = Vector3i.ONE * int(ceil(float(simulator.get_grid_size()) / float(brick_size)))
-
+	setup_brick_pipeline()
 	var s := simulator
 	simulator = null
 	set_simulator(s)
+
 
 
 func _data_got(data: PackedByteArray) -> void:
@@ -65,7 +65,7 @@ func set_simulator(sim: Simulator) -> void:
 
 	data_texture = ComputeSimulator.create_texture(rd, simulator.get_grid_size())
 
-	setup_brick_pipeline()
+	brick_grid_size = Vector3i.ONE * int(ceil(float(simulator.get_grid_size()) / float(brick_size)))
 	create_brick_map_texture()
 	build_brick_map()
 	bind_texture_to_material()
