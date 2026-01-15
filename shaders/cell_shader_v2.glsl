@@ -27,8 +27,8 @@ int idx5D(int type1, int type2, int x, int y, int z, ivec4 size) {
 	return x
 	+ size.x * y
 	+ size.x * size.y * z
-	+ size.x * size.y * size.z * type1
-	+ size.x * size.y * size.z * size.w * type2;
+	+ size.x * size.y * size.z * type2
+	+ size.x * size.y * size.z * size.w * type1;
 }
 
 void main() {
