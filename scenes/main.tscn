@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=39 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
 [ext_resource type="RDShaderFile" uid="uid://j3p2ilye6g5q" path="res://shaders/cell_shader_v2.glsl" id="2_og1vs"]
@@ -26,6 +26,7 @@
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
@@ -84,7 +85,7 @@ simulate = true
 grid_size = 64
 compute_shader_file = ExtResource("2_og1vs")
 aggregator_shader_file = ExtResource("3_2wyq8")
-kernel_file_path = "res://scenes/simulators/martkernels.txt"
+kernel_file_path = "res://scenes/simulators/kernels.txt"
 
 [node name="GDSim" type="Node" parent="Simulators"]
 editor_description = "This simulation is a cellular automaton with three cell states (wood, leaves, bark) (internally each state is a weight) run on a different thread in GDScript. Each cell type has kernels for each of the other cell types that determine its score for the next turn, for example, leaves get a bad score when something else is on top of them, bark gets a good score being next to both air and wood, etc."
@@ -140,7 +141,7 @@ transform = Transform3D(1, 0, 0, 0, 0.6949095, 0.7190973, 0, -0.7190973, 0.69490
 script = ExtResource("3_sugp2")
 renderer = NodePath("../Renderers/RaytracedRender")
 
-[node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "simulators", "renderer_switch", "renderer_description", "simulator_switch", "simulator_description", "grid_size_switch", "editor", "camera", "fps_label", "pause_button")]
+[node name="Control" type="Control" parent="Camera3D" node_paths=PackedStringArray("renderers", "simulators", "renderer_switch", "renderer_description", "simulator_switch", "simulator_description", "grid_size_switch", "editor", "camera", "fps_label", "pause_button", "kernel_selection")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -160,6 +161,7 @@ editor = NodePath("../../TextureEditor")
 camera = NodePath("..")
 fps_label = NodePath("VBoxContainer/Hbox/Center/VBoxContainer/PanelContainer/FPSLabel")
 pause_button = NodePath("VBoxContainer/MarginContainer/HBoxContainer/Pause")
+kernel_selection = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/KernelSelection")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Camera3D/Control"]
 layout_mode = 1
@@ -228,6 +230,29 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
+[node name="Label2" type="Label" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Simulation"
+
+[node name="SimulationSwitch" type="OptionButton" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+selected = 0
+item_count = 2
+popup/item_0/id = 0
+popup/item_1/id = 1
+
+[node name="SimulationDesc" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+fit_content = true
+
+[node name="KernelSelection" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer" node_paths=PackedStringArray("sim") instance=ExtResource("16_2f3dj")]
+layout_mode = 2
+sim = NodePath("../../../../../../../../../Simulators/ComputeShaderSim")
+
+[node name="HSeparator2" type="HSeparator" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
 [node name="Label" type="Label" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 text = "Renderer"
@@ -247,25 +272,6 @@ layout_mode = 2
 fit_content = true
 
 [node name="HSeparator" type="HSeparator" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="Label2" type="Label" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
-layout_mode = 2
-text = "Simulation"
-
-[node name="SimulationSwitch" type="OptionButton" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
-layout_mode = 2
-focus_mode = 0
-selected = 0
-item_count = 2
-popup/item_0/id = 0
-popup/item_1/id = 1
-
-[node name="SimulationDesc" type="RichTextLabel" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
-layout_mode = 2
-fit_content = true
-
-[node name="HSeparator2" type="HSeparator" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
 [node name="Label3" type="Label" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
