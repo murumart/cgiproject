@@ -37,9 +37,11 @@ func _ready() -> void:
 		n.selected.connect(func(r: Variant) -> void: _selected_block = int(r))
 	get_tree().get_first_node_in_group("hotbar_buttons").press()
 	clear_board_button.selected.connect(func() -> void:
-		_tdata.clear()
-		_tdata.resize(int(pow(simulator.get_grid_size(), 3)))
-		simulator.update_data(_tdata)
+		#_tdata.clear()
+		#_tdata.resize(int(pow(simulator.get_grid_size(), 3)))
+		#_tdata.fill(255)
+		#simulator.update_data(_tdata)
+		simulator.reset()
 	)
 
 
