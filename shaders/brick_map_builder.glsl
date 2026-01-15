@@ -22,52 +22,57 @@ layout(push_constant) uniform PushConstants {
 // Shared memory to store if the brick is occupied
 // Initialize to 0 (false)
 shared uint brick_occupied_shared;
+shared ivec3 brick_map_size;
 
-void main()
-{
-	uint BRICK_SIZE = pc.brick_size;
-
+void main() {
 	// Initialize shared memory
 	if (gl_LocalInvocationIndex == 0) {
 		brick_occupied_shared = 0;
+		brick_map_size = imageSize(brick_map);
 	}
+	// Calculate global brick ID (Workgroup ID)
+	ivec3 brick_id = ivec3(gl_WorkGroupID.xyz);
+	// ivec3 brick_map_size = imageSize(brick_map);
 	
 	// Wait for initialization
 	barrier();
-	
-	// Calculate global brick ID (Workgroup ID)
-	ivec3 brick_id = ivec3(gl_WorkGroupID.xyz);
-	ivec3 brick_map_size = imageSize(brick_map);
-	
+
 	// Safety: Stop if we are outside the brick map bounds
 	if (any(greaterThanEqual(brick_id, brick_map_size))) return;
+
+	int BRICK_SIZE = int(pc.brick_size);
+	int BRICK_SIZE2 = BRICK_SIZE * BRICK_SIZE;
+	// Total voxels in a brick
+	int total_voxels = BRICK_SIZE2 * BRICK_SIZE;
 	
 	// Calculate the starting voxel coordinate for this brick
-	ivec3 brick_start = brick_id * int(BRICK_SIZE);
+	ivec3 brick_start = brick_id * BRICK_SIZE;
 	
-	// Total voxels in a brick
-	uint total_voxels = BRICK_SIZE * BRICK_SIZE * BRICK_SIZE;
-	uint group_size = gl_WorkGroupSize.x * gl_WorkGroupSize.y * gl_WorkGroupSize.z; // 512
+	int group_size = int(gl_WorkGroupSize.x * gl_WorkGroupSize.y * gl_WorkGroupSize.z); // 512
 	
 	// Stride loop: Each thread checks multiple voxels to cover the whole brick
-	for (uint i = gl_LocalInvocationIndex; i < total_voxels; i += group_size) {
+	for (int i = int(gl_LocalInvocationIndex); i < total_voxels; i += group_size) {
+		memoryBarrierShared();
+		if (brick_occupied_shared != 0)
+			break;
 		// Convert linear index i to local xyz within the brick
-		int z = int(i) / (int(BRICK_SIZE) * int(BRICK_SIZE));
-		int y = (int(i) % (int(BRICK_SIZE) * int(BRICK_SIZE))) / int(BRICK_SIZE);
-		int x = int(i) % int(BRICK_SIZE);
+		int z = i / BRICK_SIZE2;
+		int y = (i % BRICK_SIZE2) / BRICK_SIZE;
+		int x = i % BRICK_SIZE;
 		
 		ivec3 voxel_pos = brick_start + ivec3(x, y, z);
 		
-		float cell = imageLoad(voxel_data, voxel_pos).r;
+		bool occupied = imageLoad(voxel_data, voxel_pos).r != 0;
 		
 		// Check occupancy (cell type > 0)
 		// uint cell_type = uint(voxel.r * 255.0 + 0.5);
 		// bool is_occupied = cell > 0;
 		
 		// If this voxel is occupied, mark the shared flag
-		if (cell > 0) {
-			brick_occupied_shared |= 1;
-			// atomicOr(brick_occupied_shared, 1);
+		if (occupied) {
+			atomicOr(brick_occupied_shared, 1);
+			// if (gl_LocalInvocationIndex != 0) return;
+			break;
 		}
 	}
 	
@@ -77,6 +82,6 @@ void main()
 	// Thread 0 writes the result for the entire brick
 	if (gl_LocalInvocationIndex == 0) {
 		// uint occupancy = (brick_occupied_shared > 0) ? 1 : 0;
-		imageStore(brick_map, brick_id, vec4(brick_occupied_shared, 0, 0, 1));
+		imageStore(brick_map, brick_id, vec4(brick_occupied_shared, 0, 0, 0));
 	}
 }
