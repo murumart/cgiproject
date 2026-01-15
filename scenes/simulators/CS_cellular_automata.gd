@@ -149,9 +149,18 @@ func setup_compute_pipeline() -> void:
 	pipeline_rid = rd.compute_pipeline_create(compute_shader_rid)
 
 	# allocated_RIDs.append(pipeline_rid)
+	var size = grid_size * grid_size * grid_size
+	var air: PackedInt32Array = []
+	air.resize(size * typecount)
+	# var cell_type = 0
+	for j in range(size):
+			# air[j + size * cell_type] = 10
+			air[j] = 255
 
-	var size = grid_size * grid_size * grid_size * typecount * 4
-	compute_read_state_rid = rd.storage_buffer_create(size)
+	size = grid_size * grid_size * grid_size * typecount * 4
+
+	compute_read_state_rid = rd.storage_buffer_create(size, air.to_byte_array())
+	# compute_read_state_rid = rd.storage_buffer_create(size)
 	compute_write_state_rid = rd.storage_buffer_create(size)
 	load_kernels_from_file(kernel_file_path)
 	# kernels_rid = rd.storage_buffer_create(4 * typecount * typecount * kernel_size.x * kernel_size.y * kernel_size.z)
