@@ -33,12 +33,13 @@ int idx5D(int type1, int type2, int x, int y, int z, ivec4 size) {
 
 void main() {
     int typecount = pc.kernel_size.w;
+    uint gid_z = gl_GlobalInvocationID.z;
+    int write_type = int(gid_z % typecount);
+    if (write_type == 0) return;    // Don't calculate air
+
     ivec3 id;
     id.x = int(gl_GlobalInvocationID.x);
     id.y = int(gl_GlobalInvocationID.y);
-
-    uint gid_z = gl_GlobalInvocationID.z;
-    int write_type = int(gid_z % typecount);
     id.z = int(gid_z / typecount);
 
     if (any(greaterThanEqual(id, pc.grid_size))) {
@@ -53,10 +54,10 @@ void main() {
 
     float sum = 0.0;
 
-    for (int read_type = 0; read_type < typecount; read_type++) {
-        for (int kz = -half_k.z; kz <= half_k.z; kz++) {
-            for (int ky = -half_k.y; ky <= half_k.y; ky++) {
-                for (int kx = -half_k.x; kx <= half_k.x; kx++) {
+    for (int kz = -half_k.z; kz <= half_k.z; kz++) {
+        for (int ky = -half_k.y; ky <= half_k.y; ky++) {
+            for (int kx = -half_k.x; kx <= half_k.x; kx++) {
+                for (int read_type = 1; read_type < typecount; read_type++) {
                     ivec3 nb = id + ivec3(kx, ky, kz);
                     if (any(lessThan(nb, ivec3(0))) || any(greaterThanEqual(nb, pc.grid_size)))
                         continue;
@@ -82,5 +83,4 @@ void main() {
     // write.data[out_i] = clamp(cur + pc.dt * growth, 0.0, 1.0);
     write.data[out_i] = int(clamp(sum, 0.0, 255.0));
 }
-
 

@@ -78,6 +78,7 @@ size = Vector3(100, 1, 100)
 [node name="Simulators" type="Node" parent="."]
 
 [node name="ComputeShaderSim" type="Node" parent="Simulators"]
+editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("4_vxglm")
 simulate = true
 grid_size = 64

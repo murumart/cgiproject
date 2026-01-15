@@ -6,6 +6,7 @@ var rd := RenderingServer.get_rendering_device()
 var allocated_RIDs: Array[RID] = []
 
 # Compute pipeline
+var local_size := 8
 var uniform_flip: bool = false
 var compute_shader_rid: RID
 var pipeline_rid: RID
@@ -95,9 +96,9 @@ func dispatch_compute_pipeline(compute_list: int):
 
 	# Dispatch automata shader
 	rd.compute_list_dispatch(compute_list,
-		int((grid_size + 7) / 8.0), # grid_size / workgroup size
-		int((grid_size + 7) / 8.0),
-		int((grid_size * typecount + 7) / 8.0)
+		(grid_size + local_size - 1) / local_size, # grid_size / workgroup size
+		(grid_size + local_size - 1) / local_size,
+		(grid_size * typecount + local_size - 1) / local_size
 	)
 
 
