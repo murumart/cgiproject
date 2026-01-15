@@ -296,22 +296,22 @@ func _generation_with_objects(cells: Dictionary[Vector3i, TreeCell], size: int) 
 					for z in size:
 						coord.z = z
 						#prints(NAMES[ct][0], NAMES[ct2][0], "AT", coord)
-						sum = ngen[coord].get_k_value(ct)
+						sum = ngen[coord].k_vals[ct]
 						for k_add in kernel:
 							@warning_ignore("narrowing_conversion")
 							var kcoord := Vector3i(k_add.x + x, k_add.y + y, k_add.z + z)
 							var c: TreeCell = cells.get(kcoord, TreeCell.NULL)
-							# var add := (c.get_k_value(ct2) * k_add.w) / 255.0
+							# var add := (c.k_vals(ct2) * k_add.w) / 255.0
 							# sum += add
-							sum += c.get_k_value(ct2) * k_add.w
-							#prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.get_k_value(ct2), k_add.w, add, kcoord)
-						# var prev := ngen[coord].get_k_value(ct)
+							sum += c.k_vals[ct2] * k_add.w
+							#prints(NAMES[ct][0], NAMES[ct2][0], "      ", c.k_vals[ct]), k_add.w, add, kcoord)
+						# var prev := ngen[coord].k_vals[ct]
 						# sum = prev / 255.0 + sum
 						sum = clampf(sum, 0, 255)
-						ngen[coord].set_k_value(ct, int(sum))
-						#prints(NAMES[ct][0], NAMES[ct2][0], "og   ", cells[coord].get_k_value(ct))
+						ngen[coord].k_vals[ct] = int(sum)
+						#prints(NAMES[ct][0], NAMES[ct2][0], "og   ", cells[coord].k_vals[ct])
 						#prints(NAMES[ct][0], NAMES[ct2][0], "prevn", prev)
-						#prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[coord].get_k_value(ct), "\n")
+						#prints(NAMES[ct][0], NAMES[ct2][0], "sum", sum, "kval", ngen[coord].k_vals[ct], "\n")
 
 	#print("NEW GEN:")
 	for t in ngen.values():

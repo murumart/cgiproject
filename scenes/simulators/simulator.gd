@@ -4,8 +4,6 @@ const UIB = preload("res://scenes/ui/ui_button.gd")
 
 signal simulation_updated
 
-@export var enabled := false
-
 @abstract func get_grid_size() -> int
 @abstract func set_grid_size(to: int) -> void
 @abstract func is_sim_running() -> bool

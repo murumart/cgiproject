@@ -82,11 +82,15 @@ func _physics_process(_delta: float) -> void:
 		var addpos := bpos + normal
 		if _selected_block == 0:
 			addpos = bpos
-			var oldblock := _tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs]
-			_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
-			simulator.update_data(_tdata)
-			if oldblock > 0:
-				_particle(BreakParticle, action_position)
+			if (addpos.x < gs and addpos.x >= 0
+				and addpos.y < gs and addpos.y >= 0
+				and addpos.z < gs and addpos.z >= 0
+			):
+				var oldblock := _tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs]
+				_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
+				simulator.update_data(_tdata)
+				if oldblock > 0:
+					_particle(BreakParticle, action_position)
 		elif (addpos.x < gs and addpos.x >= 0
 			and addpos.y < gs and addpos.y >= 0
 			and addpos.z < gs and addpos.z >= 0

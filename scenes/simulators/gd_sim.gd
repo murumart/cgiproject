@@ -95,6 +95,5 @@ var _simulating := false
 var _stop_thread := false
 func _simulate_thread() -> void:
 	while not _stop_thread:
-		print("ass")
 		semaphore.wait()
 		_simulate()

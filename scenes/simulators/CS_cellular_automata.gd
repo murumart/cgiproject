@@ -64,7 +64,7 @@ func run_simulation_once() -> void:
 	# Simulate cell automata
 	dispatch_compute_pipeline(compute_list)
 
-	
+
 	rd.compute_list_add_barrier(compute_list)
 
 	# Aggregate automata result into cells
@@ -158,7 +158,7 @@ func setup_compute_pipeline() -> void:
 	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid() or not kernels_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers!")
 		return
-	
+
 	allocated_RIDs.append(compute_read_state_rid)
 	allocated_RIDs.append(compute_write_state_rid)
 	allocated_RIDs.append(kernels_rid)
@@ -234,7 +234,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 	else:
 		var tmp = rd.storage_buffer_create(new_size)
 		rd.buffer_copy(compute_read_state_rid, tmp, 0, 0, min(new_size, old_size))
-		
+
 		free_RID_if_valid(compute_read_state_rid)
 		free_RID_if_valid(compute_write_state_rid)
 
@@ -245,7 +245,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid() or not kernels_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers!")
 		return
-	
+
 	create_compute_pipeline_uniforms()
 	create_aggregation_pipeline_uniforms()
 
@@ -253,14 +253,14 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 func update_data(data: PackedByteArray) -> void:
 	var cell_grid_size := grid_size * grid_size * grid_size
 	assert(data.size() == cell_grid_size * 4, "Update data size(%s) doesn't match grid size(%s)" % [data.size(), cell_grid_size*4])
-	
+
 	rd.texture_update(data_texture_rid, 0, data)
 
 	# Could create a shader to update read_buffer from data_tetxture
 
 	simulation_updated.emit.call_deferred()
 	simulation_updated_texture.emit(data_texture_rid)
-	
+
 	var cell_values := data.to_int32_array()
 	var tmp_buffer: PackedInt32Array = []
 	tmp_buffer.resize(cell_grid_size * typecount)
@@ -268,7 +268,7 @@ func update_data(data: PackedByteArray) -> void:
 		if(cell_values[cell_idx] > 0):
 			# if (cell_values[cell_idx] >= typecount): continue
 			tmp_buffer[cell_idx + cell_values[cell_idx]*cell_grid_size] = 255
-	
+
 	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
 	rd.buffer_update(read_buffer, 0, tmp_buffer.size() * 4, tmp_buffer.to_byte_array())
 
@@ -298,7 +298,7 @@ func create_texture(rds: RenderingDevice, grid_sizes: int) -> RID:
 	var s_data_texture_rid := rds.texture_create(fmt, RDTextureView.new())
 	if not s_data_texture_rid.is_valid():
 		printerr("CRITICAL ERROR: Failed to create voxel texture! Grid size ", grid_sizes, " might be too large for VRAM.")
-	
+
 	allocated_RIDs.append(s_data_texture_rid)
 	return s_data_texture_rid
 
@@ -312,7 +312,7 @@ func create_compute_pipeline_uniforms() -> void:
 	read_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	read_u.binding = 0
 	read_u.add_id(compute_read_state_rid)
-	
+
 	var read_u2 := RDUniform.new()
 	read_u2.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	read_u2.binding = 0
@@ -343,7 +343,7 @@ func create_compute_pipeline_uniforms() -> void:
 		compute_shader_rid,
 		0
 	)
-	
+
 	allocated_RIDs.append(compute_pipeline_uniform_set_1)
 	allocated_RIDs.append(compute_pipeline_uniform_set_2)
 
@@ -423,7 +423,7 @@ func load_kernels_from_file(path: String, _typecount: int = 4, _kernel_size: Vec
 		"Kernel count mismatch: got %d expected %d"
 		% [values.size(), expected]
 	)
-	
+
 	typecount = _typecount
 	kernel_size = _kernel_size
 	return load_kernels_from_packed_byte_array(values.to_byte_array())
