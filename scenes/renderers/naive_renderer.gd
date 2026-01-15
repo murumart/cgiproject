@@ -12,7 +12,6 @@ func _ready() -> void:
 	var s := sim
 	sim = null
 	set_simulator(s)
-	parent.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
 
 
 func set_simulator(s: Simulator) -> void:
@@ -20,6 +19,7 @@ func set_simulator(s: Simulator) -> void:
 		sim.simulation_updated.disconnect(_sim_updated)
 	sim = s
 	sim.simulation_updated.connect(_sim_updated)
+	parent.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
 
 
 func _data_get(d: PackedByteArray) -> void:

@@ -67,6 +67,7 @@ func _renderer_selected(which: int) -> void:
 	current_renderer = r
 	renderer_description.text = r.editor_description
 	camera.renderer = r
+	renderer_switch.selected = which
 
 
 func _simulator_selected(which: int) -> void:
@@ -85,3 +86,4 @@ func _simulator_selected(which: int) -> void:
 	current_simulator = s
 	simulator_description.text = s.editor_description
 	editor.simulator = s
+	simulator_switch.selected = which

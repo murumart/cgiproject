@@ -21,8 +21,7 @@ func _ready() -> void:
 	var s := sim
 	sim = null
 	set_simulator(s)
-	for inst in instances:
-		inst.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
+
 	#inst.position -= Vector3.ONE * 100.0 / sim.get_grid_size() * 0.5
 
 
@@ -37,11 +36,14 @@ func _process(delta: float) -> void:
 func _sim_updated() -> void:
 	sim.get_draw_data_async(_data_get)
 
+
 func set_simulator(simulator: Simulator) -> void:
 	if sim:
 		sim.simulation_updated.disconnect(_sim_updated)
 	sim = simulator
 	sim.simulation_updated.connect(_sim_updated)
+	for inst in instances:
+		inst.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
 
 
 func _data_get(d: PackedByteArray) -> void:
