@@ -24,7 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
-[ext_resource type="Script" path="res://scenes/ui.gd" id="12_y6deb"]
+[ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
@@ -78,6 +78,7 @@ size = Vector3(100, 1, 100)
 [node name="Simulators" type="Node" parent="."]
 
 [node name="ComputeShaderSim" type="Node" parent="Simulators"]
+editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("4_vxglm")
 grid_size = 64
 compute_shader_file = ExtResource("2_og1vs")
