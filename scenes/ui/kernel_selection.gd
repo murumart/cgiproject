@@ -13,6 +13,8 @@ var _dopen := false
 const KFILES := [
 	{"name": "Rasmus's kernels", "path": "res://scenes/simulators/rasmus_kernels.txt"},
 	{"name": "Mart's sequoia", "path": "res://scenes/simulators/martsequoia.txt"},
+	{"name": "Bush", "path": "res://scenes/simulators/poosas1.txt"},
+	{"name": "falling leaves", "path": "res://scenes/simulators/falling_leaves.txt"},
 ]
 
 func _ready() -> void:
