@@ -407,18 +407,35 @@ func load_kernels_from_packed_byte_array(kernels: PackedByteArray) -> bool:
 	return true
 
 
+func _parse_error(fpath: String, line: int, msg: String) -> void:
+	OS.alert("%s:%s: %s" % [fpath, line, msg], "Error parsing kernel file")
+
+
 func load_kernels_from_file(path: String, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5,5,5)) -> bool:
 	var file := FileAccess.open(path, FileAccess.READ)
-	assert(file, "Failed to open kernel file")
+	if file == null:
+		var err := FileAccess.get_open_error()
+		OS.alert("Couldn't open kernel file (%s)" % error_string(err), "Error opening kernel file!")
+		return false
 
 	var values: PackedFloat32Array = []
 
+	var i := 0
 	while not file.eof_reached():
+		i += 1
 		var line := file.get_line().strip_edges()
 		if line.is_empty() or line.begins_with("#"):
 			continue
 
-		for factor in line.split_floats(" "):
+		var floats := line.split_floats(" ")
+		if floats.size() > kernel_size.x:
+			_parse_error(path, i, "Too many values in kernel line (need %s, got %s)" % [kernel_size.x, floats.size()])
+			return false
+		if floats.size() < kernel_size.x:
+			_parse_error(path, i, "Too few values in kernel line (need %s, got %s)" % [kernel_size.x, floats.size()])
+			return false
+
+		for factor in floats:
 			values.append(factor)
 
 	file.close()
@@ -427,6 +444,14 @@ func load_kernels_from_file(path: String, _typecount: int = 4, _kernel_size: Vec
 		_typecount * _typecount *
 		_kernel_size.x * _kernel_size.y * _kernel_size.z
 	)
+
+	if values.size() < expected:
+		_parse_error(path, i, "Too few kernel values (need %s) (missing %s)" % [expected, expected - values.size()])
+		return false
+
+	if values.size() < expected:
+		_parse_error(path, i, "Too many kernel values (need %s) (%s would be ignored)" % [expected, values.size() - expected])
+		return false
 
 	assert(
 		values.size() == expected,

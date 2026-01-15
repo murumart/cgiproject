@@ -2,6 +2,8 @@ extends Control
 
 const CameraScript := preload("res://addons/freelookcamera/free_look_camera.gd")
 const ButtonScript := preload("res://scenes/ui/ui_button.gd")
+const CSAutomata = preload("res://scenes/simulators/CS_cellular_automata.gd")
+const KernelSelection = preload("res://scenes/ui/kernel_selection.gd")
 
 @export var renderers: Array[Renderer]
 var current_renderer: Renderer
@@ -21,6 +23,7 @@ var current_simulator: Simulator
 @export var camera: CameraScript
 @export var fps_label: Label
 @export var pause_button: ButtonScript
+@export var kernel_selection: KernelSelection
 
 
 func _ready() -> void:
@@ -90,6 +93,7 @@ func _simulator_selected(which: int) -> void:
 	simulator_description.text = s.editor_description
 	editor.simulator = s
 	simulator_switch.selected = which
+	kernel_selection.visible = s is CSAutomata
 
 
 const _GRID_SIZES := [8, 16, 32, 48, 64, 128, 256, 512]
