@@ -25,6 +25,8 @@ func _ready() -> void:
 	dialog.canceled.connect(_dial_closed)
 	dialog.confirmed.connect(_dial_closed)
 	dialog.file_selected.connect(_custom_get)
+	_kernel_selected(0)
+	kernel_switch.selected = 0
 
 
 func _kernel_selected(which: int) -> void:
