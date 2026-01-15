@@ -252,7 +252,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 
 func update_data(data: PackedByteArray) -> void:
 	var cell_grid_size := grid_size * grid_size * grid_size
-	assert(data.size() == cell_grid_size * 4, "Update data size(%s) doesn't match grid size(%s)" % [data.size(), cell_grid_size*4])
+	assert(data.size() == cell_grid_size, "Update data size(%s) doesn't match grid size(%s)" % [data.size(), cell_grid_size])
 
 	rd.texture_update(data_texture_rid, 0, data)
 
@@ -261,13 +261,13 @@ func update_data(data: PackedByteArray) -> void:
 	simulation_updated.emit.call_deferred()
 	simulation_updated_texture.emit(data_texture_rid)
 
-	var cell_values := data.to_int32_array()
+	# var cell_values := data.to_int32_array()
 	var tmp_buffer: PackedInt32Array = []
 	tmp_buffer.resize(cell_grid_size * typecount)
-	for cell_idx in range(cell_values.size()):
-		if(cell_values[cell_idx] > 0):
+	for cell_idx in range(cell_grid_size):
+		if (data[cell_idx] > 0):
 			# if (cell_values[cell_idx] >= typecount): continue
-			tmp_buffer[cell_idx + cell_values[cell_idx]*cell_grid_size] = 255
+			tmp_buffer[cell_idx + data[cell_idx]*cell_grid_size] = 255
 
 	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
 	rd.buffer_update(read_buffer, 0, tmp_buffer.size() * 4, tmp_buffer.to_byte_array())
