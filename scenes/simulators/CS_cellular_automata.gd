@@ -31,6 +31,7 @@ var _buffer_elements: int
 
 @export var compute_shader_file: RDShaderFile
 @export var aggregator_shader_file: RDShaderFile
+@export_file("*.txt") var kernel_file_path: String
 
 
 func _ready() -> void:
@@ -38,6 +39,7 @@ func _ready() -> void:
 	assert(rd, "Couldnt' get rendering device")
 
 	# Setup
+	load_kernels_from_file(kernel_file_path)
 	data_texture_rid = create_texture(rd, grid_size)
 	setup_compute_pipeline()
 	setup_aggregation_pipeline()
@@ -141,8 +143,12 @@ func setup_compute_pipeline() -> void:
 	compute_shader_rid = rd.shader_create_from_spirv(shader_spirv)
 	if compute_shader_rid == null:
 		push_error("Shader is null(SPIR-V shader failed)")
-	
+
+	allocated_RIDs.append(compute_shader_rid)
+
 	pipeline_rid = rd.compute_pipeline_create(compute_shader_rid)
+
+	allocated_RIDs.append(pipeline_rid)
 
 	var size = grid_size * grid_size * grid_size * typecount * 4
 	compute_read_state_rid = rd.storage_buffer_create(size)
@@ -188,6 +194,7 @@ func reset() -> void:
 			rd.free_rid(rid)
 	allocated_RIDs.clear()
 
+	load_kernels_from_file(kernel_file_path)
 	data_texture_rid = create_texture(rd, grid_size)
 	setup_compute_pipeline()
 	setup_aggregation_pipeline()

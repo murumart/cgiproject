@@ -93,6 +93,7 @@ script = ExtResource("4_vxglm")
 grid_size = 256
 compute_shader_file = ExtResource("2_og1vs")
 aggregator_shader_file = ExtResource("3_2wyq8")
+kernel_file_path = "res://scenes/simulators/kernels.txt"
 
 [node name="Renderers" type="Node" parent="."]
 
