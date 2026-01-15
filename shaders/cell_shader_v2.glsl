@@ -35,7 +35,7 @@ void main() {
     int typecount = pc.kernel_size.w;
     uint gid_z = gl_GlobalInvocationID.z;
     int write_type = int(gid_z % typecount);
-    if (write_type == 0) return;    // Don't calculate air
+    // if (write_type == 0) return;    // Don't calculate air
 
     ivec3 id;
     id.x = int(gl_GlobalInvocationID.x);
