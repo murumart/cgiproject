@@ -155,7 +155,7 @@ func setup_compute_pipeline() -> void:
 	# var cell_type = 0
 	for j in range(size):
 			# air[j + size * cell_type] = 10
-			air[j] = 255
+			air[j] = 250
 
 	size = grid_size * grid_size * grid_size * typecount * 4
 
