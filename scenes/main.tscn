@@ -3,7 +3,7 @@
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
 [ext_resource type="RDShaderFile" uid="uid://j3p2ilye6g5q" path="res://shaders/cell_shader_v2.glsl" id="2_og1vs"]
 [ext_resource type="RDShaderFile" uid="uid://2ewgaogko88k" path="res://shaders/state_argmax.glsl" id="3_2wyq8"]
-[ext_resource type="Script" uid="uid://psww1vs6csjx" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
+[ext_resource type="Script" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://dfn07uje00brv" path="res://scenes/renderers/compute_renderer.gd" id="3_ya4ey"]
 [ext_resource type="Script" uid="uid://o2qjsa51xmt1" path="res://scenes/lattice_mesh.gd" id="4_jyhfs"]
@@ -25,13 +25,14 @@
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
-[ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
-[ext_resource type="PackedScene" uid="uid://cn27jdabhu4oq" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
+[ext_resource type="Script" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
 sky_curve = 0.04616783
 sky_cover = ExtResource("5_eb6dy")
+ground_bottom_color = Color(0.15320483, 0.24554008, 0.2917707, 1)
 ground_curve = 0.07210009
 sun_curve = 0.07244537
 
@@ -60,9 +61,12 @@ material = ExtResource("6_o6xl0")
 size = Vector3(100, 100, 100)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wfyh"]
-transparency = 1
-albedo_color = Color(0.7554169, 0.53611076, 0.2716998, 1)
+transparency = 2
+alpha_scissor_threshold = 0.5
+alpha_antialiasing_mode = 0
+albedo_color = Color(0.6776328, 0.72237164, 0.24826637, 1)
 albedo_texture = ExtResource("5_eb6dy")
+roughness = 0.87
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_sgp6g"]
 material = SubResource("StandardMaterial3D_0wfyh")
@@ -407,7 +411,7 @@ clear_board_button = NodePath("../Camera3D/Control/VBoxContainer/MarginContainer
 [node name="Decor" type="Node3D" parent="."]
 
 [node name="GroundPlace" type="MeshInstance3D" parent="Decor"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
 mesh = SubResource("PlaneMesh_sgp6g")
 skeleton = NodePath("../..")
 
