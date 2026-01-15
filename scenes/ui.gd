@@ -16,6 +16,7 @@ var current_simulator: Simulator
 @export var simulator_description: RichTextLabel
 @export var grid_size: int
 
+@export var grid_size_switch: OptionButton
 @export var editor: TextureEditor
 @export var camera: CameraScript
 @export var fps_label: Label
@@ -49,6 +50,8 @@ func _ready() -> void:
 			_simulator_selected(i)
 		i += 1
 	simulator_switch.item_selected.connect(_simulator_selected)
+	grid_size_switch.item_selected.connect(_grid_size_changed)
+	grid_size_switch.selected = _GRID_SIZES.find(grid_size)
 
 
 func _process(_delta: float) -> void:
@@ -87,3 +90,11 @@ func _simulator_selected(which: int) -> void:
 	simulator_description.text = s.editor_description
 	editor.simulator = s
 	simulator_switch.selected = which
+
+
+const _GRID_SIZES := [8, 16, 32, 48, 64, 128, 256, 512]
+func _grid_size_changed(which: int) -> void:
+	var s := current_simulator
+	current_simulator = null
+	grid_size = _GRID_SIZES[which]
+	_simulator_selected(simulators.find(s))
