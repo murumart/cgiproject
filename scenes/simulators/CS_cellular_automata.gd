@@ -83,16 +83,37 @@ func dispatch_compute_pipeline(compute_list: int):
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 	# Push constants for cell automata
-	var push_constant := PackedByteArray()
-	push_constant.resize(32)
-	push_constant.encode_u32(0, grid_size)
-	push_constant.encode_u32(4, grid_size)
-	push_constant.encode_u32(8, grid_size)
-	push_constant.encode_u32(16, kernel_size.x)
-	push_constant.encode_u32(20, kernel_size.y)
-	push_constant.encode_u32(24, kernel_size.z)
-	push_constant.encode_u32(28, typecount)
-	rd.compute_list_set_push_constant(compute_list, push_constant, push_constant.size())
+	# var push_constant := PackedByteArray()
+	# push_constant.resize(48)
+	var push: PackedInt32Array = [
+		grid_size,
+		grid_size,
+		grid_size,
+		0,
+		grid_size,
+		grid_size * grid_size,
+		grid_size * grid_size * grid_size,
+		0,
+		kernel_size.x,
+		kernel_size.y,
+		kernel_size.z,
+		typecount]
+	# # grid size
+	# push_constant.encode_u32(0, grid_size)
+	# push_constant.encode_u32(4, grid_size)
+	# push_constant.encode_u32(8, grid_size)
+	# # strides
+	# push_constant.encode_u32(16, grid_size)
+	# push_constant.encode_u32(20, grid_size * grid_size)
+	# push_constant.encode_u32(24, grid_size * grid_size * grid_size)
+	# # kernel size
+	# push_constant.encode_u32(32, kernel_size.x)
+	# push_constant.encode_u32(36, kernel_size.y)
+	# push_constant.encode_u32(40, kernel_size.z)
+	# # typecount
+	# push_constant.encode_u32(44, typecount)
+	
+	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
 
 	# Dispatch automata shader
 	rd.compute_list_dispatch(compute_list,

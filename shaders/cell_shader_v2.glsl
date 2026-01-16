@@ -11,25 +11,18 @@ layout(set = 0, binding = 2, std430) buffer KernelArray { readonly float data[];
 
 layout(push_constant) uniform PushConstants {
 	ivec3 grid_size; // size.x, size.y, size.z: dimensions of the 3D grid;
+    ivec3 stride;
 	ivec4 kernel_size;
 } pc;
 
 
-int idx4D(int type, int x, int y, int z, ivec4 size) {
+int idx4D(int type, int x, int y, int z) {
 	return x
-	+ size.x * y
-	+ size.x * size.y * z
-	+ size.x * size.y * size.z * type;
+	+ pc.stride.x * y
+	+ pc.stride.y * z
+	+ pc.stride.z * type;
 }
 
-
-int idx5D(int type1, int type2, int x, int y, int z, ivec4 size) {
-	return x
-	+ size.x * y
-	+ size.x * size.y * z
-	+ size.x * size.y * size.z * type2
-	+ size.x * size.y * size.z * size.w * type1;
-}
 
 void main() {
     int typecount = pc.kernel_size.w;
@@ -46,11 +39,11 @@ void main() {
         return;
     }
 
-    ivec4 size = ivec4(pc.grid_size, typecount);
+    // ivec3 size = pc.grid_size;
     ivec3 half_k = pc.kernel_size.xyz / 2;
     // float dsigma = 2.0 * pc.sigma * pc.sigma;
 
-    int out_i = idx4D(write_type, id.x, id.y, id.z, size);
+    int out_i = idx4D(write_type, id.x, id.y, id.z);
 
     float sum = 0.0;
     int ki = pc.kernel_size.x * pc.kernel_size.y * pc.kernel_size.z * pc.kernel_size.w * write_type - 1;
@@ -67,7 +60,7 @@ void main() {
                         if (any(lessThan(nb, ivec3(0))) || any(greaterThanEqual(nb, pc.grid_size)))
                             continue;
 
-                        int ni = idx4D(read_type, nb.x, nb.y, nb.z, size);
+                        int ni = idx4D(read_type, nb.x, nb.y, nb.z);
 
                         sum += kernel.data[ki] * read.data[ni];
                     }
@@ -81,7 +74,7 @@ void main() {
                 for (int kx = -half_k.x; kx <= half_k.x; kx++) {
                     ki++;
                     // ivec3 nb = id + ivec3(kx, ky, kz);
-                    int ni = idx4D(read_type, id.x + kx, id.y + ky, id.z + kz, size);
+                    int ni = idx4D(read_type, id.x + kx, id.y + ky, id.z + kz);
 
                     sum += kernel.data[ki] * read.data[ni];
                 }
