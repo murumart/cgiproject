@@ -15,7 +15,7 @@ uniform float mesh_size : hint_range(1, 400);
 uniform int brick_size; // Size of each brick (must match VolumetricController)
 
 // lighting
-uniform vec3 sun_direction = vec3(0.5, 1.0, 0.5);
+uniform vec3 sun_direction = vec3(0.3535533906, 0.7071067812, 0.3535533906);
 uniform vec3 sun_color = vec3(1.0, 1.0, 1.0);
 uniform float sun_power : hint_range(0.0, 1.0) = 1.0;
 //uniform vec3 ambient_color = vec3(0.1, 0.1, 0.1);
@@ -103,9 +103,9 @@ Material my_material(uint cell){
 
 vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
 	// Blinn-Phong Shading
-	normal = normalize(normal);
-	vec3 light_dir = normalize(sun_direction);
-	view_dir = normalize(view_dir);
+	// normal = normalize(normal);
+	vec3 light_dir = sun_direction;
+	// view_dir = normalize(view_dir);
 
 
 	float lambertian = max(dot(normal, light_dir), 0.0);
@@ -215,12 +215,14 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 			break;
 		}
 
-		vec3 brick_uvw = (vec3(brick_coord) + 0.5) / vec3(textureSize(brick_map, 0)); // uvw coordinates of the brick
-		float brick_occupied = textureLod(brick_map, brick_uvw, 0.0).r; // if the brick is occupied
+		// vec3 brick_uvw = (vec3(brick_coord) + 0.5) / vec3(textureSize(brick_map, 0)); // uvw coordinates of the brick
+		// float brick_occupied = textureLod(brick_map, brick_uvw, 0.0).r; // if the brick is occupied
 
-		if (brick_occupied > 0.5) {
-			vec4 voxel_data_u = texelFetch(simulation_data, coord, 0);
-			res.cell = uint(voxel_data_u.r * 255.0); // cell type
+		// float brick_occupied = texelFetch(brick_map, brick_coord, 0).r;
+		// if (brick_occupied > 0.5) {
+		if (texelFetch(brick_map, brick_coord, 0).r > 0.0) {
+			// vec4 voxel_data_u = texelFetch(simulation_data, coord, 0);
+			res.cell = uint(texelFetch(simulation_data, coord, 0).r * 255.0); // cell type
 
 			// if the voxel is occupied
 			if (res.cell > 0u) {
@@ -320,7 +322,7 @@ void fragment() {
 	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
-	vec3 sun_dir = normalize(sun_direction);
+	vec3 sun_dir = sun_direction;
 
 	//vec3 lighting = blinn_phong(res.normal, -dir, res.material);
 
