@@ -130,7 +130,7 @@ vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
 	return lightColor;
 }
 
-RayResult dda_ray_march(vec3 origin, vec3 dir) {
+RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
 	RayResult res;
 	res.material = Material(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), 0.0, 0.0);
 	//res.color = vec3(0.0);
@@ -144,7 +144,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 	res.position = vec3(0.0);
 	res.normal = vec3(0.0);
 
-	ivec3 tex_size = textureSize(simulation_data, 0);
+	// ivec3 tex_size = textureSize(simulation_data, 0);
 	vec3 voxel_resolution = vec3(tex_size);
 
 	// DDA setup
@@ -318,7 +318,7 @@ void fragment() {
 	// Convert to voxel space (0 to voxel_resolution)
 	vec3 origin = (local_cam + 0.5) * voxel_resolution;
 
-	RayResult res = dda_ray_march(origin, dir);
+	RayResult res = dda_ray_march(origin, dir, tex_size);
 	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
@@ -334,7 +334,7 @@ void fragment() {
 		// Move along the light direction to ensure we clear the current voxel boundary
 		vec3 shadow_origin = res.position + sun_dir * 0.001;
 
-		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir);
+		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir, tex_size);
 
 		// If the shadow ray hits something BEFORE exiting the volume, apply shadow
 		if (res2sun.alpha > 0.0 && res.steps > 1u) {
@@ -386,7 +386,7 @@ void fragment() {
 			ALPHA = 1.0;
 			break;
 		case 6:
-			ivec3 tex_size = textureSize(simulation_data, 0);
+			// ivec3 tex_size = textureSize(simulation_data, 0);
 			vec4 r = texelFetch(simulation_data, ivec3(int(sin(TIME) * 0.5 + 0.5) * tex_size.x), 0);
 			ALBEDO = vec3(r.r * 255.0);
 			break;
