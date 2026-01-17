@@ -20,6 +20,7 @@ func set_simulator(s: Simulator) -> void:
 	sim = s
 	sim.simulation_updated.connect(_sim_updated)
 	parent.scale = Vector3.ONE * 100.0 / sim.get_grid_size()
+	_boxes.clear()
 
 
 func _data_get(d: PackedByteArray) -> void:
@@ -51,7 +52,7 @@ func _draw_life() -> void:
 
 	var gs := sim.get_grid_size()
 	var ix = 0
-	for x in gs: for y in gs: for z in gs:
+	for z in gs: for y in gs: for x in gs:
 		# var ix := x + y * gs + z * gs * gs
 		_draw_check_box(ix, x, y, z)
 		_draw_update_cell(ix)
