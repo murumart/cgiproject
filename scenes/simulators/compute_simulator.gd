@@ -1,6 +1,7 @@
 extends Simulator
 
 signal simulation_updated_texture(data: RID)
+const ComputeAutomataSimulator = preload("res://scenes/simulators/CS_cellular_automata.gd")
 
 var rd := RenderingServer.get_rendering_device()
 var data_texture_rid: RID
@@ -24,7 +25,7 @@ func _ready() -> void:
 
 
 func reset() -> void:
-	data_texture_rid = create_texture(rd, grid_size)
+	data_texture_rid = ComputeAutomataSimulator.create_texture(rd, grid_size)
 	setup_compute_pipeline()
 
 
