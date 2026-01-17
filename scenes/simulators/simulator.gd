@@ -11,6 +11,7 @@ signal simulation_updated
 
 @abstract func get_draw_data_async(callback: Callable) -> void
 @abstract func update_data(data: PackedByteArray) -> void
+@abstract func update_data_at(value: int, x: int, y: int, z:int) -> void
 
 @abstract func reset() -> void
 

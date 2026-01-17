@@ -23,6 +23,11 @@ var aggregation_pipeline_rid: RID
 var aggregation_uniform_set_1: RID
 var aggregation_uniform_set_2: RID
 
+# Texture update shader
+var texture_update_shader_rid: RID
+var texture_update_pipeline_rid: RID
+var texture_update_uniform_set: RID
+
 @export var simulate: bool = false
 
 var _buffer_elements: int
@@ -32,6 +37,7 @@ var _buffer_elements: int
 
 @export var compute_shader_file: RDShaderFile
 @export var aggregator_shader_file: RDShaderFile
+@export var texture_update_shader_file: RDShaderFile
 @export_file("*.txt") var kernel_file_path: String
 
 
@@ -42,6 +48,7 @@ func _ready() -> void:
 	# Setup
 	data_texture_rid = create_texture(rd, grid_size)
 	setup_compute_pipeline()
+	setup_texture_update_pipeline()
 	setup_aggregation_pipeline()
 	_buffer_elements = grid_size * grid_size * grid_size * typecount
 
@@ -115,6 +122,7 @@ func dispatch_compute_pipeline(compute_list: int):
 	
 	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
 
+	@warning_ignore("integer_division")
 	# Dispatch automata shader
 	rd.compute_list_dispatch(compute_list,
 		(grid_size + local_size - 1) / local_size, # grid_size / workgroup size
@@ -144,6 +152,15 @@ func dispatch_aggregation_pipeline(compute_list: int):
 		int((grid_size + 7) / 8.0),
 		int((grid_size + 7) / 8.0)
 	)
+
+
+func dispatch_texture_update(value_and_location: PackedInt32Array) -> void:
+	var compute_list = rd.compute_list_begin()
+	rd.compute_list_bind_compute_pipeline(compute_list, texture_update_pipeline_rid)
+	rd.compute_list_bind_uniform_set(compute_list, texture_update_uniform_set, 0)
+	rd.compute_list_set_push_constant(compute_list, value_and_location.to_byte_array(), 16)
+	rd.compute_list_dispatch(compute_list, 1,1,1)
+	rd.compute_list_end()
 
 
 func setup_compute_pipeline() -> void:
@@ -202,8 +219,7 @@ func setup_compute_pipeline() -> void:
 	# allocated_RIDs.append(compute_write_state_rid)
 	# allocated_RIDs.append(kernels_rid)
 
-	# create_compute_pipeline_uniforms()
-
+	# create_compute_pipeline_uniforms()	# created with kernels
 
 func setup_aggregation_pipeline() -> void:
 	# free_RID_if_valid(aggregation_shader_rid)
@@ -225,6 +241,24 @@ func setup_aggregation_pipeline() -> void:
 	aggregation_pipeline_rid = rd.compute_pipeline_create(aggregation_shader_rid)
 
 	create_aggregation_pipeline_uniforms()
+
+
+func setup_texture_update_pipeline() -> void:
+	if texture_update_shader_file == null:
+		push_error("Failed to load compute shader file")
+		return
+	var shader_spirv: RDShaderSPIRV = texture_update_shader_file.get_spirv()
+	if shader_spirv == null:
+		push_error("Shader SPIR-V is null (compile error)")
+		return
+
+	texture_update_shader_rid = rd.shader_create_from_spirv(shader_spirv)
+	if compute_shader_rid == null:
+		push_error("Shader is null(SPIR-V shader failed)")
+
+	texture_update_pipeline_rid = rd.compute_pipeline_create(texture_update_shader_rid)
+
+	# create_texture_update_uniforms() # called in create_aggregation_pipeline_uniforms
 
 
 func reset() -> void:
@@ -306,6 +340,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 
 	create_compute_pipeline_uniforms()
 	create_aggregation_pipeline_uniforms()
+	# create_texture_update_uniforms()
 
 
 func update_data(data: PackedByteArray) -> void:
@@ -329,6 +364,25 @@ func update_data(data: PackedByteArray) -> void:
 
 	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
 	rd.buffer_update(read_buffer, 0, tmp_buffer.size() * 4, tmp_buffer.to_byte_array())
+
+
+func update_data_at(value: int, x: int, y: int, z:int):
+	if (x >= grid_size or x < 0 or y > grid_size or y < 0 or z > grid_size or z < 0 or value < 0 or value > typecount):
+		return
+
+	dispatch_texture_update([value, x, y, z])
+	# await RenderingServer.frame_post_draw
+	simulation_updated.emit.call_deferred()
+	simulation_updated_texture.emit(data_texture_rid)
+
+	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
+	var grid_index = (x + y*grid_size + z*grid_size*grid_size)*4
+	var type_stride = grid_size*grid_size*grid_size*4
+	for i in typecount:
+		if (i == value):
+			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [255])
+		else:
+			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [0])
 
 
 func is_sim_running() -> bool:
@@ -432,6 +486,16 @@ func create_aggregation_pipeline_uniforms():
 
 	# allocated_RIDs.append(aggregation_uniform_set_1)
 	# allocated_RIDs.append(aggregation_uniform_set_2)
+	create_texture_update_uniforms()
+
+
+func create_texture_update_uniforms() -> void:
+	var texture_uniform := RDUniform.new()
+	texture_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+	texture_uniform.binding = 0
+	texture_uniform.add_id(data_texture_rid)
+
+	texture_update_uniform_set = rd.uniform_set_create([texture_uniform], texture_update_shader_rid, 0)
 
 
 func load_kernels(kernels: PackedFloat32Array, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5,5,5)) -> bool:

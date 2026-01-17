@@ -9,6 +9,7 @@ var _cells: PackedByteArray
 var _newcells: PackedByteArray
 var thread := Thread.new()
 var semaphore := Semaphore.new()
+var update_tmp: PackedInt32Array = []
 
 
 func _ready() -> void:
@@ -81,10 +82,25 @@ func update_data(data: PackedByteArray) -> void:
 	simulation_updated.emit()
 
 
+func update_data_at(value: int, x: int, y: int, z:int):
+	if (x >= grid_size or x < 0 or y >= grid_size or y < 0 or z >= grid_size or z < 0 or value < 0 or value >= 4):
+		return
+	if running and _simulating:
+		update_tmp = [value, x, y, z]
+		return
+	_cells[x + y*grid_size + z*grid_size*grid_size] = value
+	if (value != 0):
+		_cells[x + y*grid_size + z*grid_size*grid_size + value*grid_size*grid_size*grid_size] = 255
+	simulation_updated.emit()
+
+
 func _simulate() -> void:
 	if _newcells:
 		update_data(_newcells)
 		_newcells = []
+	if update_tmp:
+		callv("update_data_at", update_tmp)
+		update_tmp = []
 	_simulating = true
 	var newc := life.generation(PackedByteArray(_cells), grid_size)
 	_cells = newc

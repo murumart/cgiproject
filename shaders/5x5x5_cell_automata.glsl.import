@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dut4tjf4vu7wr"
+path="res://.godot/imported/5x5x5_cell_automata.glsl-bf8e67844c95a2188150f17a0cc41231.res"
+
+[deps]
+
+source_file="res://shaders/5x5x5_cell_automata.glsl"
+dest_files=["res://.godot/imported/5x5x5_cell_automata.glsl-bf8e67844c95a2188150f17a0cc41231.res"]
+
+[params]
+

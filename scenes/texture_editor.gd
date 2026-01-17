@@ -93,16 +93,20 @@ func _physics_process(_delta: float) -> void:
 				and addpos.z < gs and addpos.z >= 0
 			):
 				var oldblock := _tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs]
-				_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
-				simulator.update_data(_tdata)
+				# _tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
+				# simulator.update_data(_tdata)
+				@warning_ignore("narrowing_conversion")
+				simulator.update_data_at(_selected_block, addpos.x, addpos.y, addpos.z)
 				if oldblock > 0:
 					_particle(BreakParticle, action_position)
 		elif (addpos.x < gs and addpos.x >= 0
 			and addpos.y < gs and addpos.y >= 0
 			and addpos.z < gs and addpos.z >= 0
 		):
-			_tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
-			simulator.update_data(_tdata)
+			# _tdata[addpos.x + addpos.y * gs + addpos.z * gs * gs] = _selected_block
+			# simulator.update_data(_tdata)
+			@warning_ignore("narrowing_conversion")
+			simulator.update_data_at(_selected_block, addpos.x, addpos.y, addpos.z)
 			_particle(AddParticle, action_position)
 
 	_data_queueing = true

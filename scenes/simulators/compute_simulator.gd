@@ -52,6 +52,10 @@ func update_data(data: PackedByteArray) -> void:
 	simulation_updated.emit.call_deferred()
 	simulation_updated_texture.emit(data_texture_rid)
 
+@warning_ignore("unused_parameter")
+func update_data_at(value: int, x: int, y: int, z:int):
+	pass
+
 
 func is_sim_running() -> bool:
 	return simulte
