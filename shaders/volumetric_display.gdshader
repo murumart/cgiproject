@@ -1,6 +1,7 @@
 shader_type spatial;
 
 // source https://www.youtube.com/watch?v=ztkh1r1ioZo
+// more source https://www.youtube.com/watch?v=OjZ7vV62lJk
 
 // Unshaded is faster; cull_front allows us to see "into" the box
 render_mode unshaded, cull_front;
