@@ -317,7 +317,7 @@ func update_data(data: PackedByteArray) -> void:
 	for cell_idx in range(cell_grid_size):
 		# if (data[cell_idx] > 0):
 			# if (cell_values[cell_idx] >= typecount): continue
-		tmp_buffer[cell_idx + clamp(data[cell_idx], 0, typecount)*cell_grid_size] = 200
+		tmp_buffer[cell_idx + clamp(data[cell_idx], 0, typecount - 1)*cell_grid_size] = 200
 
 	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
 	rd.buffer_update(read_buffer, 0, tmp_buffer.size() * 4, tmp_buffer.to_byte_array())
