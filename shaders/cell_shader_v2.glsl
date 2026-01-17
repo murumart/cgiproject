@@ -46,7 +46,7 @@ void main() {
     int out_i = idx4D(write_type, id.x, id.y, id.z);
 
     float sum = 0.0;
-    int ki = pc.kernel_size.x * pc.kernel_size.y * pc.kernel_size.z * pc.kernel_size.w * write_type - 1;
+    int ki = pc.kernel_size.x * pc.kernel_size.y * pc.kernel_size.z * pc.kernel_size.w * write_type;
 
 
     // if not close to edge no out of bounds check in loop
@@ -55,32 +55,36 @@ void main() {
             for (int kz = -half_k.z; kz <= half_k.z; kz++) {
                 for (int ky = -half_k.y; ky <= half_k.y; ky++) {
                     for (int kx = -half_k.x; kx <= half_k.x; kx++) {
-                        ki++;
+                        float kernel_factor = kernel.data[ki++];
+                        if (kernel_factor == 0.0) { continue; }
                         ivec3 nb = id + ivec3(kx, ky, kz);
                         if (any(lessThan(nb, ivec3(0))) || any(greaterThanEqual(nb, pc.grid_size)))
                             continue;
 
                         int ni = idx4D(read_type, nb.x, nb.y, nb.z);
 
-                        sum += kernel.data[ki] * read.data[ni];
+                        sum +=  kernel_factor * read.data[ni];
                     }
                 }
             }
         }
     } else {
-        for (int read_type = 0; read_type < typecount; read_type++) {
-        for (int kz = -half_k.z; kz <= half_k.z; kz++) {
-            for (int ky = -half_k.y; ky <= half_k.y; ky++) {
-                for (int kx = -half_k.x; kx <= half_k.x; kx++) {
-                    ki++;
-                    // ivec3 nb = id + ivec3(kx, ky, kz);
-                    int ni = idx4D(read_type, id.x + kx, id.y + ky, id.z + kz);
+        int ni = id.x
+            + pc.stride.x * id.y
+            + pc.stride.y * id.z;
+        for (int read_type = 0; read_type < typecount*pc.stride.z; read_type += pc.stride.z) {
+            for (int kz = -half_k.z*pc.stride.y; kz <= half_k.z*pc.stride.y; kz += pc.stride.y) {
+                for (int ky = -half_k.y*pc.stride.x; ky <= half_k.y*pc.stride.x; ky += pc.stride.x) {
+                    for (int kx = -half_k.x; kx <= half_k.x; kx++) {
+                        float kernel_factor = kernel.data[ki++];
+                        if (kernel_factor == 0.0) { continue; }
+                        // ivec3 nb = id + ivec3(kx, ky, kz);
 
-                    sum += kernel.data[ki] * read.data[ni];
+                        sum += kernel_factor * read.data[ni + read_type + kz + ky + kx];
+                    }
                 }
             }
         }
-    }
     }
 
     // float growth = exp(-pow(sum - pc.mu, 2.0) / dsigma) * 2.0 - 1.0;
