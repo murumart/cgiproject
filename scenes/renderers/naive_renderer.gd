@@ -50,10 +50,12 @@ func _draw_life() -> void:
 		parent.get_children().map(func(n: Node) -> void: n.queue_free())
 
 	var gs := sim.get_grid_size()
+	var ix = 0
 	for x in gs: for y in gs: for z in gs:
-		var ix := x + y * gs + z * gs * gs
+		# var ix := x + y * gs + z * gs * gs
 		_draw_check_box(ix, x, y, z)
 		_draw_update_cell(ix)
+		ix += 1
 
 
 var _bmesh: Array[BoxMesh]
