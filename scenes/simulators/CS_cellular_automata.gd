@@ -227,6 +227,8 @@ func reset() -> void:
 
 	load_kernels_from_file(kernel_file_path)
 	data_texture_rid = create_texture(rd, grid_size)
+	simulation_updated.emit.call_deferred()
+	simulation_updated_texture.emit(data_texture_rid)
 	setup_compute_pipeline()
 	setup_aggregation_pipeline()
 	_buffer_elements = grid_size * grid_size * grid_size * typecount
@@ -248,29 +250,46 @@ func set_grid_size(to: int) -> void:
 
 
 func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
+	data_texture_rid = create_texture(rd, to)
 	_buffer_elements = to * to * to * typecount
-	var new_size = _buffer_elements * 4
-	var old_size = grid_size * grid_size * grid_size * typecount * 4
+	var buffer_size = _buffer_elements * 4
+	var new_size = to * to * to
+	var old_size = grid_size * grid_size * grid_size
 	grid_size = to
 
-	if (uniform_flip):
-		var tmp = rd.storage_buffer_create(new_size)
-		rd.buffer_copy(compute_write_state_rid, tmp, 0, 0, min(new_size, old_size))
+	var air: PackedInt32Array = []
+	air.resize(new_size * typecount)
+	# var cell_type = 0
+	for j in range(new_size):
+			air[j] = 250
+	
+	old_size *= 4
+	new_size *= 4
 
+	var min_size = min(new_size, old_size)
+	var tmp = rd.storage_buffer_create(buffer_size, air.to_byte_array())
+
+	if (not uniform_flip):
+		for i in typecount:
+			rd.buffer_copy(compute_write_state_rid, tmp, old_size*i, new_size*i, min_size)
+
+		await RenderingServer.frame_post_draw
 		# free_RID_if_valid(compute_read_state_rid)
 		# free_RID_if_valid(compute_write_state_rid)
 
 		compute_write_state_rid = tmp
-		compute_read_state_rid = rd.storage_buffer_create(new_size)
+		compute_read_state_rid = rd.storage_buffer_create(buffer_size)
 	else:
-		var tmp = rd.storage_buffer_create(new_size)
-		rd.buffer_copy(compute_read_state_rid, tmp, 0, 0, min(new_size, old_size))
+		for i in typecount:
+			rd.buffer_copy(compute_read_state_rid, tmp, old_size*i, new_size*i, min_size)
 
+		await RenderingServer.frame_post_draw
 		# free_RID_if_valid(compute_read_state_rid)
 		# free_RID_if_valid(compute_write_state_rid)
 
 		compute_read_state_rid = tmp
-		compute_write_state_rid = rd.storage_buffer_create(new_size)
+		compute_write_state_rid = rd.storage_buffer_create(buffer_size)
+
 
 
 	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid() or not kernels_rid.is_valid()):
@@ -298,7 +317,7 @@ func update_data(data: PackedByteArray) -> void:
 	for cell_idx in range(cell_grid_size):
 		# if (data[cell_idx] > 0):
 			# if (cell_values[cell_idx] >= typecount): continue
-		tmp_buffer[cell_idx + data[cell_idx]*cell_grid_size] = 200
+		tmp_buffer[cell_idx + clamp(data[cell_idx], 0, typecount)*cell_grid_size] = 200
 
 	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
 	rd.buffer_update(read_buffer, 0, tmp_buffer.size() * 4, tmp_buffer.to_byte_array())
@@ -312,7 +331,7 @@ func sim_set_running(to: bool) -> void:
 	simulate = to
 
 
-func create_texture(rds: RenderingDevice, grid_sizes: int) -> RID:
+static func create_texture(rds: RenderingDevice, grid_sizes: int) -> RID:
 	var fmt := RDTextureFormat.new()
 	fmt.width = grid_sizes # No packing - each voxel gets its own texel
 	fmt.height = grid_sizes

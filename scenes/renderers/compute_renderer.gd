@@ -64,7 +64,7 @@ func set_simulator(sim: Simulator) -> void:
 	else:
 		simulator.simulation_updated.connect(_sim_updated)
 
-	data_texture = ComputeSimulator.create_texture(rd, simulator.get_grid_size())
+	data_texture = ComputeAutomataSimulator.create_texture(rd, simulator.get_grid_size())
 
 	brick_grid_size = Vector3i.ONE * int(ceil(float(simulator.get_grid_size()) / float(brick_size)))
 	create_brick_map_texture()

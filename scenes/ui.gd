@@ -8,6 +8,7 @@ const KernelSelection = preload("res://scenes/ui/kernel_selection.gd")
 @export var renderers: Array[Renderer]
 var current_renderer: Renderer
 
+@export var isRunning := true
 @export var simulators: Array[Simulator]
 var current_simulator: Simulator
 
@@ -27,14 +28,7 @@ var current_simulator: Simulator
 
 
 func _ready() -> void:
-	pause_button.selected.connect(func() -> void:
-		if current_simulator.is_sim_running():
-			current_simulator.sim_set_running(false)
-			pause_button.text = "Play Simulation"
-		else:
-			current_simulator.sim_set_running(true)
-			pause_button.text = "Pause Simulation"
-	)
+	pause_button.selected.connect(pause_changed)
 
 	renderer_switch.clear()
 	var i := 0
@@ -86,7 +80,7 @@ func _simulator_selected(which: int) -> void:
 		current_simulator.sim_set_running(false)
 	s.set_grid_size(grid_size)
 	s.reset()
-	s.sim_set_running(true)
+	s.sim_set_running(isRunning)
 	for r in renderers:
 		r.set_simulator(s)
 	current_simulator = s
@@ -101,10 +95,44 @@ func _grid_size_changed(which: int) -> void:
 	var s := current_simulator
 	current_simulator = null
 	grid_size = _GRID_SIZES[which]
-	_simulator_selected(simulators.find(s))
+	if (s is CSAutomata):
+		_simulator_selected_CS_Automata(simulators.find(s))
+	else:
+		_simulator_selected(simulators.find(s))	# bruh see kutsub reseti välja
+
+
+func _simulator_selected_CS_Automata(which: int) -> void:
+	var s := simulators[which]
+	if s == current_simulator:
+		return
+
+	print("switching sim to ", s)
+	if current_simulator:
+		current_simulator.sim_set_running(false)
+	s.set_grid_size(grid_size)
+	# s.reset()
+	s.sim_set_running(isRunning)
+	for r in renderers:
+		r.set_simulator(s)
+	current_simulator = s
+	simulator_description.text = s.editor_description
+	editor.simulator = s
+	simulator_switch.selected = which
+	kernel_selection.visible = s is CSAutomata
 
 
 func _notification(what):
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		get_tree().quit()
+
+
+func pause_changed() -> void:
+		if current_simulator.is_sim_running():
+			current_simulator.sim_set_running(false)
+			isRunning = false
+			pause_button.text = "Play Simulation"
+		else:
+			current_simulator.sim_set_running(true)
+			isRunning = true
+			pause_button.text = "Pause Simulation"
