@@ -102,3 +102,9 @@ func _grid_size_changed(which: int) -> void:
 	current_simulator = null
 	grid_size = _GRID_SIZES[which]
 	_simulator_selected(simulators.find(s))
+
+
+func _notification(what):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+		get_tree().quit()
