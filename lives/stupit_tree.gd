@@ -145,15 +145,21 @@ class TreeCell:
 	) -> Dictionary[Vector3i, TreeCell]:
 		var tc: Dictionary[Vector3i, TreeCell]
 		var i = 0
-		for x in size:
-			for y in size:
-				for z in size:
-					# var i := Life.ix3d(x, y, z, size)
-					if oldcells[i] == 0:
+		if (oldcells.size() == size * size * size):
+			for x in size:
+				for y in size:
+					for z in size:
+						# var i := Life.ix3d(x, y, z, size)
+						if oldcells[i] == 0:
+							tc[Vector3i(x, y, z)] = NULL
+						else:
+							tc[Vector3i(x, y, z)] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
+						i += 1
+		else:
+			for x in size:
+				for y in size:
+					for z in size:
 						tc[Vector3i(x, y, z)] = NULL
-					else:
-						tc[Vector3i(x, y, z)] = TreeCell.new(oldcells[i], oldenergy[i], oldwater[i], oldhp[i])
-					i += 1
 		return tc
 
 

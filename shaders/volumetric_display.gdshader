@@ -1,6 +1,7 @@
 shader_type spatial;
 
 // source https://www.youtube.com/watch?v=ztkh1r1ioZo
+// more source https://www.youtube.com/watch?v=OjZ7vV62lJk
 
 // Unshaded is faster; cull_front allows us to see "into" the box
 render_mode unshaded, cull_front;
@@ -15,7 +16,7 @@ uniform float mesh_size : hint_range(1, 400);
 uniform int brick_size; // Size of each brick (must match VolumetricController)
 
 // lighting
-uniform vec3 sun_direction = vec3(0.5, 1.0, 0.5);
+uniform vec3 sun_direction = vec3(0.3535533906, 0.7071067812, 0.3535533906);
 uniform vec3 sun_color = vec3(1.0, 1.0, 1.0);
 uniform float sun_power : hint_range(0.0, 1.0) = 1.0;
 //uniform vec3 ambient_color = vec3(0.1, 0.1, 0.1);
@@ -103,9 +104,9 @@ Material my_material(uint cell){
 
 vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
 	// Blinn-Phong Shading
-	normal = normalize(normal);
-	vec3 light_dir = normalize(sun_direction);
-	view_dir = normalize(view_dir);
+	// normal = normalize(normal);
+	vec3 light_dir = sun_direction;
+	// view_dir = normalize(view_dir);
 
 
 	float lambertian = max(dot(normal, light_dir), 0.0);
@@ -130,7 +131,7 @@ vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
 	return lightColor;
 }
 
-RayResult dda_ray_march(vec3 origin, vec3 dir) {
+RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
 	RayResult res;
 	res.material = Material(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), 0.0, 0.0);
 	//res.color = vec3(0.0);
@@ -144,7 +145,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 	res.position = vec3(0.0);
 	res.normal = vec3(0.0);
 
-	ivec3 tex_size = textureSize(simulation_data, 0);
+	// ivec3 tex_size = textureSize(simulation_data, 0);
 	vec3 voxel_resolution = vec3(tex_size);
 
 	// DDA setup
@@ -215,12 +216,14 @@ RayResult dda_ray_march(vec3 origin, vec3 dir) {
 			break;
 		}
 
-		vec3 brick_uvw = (vec3(brick_coord) + 0.5) / vec3(textureSize(brick_map, 0)); // uvw coordinates of the brick
-		float brick_occupied = textureLod(brick_map, brick_uvw, 0.0).r; // if the brick is occupied
+		// vec3 brick_uvw = (vec3(brick_coord) + 0.5) / vec3(textureSize(brick_map, 0)); // uvw coordinates of the brick
+		// float brick_occupied = textureLod(brick_map, brick_uvw, 0.0).r; // if the brick is occupied
 
-		if (brick_occupied > 0.5) {
-			vec4 voxel_data_u = texelFetch(simulation_data, coord, 0);
-			res.cell = uint(voxel_data_u.r * 255.0); // cell type
+		// float brick_occupied = texelFetch(brick_map, brick_coord, 0).r;
+		// if (brick_occupied > 0.5) {
+		if (texelFetch(brick_map, brick_coord, 0).r > 0.0) {
+			// vec4 voxel_data_u = texelFetch(simulation_data, coord, 0);
+			res.cell = uint(texelFetch(simulation_data, coord, 0).r * 255.0); // cell type
 
 			// if the voxel is occupied
 			if (res.cell > 0u) {
@@ -316,11 +319,11 @@ void fragment() {
 	// Convert to voxel space (0 to voxel_resolution)
 	vec3 origin = (local_cam + 0.5) * voxel_resolution;
 
-	RayResult res = dda_ray_march(origin, dir);
+	RayResult res = dda_ray_march(origin, dir, tex_size);
 	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
-	vec3 sun_dir = normalize(sun_direction);
+	vec3 sun_dir = sun_direction;
 
 	//vec3 lighting = blinn_phong(res.normal, -dir, res.material);
 
@@ -332,7 +335,7 @@ void fragment() {
 		// Move along the light direction to ensure we clear the current voxel boundary
 		vec3 shadow_origin = res.position + sun_dir * 0.001;
 
-		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir);
+		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir, tex_size);
 
 		// If the shadow ray hits something BEFORE exiting the volume, apply shadow
 		if (res2sun.alpha > 0.0 && res.steps > 1u) {
@@ -384,7 +387,7 @@ void fragment() {
 			ALPHA = 1.0;
 			break;
 		case 6:
-			ivec3 tex_size = textureSize(simulation_data, 0);
+			// ivec3 tex_size = textureSize(simulation_data, 0);
 			vec4 r = texelFetch(simulation_data, ivec3(int(sin(TIME) * 0.5 + 0.5) * tex_size.x), 0);
 			ALBEDO = vec3(r.r * 255.0);
 			break;

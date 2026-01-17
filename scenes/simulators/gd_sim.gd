@@ -82,10 +82,10 @@ func update_data(data: PackedByteArray) -> void:
 
 
 func _simulate() -> void:
-	_simulating = true
 	if _newcells:
 		update_data(_newcells)
 		_newcells = []
+	_simulating = true
 	var newc := life.generation(PackedByteArray(_cells), grid_size)
 	_cells = newc
 	_simulating = false
