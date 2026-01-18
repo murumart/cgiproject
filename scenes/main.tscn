@@ -1,13 +1,14 @@
-[gd_scene load_steps=39 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=40 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
-[ext_resource type="RDShaderFile" uid="uid://j3p2ilye6g5q" path="res://shaders/cell_shader_v2.glsl" id="2_og1vs"]
+[ext_resource type="RDShaderFile" uid="uid://bvyd7pxebmgos" path="res://shaders/dynamic_size_cell_automata.glsl" id="2_yq6so"]
 [ext_resource type="RDShaderFile" uid="uid://2ewgaogko88k" path="res://shaders/state_argmax.glsl" id="3_2wyq8"]
 [ext_resource type="Script" uid="uid://psww1vs6csjx" path="res://scenes/simulators/gd_sim.gd" id="3_pm3ni"]
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://dfn07uje00brv" path="res://scenes/renderers/compute_renderer.gd" id="3_ya4ey"]
 [ext_resource type="Script" uid="uid://o2qjsa51xmt1" path="res://scenes/lattice_mesh.gd" id="4_jyhfs"]
 [ext_resource type="Script" uid="uid://dfal1x20mt0gc" path="res://scenes/simulators/CS_cellular_automata.gd" id="4_vxglm"]
+[ext_resource type="RDShaderFile" uid="uid://dv3k84o41wnxb" path="res://shaders/texture_update.glsl" id="4_yq6so"]
 [ext_resource type="Script" uid="uid://cx2kw01uyi1ko" path="res://scenes/renderers/naive_renderer.gd" id="5_dp3eg"]
 [ext_resource type="Texture2D" uid="uid://3sp4y4a4vg4k" path="res://scenes/decor/smoke.png" id="5_eb6dy"]
 [ext_resource type="Material" uid="uid://dl42s6e68ocqk" path="res://shaders/lattice_material.tres" id="5_tefeu"]
@@ -89,8 +90,9 @@ editor_description = "Simulates cellural automata via running a compute shader o
 script = ExtResource("4_vxglm")
 simulate = true
 grid_size = 64
-compute_shader_file = ExtResource("2_og1vs")
+compute_shader_file = ExtResource("2_yq6so")
 aggregator_shader_file = ExtResource("3_2wyq8")
+texture_update_shader_file = ExtResource("4_yq6so")
 kernel_file_path = "res://scenes/simulators/kernels.txt"
 
 [node name="GDSim" type="Node" parent="Simulators"]
