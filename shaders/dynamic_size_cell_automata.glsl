@@ -73,11 +73,10 @@ void main() {
             + pc.stride.x * id.y
             + pc.stride.y * id.z;
         for (int read_type = 0; read_type < typecount*pc.stride.z; read_type += pc.stride.z) {
-            for (int kz = -2*pc.stride.y; kz <= 2*pc.stride.y; kz += pc.stride.y) {
-                for (int ky = -2*pc.stride.x; ky <= 2*pc.stride.x; ky += pc.stride.x) {
-
-                    #pragma unroll
-                    for (int kx = -2; kx <= 2; kx++) {
+            for (int kz = -half_k.z*pc.stride.y; kz <= half_k.z*pc.stride.y; kz += pc.stride.y) {
+                for (int ky = -half_k.y*pc.stride.x; ky <= half_k.y*pc.stride.x; ky += pc.stride.x) {
+                    // #pragma unroll
+                    for (int kx = -half_k.x; kx <= half_k.x; kx++) {
                         float kernel_factor = kernel.data[ki++];
                         if (kernel_factor == 0.0) { continue; }
                         // ivec3 nb = id + ivec3(kx, ky, kz);

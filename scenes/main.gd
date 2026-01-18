@@ -15,7 +15,7 @@ var mutex := Mutex.new()
 
 
 func _ready() -> void:
-	_cells = PackedByteArray()
+	# _cells = PackedByteArray()
 	#life.init(_cells, board_size)
 
 	#_draw_life()
@@ -34,6 +34,3 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		print("ö")
-		_stop_thread = true
-		semaphore.post()
-		thread.wait_to_finish()

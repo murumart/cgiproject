@@ -2,7 +2,7 @@ extends Control
 
 const CameraScript := preload("res://addons/freelookcamera/free_look_camera.gd")
 const ButtonScript := preload("res://scenes/ui/ui_button.gd")
-const CSAutomata = preload("res://scenes/simulators/CS_cellular_automata.gd")
+const CPUSim = preload("res://scenes/simulators/gd_sim.gd")
 const KernelSelection = preload("res://scenes/ui/kernel_selection.gd")
 
 @export var renderers: Array[Renderer]
@@ -79,7 +79,7 @@ func _simulator_selected(which: int) -> void:
 	if current_simulator:
 		current_simulator.sim_set_running(false)
 	s.set_grid_size(grid_size)
-	if (s is not CSAutomata):
+	if (s is CPUSim):
 		s.reset()
 	s.sim_set_running(true)	
 	for r in renderers:
@@ -88,7 +88,7 @@ func _simulator_selected(which: int) -> void:
 	simulator_description.text = s.editor_description
 	editor.simulator = s
 	simulator_switch.selected = which
-	kernel_selection.visible = s is CSAutomata
+	kernel_selection.visible = s is not CPUSim
 
 
 const _GRID_SIZES := [8, 16, 32, 48, 64, 128, 256, 512]
