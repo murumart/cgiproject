@@ -47,17 +47,29 @@ void main() {
 
     ivec3 half_k = pc.kernel_size.xyz / 2;
     float sum = 0.0;
-    int ki = pc.kernel_size.x * pc.kernel_size.y * pc.kernel_size.z * pc.kernel_size.w * write_type;
+    int kernel_grid_volume = pc.kernel_size.x * pc.kernel_size.y * pc.kernel_size.z + 1;
+    int kernel_index = kernel_grid_volume * pc.kernel_size.w * write_type;
 
 
     // if not close to edge no out of bounds check in loop
     if(any(lessThan(id - half_k, ivec3(0))) || any(greaterThanEqual(id + half_k, pc.grid_size))) {
+        int type = 0;
         for (int read_type = 0; read_type < typecount*pc.stride.z; read_type += pc.stride.z) {
-            for (int kz = -half_k.z; kz <= half_k.z; kz++) {
-                for (int ky = -half_k.y; ky <= half_k.y; ky++) {
-                    for (int kx = -half_k.x; kx <= half_k.x; kx++) {
+            int ki = kernel_index + type++ * kernel_grid_volume;
+            int remaining_kernel_values = int(kernel.data[ki++]);
+            if (remaining_kernel_values == 0) {
+                continue;
+            }
+            // Loop through all kernel indexes from -halh_k to half_k
+            for (int kz = -half_k.z; kz <= half_k.z && remaining_kernel_values > 0; kz++) {
+                for (int ky = -half_k.y; ky <= half_k.y && remaining_kernel_values > 0; ky++) {
+                    for (int kx = -half_k.x; kx <= half_k.x && remaining_kernel_values > 0; kx++) {
+                        // Skip 0 values
                         float kernel_factor = kernel.data[ki++];
                         if (kernel_factor == 0.0) { continue; }
+                        // Reduce amount of remaining values
+                        remaining_kernel_values--;
+                        // Out of bounds check
                         ivec3 nb = id + ivec3(kx, ky, kz);
                         if (any(lessThan(nb, ivec3(0))) || any(greaterThanEqual(nb, pc.grid_size)))
                             continue;
@@ -73,14 +85,23 @@ void main() {
         int ni = id.x
             + pc.stride.x * id.y
             + pc.stride.y * id.z;
+        int type = 0;
         for (int read_type = 0; read_type < typecount*pc.stride.z; read_type += pc.stride.z) {
-            for (int kz = -half_k.z*pc.stride.y; kz <= half_k.z*pc.stride.y; kz += pc.stride.y) {
-                for (int ky = -half_k.y*pc.stride.x; ky <= half_k.y*pc.stride.x; ky += pc.stride.x) {
+            int ki = kernel_index + type++ * kernel_grid_volume;
+            int remaining_kernel_values = int(kernel.data[ki++]);
+            if (remaining_kernel_values == 0) {
+                continue;
+            }
+            // Loop through all kernel indexes from -halh_k to half_k with stride premultiplied to redcue multiplications
+            for (int kz = -half_k.z*pc.stride.y; kz <= half_k.z*pc.stride.y  && remaining_kernel_values > 0; kz += pc.stride.y) {
+                for (int ky = -half_k.y*pc.stride.x; ky <= half_k.y*pc.stride.x && remaining_kernel_values > 0; ky += pc.stride.x) {
                     // #pragma unroll
-                    for (int kx = -half_k.x; kx <= half_k.x; kx++) {
+                    for (int kx = -half_k.x; kx <= half_k.x && remaining_kernel_values > 0; kx++) {
+                        // Skip 0 values
                         float kernel_factor = kernel.data[ki++];
                         if (kernel_factor == 0.0) { continue; }
-                        // ivec3 nb = id + ivec3(kx, ky, kz);
+                        // Reduce amount of remaining values
+                        remaining_kernel_values--;
 
                         sum += kernel_factor * read.data[ni + read_type + kz + ky + kx];
                     }

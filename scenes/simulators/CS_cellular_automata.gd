@@ -505,7 +505,8 @@ func load_kernels(kernels: PackedFloat32Array, _typecount: int = 4, _kernel_size
 
 
 func load_kernels_from_packed_byte_array(kernels: PackedByteArray) -> bool:
-	var size = typecount * typecount * kernel_size.x * kernel_size.y * kernel_size.z * 4
+	# + 1 for value count
+	var size = typecount * typecount * (kernel_size.x * kernel_size.y * kernel_size.z + 1) * 4
 	assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
 
 	# free_RID_if_valid(kernels_rid)
@@ -531,6 +532,7 @@ func load_kernels_from_file(path: String, _typecount: int = 4, _kernel_size: Vec
 		return false
 
 	var values: PackedFloat32Array = []
+	var tmp_values: PackedFloat32Array = []
 
 	var i := 0
 	while not file.eof_reached():
@@ -548,20 +550,28 @@ func load_kernels_from_file(path: String, _typecount: int = 4, _kernel_size: Vec
 			return false
 
 		for factor in floats:
-			values.append(factor)
+			tmp_values.append(factor)
+
+		if ((tmp_values.size() % (_kernel_size.x * _kernel_size.y * _kernel_size.z)) == 0):
+			var zeros = tmp_values.count(0.0)
+			values.append(tmp_values.size() - zeros)
+			# print("Loaded kernel with %s non-zero values" % [tmp_values.size() - zeros])
+			# print(tmp_values)
+			values.append_array(tmp_values)
+			tmp_values.clear()
 
 	file.close()
 
 	var expected := (
 		_typecount * _typecount *
-		_kernel_size.x * _kernel_size.y * _kernel_size.z
+		(_kernel_size.x * _kernel_size.y * _kernel_size.z + 1) # +1 for value count
 	)
 
 	if values.size() < expected:
 		_parse_error(path, i, "Too few kernel values (need %s) (missing %s)" % [expected, expected - values.size()])
 		return false
 
-	if values.size() < expected:
+	if values.size() > expected:
 		_parse_error(path, i, "Too many kernel values (need %s) (%s would be ignored)" % [expected, values.size() - expected])
 		return false
 
