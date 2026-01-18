@@ -16,6 +16,7 @@ const KFILES := [
 	{"name": "falling leaves", "path": "res://scenes/simulators/falling_leaves.txt"},
 	{"name": "Cone", "path": "res://scenes/simulators/rasmus_kernels.txt"},
 	{"name": "Meh", "path": "res://scenes/simulators/wide_kernel.txt"},
+	{"name": "Test", "path": "res://scenes/simulators/test.txt"},
 ]
 
 func _ready() -> void:

@@ -159,7 +159,7 @@ func dispatch_texture_update(value_and_location: PackedInt32Array) -> void:
 	rd.compute_list_bind_compute_pipeline(compute_list, texture_update_pipeline_rid)
 	rd.compute_list_bind_uniform_set(compute_list, texture_update_uniform_set, 0)
 	rd.compute_list_set_push_constant(compute_list, value_and_location.to_byte_array(), 16)
-	rd.compute_list_dispatch(compute_list, 1,1,1)
+	rd.compute_list_dispatch(compute_list,1,1,1)
 	rd.compute_list_end()
 
 
@@ -220,6 +220,7 @@ func setup_compute_pipeline() -> void:
 	# allocated_RIDs.append(kernels_rid)
 
 	# create_compute_pipeline_uniforms()	# created with kernels
+
 
 func setup_aggregation_pipeline() -> void:
 	# free_RID_if_valid(aggregation_shader_rid)
@@ -367,22 +368,22 @@ func update_data(data: PackedByteArray) -> void:
 
 
 func update_data_at(value: int, x: int, y: int, z:int):
-	if (x >= grid_size or x < 0 or y > grid_size or y < 0 or z > grid_size or z < 0 or value < 0 or value > typecount):
+	if (x >= grid_size or x < 0 or y >= grid_size or y < 0 or z >= grid_size or z < 0 or value < 0 or value >= typecount):
 		return
 
+	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
 	dispatch_texture_update([value, x, y, z])
 	# await RenderingServer.frame_post_draw
 	simulation_updated.emit.call_deferred()
 	simulation_updated_texture.emit(data_texture_rid)
 
-	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
 	var grid_index = (x + y*grid_size + z*grid_size*grid_size)*4
 	var type_stride = grid_size*grid_size*grid_size*4
 	for i in typecount:
 		if (i == value):
-			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [255])
+			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [255,0,0,0])
 		else:
-			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [0])
+			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [0,0,0,0])
 
 
 func is_sim_running() -> bool:
