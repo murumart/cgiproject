@@ -9,25 +9,12 @@ layout(set = 0, binding = 1, std430) buffer WriteArray { writeonly uint data[]; 
 
 layout(set = 0, binding = 2, std430) buffer KernelArray { readonly float data[]; } kernel;
 
+layout(set = 0, binding = 3, std430) buffer OffsetArray { readonly int data[]; } offset;
+
 layout(push_constant) uniform PushConstants {
 	ivec3 grid_size; // size.x, size.y, size.z: dimensions of the 3D grid;
-    ivec3 stride;
 	ivec4 kernel_size;
 } pc;
-
-
-// int idx4D(int type, int x, int y, int z) {
-// 	return x
-// 	+ pc.stride.x * y
-// 	+ pc.stride.y * z
-// 	+ pc.stride.z * type;
-// }
-
-int idx3D(int x, int y, int z) {
-	return x
-	+ pc.stride.x * y
-	+ pc.stride.y * z;
-}
 
 
 void main() {
@@ -50,6 +37,7 @@ void main() {
     int write_type_kernel_index = kernel_grid_volume * pc.kernel_size.w * write_type;
     float sum = 0.0;
     // int ni = 0;
+    int stride_Y = pc.grid_size.x * pc.grid_size.y;
 
 
     // if not close to edge no out of bounds check in loop
@@ -59,10 +47,9 @@ void main() {
             int kernel_index = write_type_kernel_index + read_type * kernel_grid_volume;
             int remaining_kernel_values = int(kernel.data[kernel_index++]);
             if (remaining_kernel_values == 0) {
-                // ni += pc.stride.z;
                 continue;
             }
-            int ni = pc.stride.z * read_type;
+            int ni = stride_Y * read_type;
             // Loop through all kernel indexes from -halh_k to half_k
             for (int kz = -half_k.z; kz <= half_k.z && remaining_kernel_values > 0; kz++) {
                 for (int ky = -half_k.y; ky <= half_k.y && remaining_kernel_values > 0; ky++) {
@@ -78,42 +65,33 @@ void main() {
                         if (any(lessThan(nb, ivec3(0))) || any(greaterThanEqual(nb, pc.grid_size)))
                             continue;
 
-                        sum +=  kernel_factor * read.data[ni + idx3D(nb.x, nb.y, nb.z)];
+                        sum +=  kernel_factor * read.data[ni + offset.data[kernel_index-1]];
                     }
                 }
             }
             // ni += pc.stride.z;
         }
     } else {
-        // ivec3 tmpId = id - half_k;
+        int baseIndex = id.x + pc.grid_size.x * (id.y + pc.grid_size.y * id.z);
         for (int read_type = 0; read_type < typecount; read_type++) {
             int kernel_index = write_type_kernel_index + read_type * kernel_grid_volume;
             int remaining_kernel_values = int(kernel.data[kernel_index++]);
             if (remaining_kernel_values == 0) {
-                // ni += pc.stride.z;
                 continue;
             }
-            int ni = pc.stride.z * read_type;
-            // Loop through all kernel indexes from -halh_k to half_k with stride premultiplied to redcue multiplications
-            for (int kz = -half_k.z; kz <= half_k.z && remaining_kernel_values > 0; kz++) {
-                for (int ky = -half_k.y; ky <= half_k.y && remaining_kernel_values > 0; ky++) {
-                    for (int kx = -half_k.x; kx <= half_k.x && remaining_kernel_values > 0; kx++) {
-                        // Skip 0 values
-                        float kernel_factor = kernel.data[kernel_index++];
-                        if (kernel_factor == 0.0)
-                            continue;
-                        // Reduce amount of remaining values
-                        remaining_kernel_values--;
-                        ivec3 nb = id + ivec3(kx, ky, kz);
-
-                        sum +=  kernel_factor * read.data[ni + idx3D(nb.x, nb.y, nb.z)];
-                    }
-                }
+            int ni = baseIndex + stride_Y * read_type;
+            for (int i = 1; i < kernel_grid_volume && remaining_kernel_values > 0; i++) {
+                // Skip 0 values
+                float kernel_factor = kernel.data[kernel_index++];
+                if (kernel_factor == 0.0)
+                    continue;
+                // Reduce amount of remaining values
+                remaining_kernel_values--;
+                sum += kernel_factor * read.data[ni + offset.data[i]];
             }
         }
     }
 
     // int out_i = idx4D(write_type, id.x, id.y, id.z);
-    write.data[id.x + pc.stride.x * id.y + pc.stride.y * id.z + pc.stride.z * write_type] = int(clamp(sum, 0.0, 255.0));
+    write.data[id.x + pc.grid_size.x * id.y + stride_Y * (id.z + pc.grid_size.z  * write_type)] = int(clamp(sum, 0.0, 255.0));
 }
-

@@ -13,6 +13,7 @@ var pipeline_rid: RID
 var compute_read_state_rid: RID
 var compute_write_state_rid: RID
 var kernels_rid: RID
+# var kernel_offsets_rid: RID
 var compute_pipeline_uniform_set_1: RID
 var compute_pipeline_uniform_set_2: RID
 
@@ -207,7 +208,6 @@ func setup_compute_pipeline() -> void:
 	else:
 		compute_write_state_rid = rd.storage_buffer_create(size, air.to_byte_array())
 	
-
 	load_kernels_from_file(kernel_file_path)
 	# kernels_rid = rd.storage_buffer_create(4 * typecount * typecount * kernel_size.x * kernel_size.y * kernel_size.z)
 
@@ -446,6 +446,11 @@ func create_compute_pipeline_uniforms() -> void:
 	kernel_u.binding = 2
 	kernel_u.add_id(kernels_rid)
 
+	# var offset_u := RDUniform.new()
+	# offset_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	# offset_u.binding = 3
+	# offset_u.add_id(kernel_offsets_rid)
+
 	compute_pipeline_uniform_set_1 = rd.uniform_set_create(
 		[read_u, write_u, kernel_u],
 		compute_shader_rid,
@@ -516,6 +521,7 @@ func load_kernels_from_packed_byte_array(kernels: PackedByteArray) -> bool:
 
 	# allocated_RIDs.append(kernels_rid)
 
+	# setup_kernel_offset_array()
 	create_compute_pipeline_uniforms()
 
 	return true
@@ -595,3 +601,21 @@ func free_RID_if_valid(rid: RID) -> bool:
 		rd.free_rid(rid)
 		return true
 	return false
+
+
+# func setup_kernel_offset_array() -> void:
+# 	# Offset positions for accessing cell data according to kernel index
+# 	var offsets: PackedInt32Array = [0]
+# 	@warning_ignore("integer_division")
+# 	var half_kernel_size := Vector3i(
+# 		kernel_size.x / 2,
+# 		kernel_size.y / 2,
+# 		kernel_size.z / 2
+# 	)
+# 	for z in range(kernel_size.z):
+# 		for y in range(kernel_size.y):
+# 			var baseIndex = ((z - half_kernel_size.z) * grid_size + y - half_kernel_size.y) * grid_size - half_kernel_size.x
+# 			for x in range(kernel_size.x):
+# 				offsets.append(baseIndex + x)
+# 	print(offsets)
+# 	kernel_offsets_rid = rd.storage_buffer_create(offsets.size() * 4, offsets.to_byte_array())
