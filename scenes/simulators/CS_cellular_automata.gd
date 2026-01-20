@@ -91,35 +91,19 @@ func dispatch_compute_pipeline(compute_list: int):
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 	# Push constants for cell automata
-	# var push_constant := PackedByteArray()
-	# push_constant.resize(48)
 	var push: PackedInt32Array = [
-		grid_size,
-		grid_size,
-		grid_size,
-		0,
 		grid_size,
 		grid_size * grid_size,
 		grid_size * grid_size * grid_size,
+		typecount,
+		grid_size,
+		grid_size,
+		grid_size,
 		0,
 		kernel_size.x,
 		kernel_size.y,
 		kernel_size.z,
-		typecount]
-	# # grid size
-	# push_constant.encode_u32(0, grid_size)
-	# push_constant.encode_u32(4, grid_size)
-	# push_constant.encode_u32(8, grid_size)
-	# # strides
-	# push_constant.encode_u32(16, grid_size)
-	# push_constant.encode_u32(20, grid_size * grid_size)
-	# push_constant.encode_u32(24, grid_size * grid_size * grid_size)
-	# # kernel size
-	# push_constant.encode_u32(32, kernel_size.x)
-	# push_constant.encode_u32(36, kernel_size.y)
-	# push_constant.encode_u32(40, kernel_size.z)
-	# # typecount
-	# push_constant.encode_u32(44, typecount)
+		0]
 	
 	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
 
@@ -603,19 +587,21 @@ func free_RID_if_valid(rid: RID) -> bool:
 	return false
 
 
-# func setup_kernel_offset_array() -> void:
-# 	# Offset positions for accessing cell data according to kernel index
-# 	var offsets: PackedInt32Array = [0]
-# 	@warning_ignore("integer_division")
-# 	var half_kernel_size := Vector3i(
-# 		kernel_size.x / 2,
-# 		kernel_size.y / 2,
-# 		kernel_size.z / 2
-# 	)
-# 	for z in range(kernel_size.z):
-# 		for y in range(kernel_size.y):
-# 			var baseIndex = ((z - half_kernel_size.z) * grid_size + y - half_kernel_size.y) * grid_size - half_kernel_size.x
-# 			for x in range(kernel_size.x):
-# 				offsets.append(baseIndex + x)
-# 	print(offsets)
-# 	kernel_offsets_rid = rd.storage_buffer_create(offsets.size() * 4, offsets.to_byte_array())
+'''
+func setup_kernel_offset_array() -> void:
+	# Offset positions for accessing cell data according to kernel index
+	var offsets: PackedInt32Array = [0]
+	@warning_ignore("integer_division")
+	var half_kernel_size := Vector3i(
+		kernel_size.x / 2,
+		kernel_size.y / 2,
+		kernel_size.z / 2
+	)
+	for z in range(kernel_size.z):
+		for y in range(kernel_size.y):
+			var baseIndex = ((z - half_kernel_size.z) * grid_size + y - half_kernel_size.y) * grid_size - half_kernel_size.x
+			for x in range(kernel_size.x):
+				offsets.append(baseIndex + x)
+	print(offsets)
+	kernel_offsets_rid = rd.storage_buffer_create(offsets.size() * 4, offsets.to_byte_array())
+'''
