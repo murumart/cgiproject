@@ -28,7 +28,7 @@
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
-[ext_resource type="Script" uid="uid://bxor2jg5kddjc" path="res://scenes/renderers/multimesh_shader_renderer.gd" id="15_qkpxi"]
+[ext_resource type="Script" uid="uid://b0mrd3macpera" path="res://scenes/renderers/instance_custom_data_renderer.gd" id="15_qkpxi"]
 [ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 [ext_resource type="Material" uid="uid://emsjvmm7mtwf" path="res://shaders/multiMeshInstance.tres" id="24_tel4y"]
@@ -210,7 +210,7 @@ renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/Sc
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
 simulator_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationSwitch")
 simulator_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationDesc")
-grid_size = 32
+grid_size = 64
 grid_size_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/GridSizeSwitch")
 editor = NodePath("../../TextureEditor")
 camera = NodePath("..")
