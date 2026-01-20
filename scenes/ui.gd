@@ -30,22 +30,24 @@ var current_simulator: Simulator
 func _ready() -> void:
 	pause_button.selected.connect(pause_changed)
 
-	renderer_switch.clear()
-	var i := 0
-	for r in renderers:
-		renderer_switch.add_item(r.name)
-		if not r.disabled:
-			_renderer_selected(i)
-		i += 1
-	renderer_switch.item_selected.connect(_renderer_selected)
 	simulator_switch.clear()
-	i = 0
+	var i := 0
 	for s in simulators:
 		simulator_switch.add_item(s.name)
 		if s.is_sim_running():
 			assert(current_simulator == null, "Only enable one simulator at a time")
 			_simulator_selected(i)
 		i += 1
+
+	renderer_switch.clear()
+	i = 0
+	for r in renderers:
+		renderer_switch.add_item(r.name)
+		if not r.disabled:
+			_renderer_selected(i)
+		i += 1
+	renderer_switch.item_selected.connect(_renderer_selected)
+
 	simulator_switch.item_selected.connect(_simulator_selected)
 	grid_size_switch.item_selected.connect(_grid_size_changed)
 	grid_size_switch.selected = _GRID_SIZES.find(grid_size)
@@ -64,6 +66,8 @@ func _renderer_selected(which: int) -> void:
 	if current_renderer:
 		current_renderer.set_disabled(true)
 	r.set_disabled(false)
+	if (current_simulator):
+		r.set_simulator(current_simulator)
 	current_renderer = r
 	renderer_description.text = r.editor_description
 	camera.renderer = r
@@ -82,8 +86,8 @@ func _simulator_selected(which: int) -> void:
 	if (s is CPUSim):
 		s.reset()
 	s.sim_set_running(true)
-	for r in renderers:
-		r.set_simulator(s)
+	if (current_renderer):
+		current_renderer.set_simulator(s)
 	current_simulator = s
 	simulator_description.text = s.editor_description
 	editor.simulator = s
@@ -91,11 +95,14 @@ func _simulator_selected(which: int) -> void:
 	kernel_selection.visible = s is not CPUSim
 
 
-const _GRID_SIZES := [8, 16, 32, 48, 64, 128, 256, 512]
+const _GRID_SIZES: PackedInt32Array = [8, 16, 32, 48, 64, 128, 256, 512]
 func _grid_size_changed(which: int) -> void:
+	var tmp := _GRID_SIZES[which]
+	if tmp == grid_size:
+		return
+	grid_size = tmp
 	var s := current_simulator
 	current_simulator = null
-	grid_size = _GRID_SIZES[which]
 	_simulator_selected(simulators.find(s))
 
 
