@@ -30,27 +30,71 @@ uniform float exposure : hint_range(0.1, 10) = 1.0;
 
 uniform bool rt_shadows = false;
 
-uniform uint ground_material = 7;
+uniform int ground_material = 7;
+
+const vec3 diffuse_colors[8] = vec3[](
+	vec3(1.0, 0.3, 0.8),
+	vec3(0.8, 0.5, 0.3),
+	vec3(0.25, 1.0, 0.2),
+	vec3(0.4, 0.20, 0.15),
+	vec3(0.2, 0.2, 0.2),
+	vec3(0.2, 0.2, 0.2),
+	vec3(0.2, 0.2, 0.2),
+	vec3(0.2, 0.6, 0.2)
+);
+
+const vec3 specular_colors[8] = vec3[](
+	vec3(0.0, 1.0, 0.0),
+	vec3(1.0),
+	vec3(1.0),
+	vec3(1.0),
+	vec3(1.0),
+	vec3(1.0),
+	vec3(1.0),
+	vec3(0.1)
+);
+
+const float roughness[8] = float[](
+	0.2,
+	0.3,
+	0.2,
+	0.9,
+	0.2,
+	0.2,
+	0.2,
+	0.2
+);
+
+const float opacity[8] = float[](
+	1.0,
+	1.0,
+	1.0,
+	1.0,
+	1.0,
+	1.0,
+	1.0,
+	1.0
+);
 
 varying vec3 local_pos;
 
-struct Material {
-	vec3 diffuse_color;
-	vec3 specular_color;
-	float roughness;
-	float opacity;
-};
+// struct Material {
+// 	vec3 diffuse_color;
+// 	vec3 specular_color;
+// 	float roughness;
+// 	float opacity;
+// };
 
 struct RayResult {
-	Material material;
+	int material;
 	//vec3 color;
 	float alpha;
 	float depth;
 	int stepped_axis;
-	uint steps;
+	int steps;
 	float passed_through;
-	float exited;
-	uint cell;
+	bool exited;
+	int cell;
 	vec3 normal;
 	vec3 position;
 };
@@ -83,26 +127,26 @@ vec3 my_color(uint cell) {
 	}
 }*/
 
-Material my_material(uint cell){
-	switch (cell) {
-		case 1u:
-			return Material(vec3(0.8, 0.5, 0.3), vec3(1.0), 0.3, 1.0);
-		case 2u:
-			return Material(vec3(0.25, 1.0, 0.2), vec3(1.0), 0.2, 1.0);
-		case 3u:
-			return Material(vec3(0.4, 0.20, 0.15), vec3(1.0), 0.9, 1.0);
-		case 4u:
-			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
-		case 5u:
-			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
-		case 6u:
-			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
-		case 7u:
-			return Material(vec3(0.2, 0.6, 0.2), vec3(0.1), 0.2, 1.0);
-	}
-}
+// Material my_material(uint cell){
+// 	switch (cell) {
+// 		case 1u:
+// 			return Material(vec3(0.8, 0.5, 0.3), vec3(1.0), 0.3, 1.0);
+// 		case 2u:
+// 			return Material(vec3(0.25, 1.0, 0.2), vec3(1.0), 0.2, 1.0);
+// 		case 3u:
+// 			return Material(vec3(0.4, 0.20, 0.15), vec3(1.0), 0.9, 1.0);
+// 		case 4u:
+// 			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+// 		case 5u:
+// 			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+// 		case 6u:
+// 			return Material(vec3(0.2, 0.2, 0.2), vec3(1.0), 0.2, 1.0);
+// 		case 7u:
+// 			return Material(vec3(0.2, 0.6, 0.2), vec3(0.1), 0.2, 1.0);
+// 	}
+// }
 
-vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
+vec3 blinn_phong(vec3 normal, vec3 view_dir, int material) {
 	// Blinn-Phong Shading
 	// normal = normalize(normal);
 	vec3 light_dir = sun_direction;
@@ -113,17 +157,17 @@ vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
 	float specular = 0.0;
 	if (lambertian > 0.0) {
 		vec3 half_dir = normalize(light_dir + view_dir);
-		specular = pow(max(dot(normal, half_dir), 0.0), shininess) * pow(1.0 - material.roughness, 1.0);
+		specular = pow(max(dot(normal, half_dir), 0.0), shininess) * pow(1.0 - roughness[material], 1.0);
 	}
 
 	vec3 specular_color = vec3(0.0);
 	if (specular > 0.0) {
-		specular_color = material.specular_color * specular * sun_color * sun_power;
+		specular_color = specular_colors[material] * specular * sun_color * sun_power;
 	}
 
-	vec3 diffuse_color = material.diffuse_color * lambertian * sun_color * sun_power;
+	vec3 diffuse_color = diffuse_colors[material] * lambertian * sun_color * sun_power;
 
-	vec3 ambient_color = material.diffuse_color * sun_color * ambient_power;
+	vec3 ambient_color = diffuse_colors[material] * sun_color * ambient_power;
 
 	vec3 lightColor = (ambient_color + (diffuse_color) + (specular_color)/(exposure));
 	//lightColor = pow(lightColor, vec3(1.0 / screenGamma));
@@ -132,18 +176,18 @@ vec3 blinn_phong(vec3 normal, vec3 view_dir, Material material) {
 }
 
 RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
-	RayResult res;
-	res.material = Material(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), 0.0, 0.0);
-	//res.color = vec3(0.0);
-	res.alpha = 0.0;
-	res.depth = 0.0;
-	res.stepped_axis = 0;
-	res.steps = 0u;
-	res.passed_through = 0.0;
-	res.exited = 0.0;
-	res.cell = 0u;
-	res.position = vec3(0.0);
-	res.normal = vec3(0.0);
+	RayResult res = RayResult(0, 0.0, 0.0, 0, 0, 0.0, false, 0, vec3(0.0), vec3(0.0));
+	// res.material = 0;
+	// //res.color = vec3(0.0);
+	// res.alpha = 0.0;
+	// res.depth = 0.0;
+	// res.stepped_axis = 0;
+	// res.steps = 0u;
+	// res.passed_through = 0.0;
+	// res.exited = false;
+	// res.cell = 0;
+	// res.position = vec3(0.0);
+	// res.normal = vec3(0.0);
 
 	// ivec3 tex_size = textureSize(simulation_data, 0);
 	vec3 voxel_resolution = vec3(tex_size);
@@ -190,30 +234,33 @@ RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
 
     // DDA traversal with brick map acceleration
 	// move the ray through the voxel grid until we reach the end or alpha is 1 (find the next occupied voxel)
-	uint max_steps = uint(voxel_resolution.x * 3.0); // Safety limit
+	int max_steps = int(voxel_resolution.x * 3.0); // Safety limit
+	ivec3 volume_min = ivec3(0);
+	ivec3 volume_max = ivec3(voxel_resolution);
+	ivec3 brick_map_size = textureSize(brick_map, 0);
 	while (res.steps < max_steps) { // can make faster using max steps
 		res.steps++;
 
 		// Check if we exited the volume
-		if (any(lessThan(coord, ivec3(0))) || any(greaterThanEqual(coord, ivec3(voxel_resolution)))) {
-			res.exited = 1.0;
+		if (any(lessThan(coord, volume_min)) || any(greaterThanEqual(coord, volume_max))) {
+			res.exited = true;
 			// set ground if exited at bottom
 			if (res.stepped_axis == 1 && sgn_dir.y < 0.0) {
 				res.cell = ground_material;
-				res.material = my_material(ground_material);
+				res.material = ground_material;
 				res.alpha = 1.0;
 				res.position = curr_pos + dir * t_current;
-				res.normal = vec3(0.0, 1.0, 0.0);
+				res.normal.y = 1.0;
 				res.depth = t_current;
 			}
-			break;
+			return res;
 		}
 
 		ivec3 brick_coord = ivec3(coord / brick_size); // brick coordinate
 
 		// Safety check for array bounds before texture fetch
-		if (any(lessThan(brick_coord, ivec3(0))) || any(greaterThanEqual(brick_coord, textureSize(brick_map, 0)))) {
-			break;
+		if (any(lessThan(brick_coord, ivec3(0))) || any(greaterThanEqual(brick_coord, brick_map_size))) {
+			return res;
 		}
 
 		// vec3 brick_uvw = (vec3(brick_coord) + 0.5) / vec3(textureSize(brick_map, 0)); // uvw coordinates of the brick
@@ -223,11 +270,11 @@ RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
 		// if (brick_occupied > 0.5) {
 		if (texelFetch(brick_map, brick_coord, 0).r > 0.0) {
 			// vec4 voxel_data_u = texelFetch(simulation_data, coord, 0);
-			res.cell = uint(texelFetch(simulation_data, coord, 0).r * 255.0); // cell type
+			res.cell = int(texelFetch(simulation_data, coord, 0).r * 255.0); // cell type
 
 			// if the voxel is occupied
-			if (res.cell > 0u) {
-				res.material = my_material(res.cell);
+			if (res.cell > 0) {
+				res.material = res.cell;
 				//res.color = mix(res.color, my_color(res.cell), 0.01 * density);
 				//res.depth += t[res.stepped_axis]; // OLD INCORRECT logic
 				if (res.passed_through == 0.0) {
@@ -248,7 +295,8 @@ RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
 					break; // if the alpha is 1, we break
 				}
 				res.passed_through += 1.0;
-			} else if (res.cell == 0u) {
+			// } else if (res.cell == 0) {
+			} else {
 				res.passed_through = 0.0;
 			}
 		} else {
@@ -276,18 +324,18 @@ RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
 
 			// Floor the biased position.
 			// Because we pushed it forward, floor() is forced to snap to the next index.
-			ivec3 next_coord = ivec3(floor(exit_pos + bias));
+			// ivec3 next_coord = ivec3(floor(exit_pos + bias));
 
-			coord = next_coord;
+			coord = ivec3(floor(exit_pos + bias));
 
 			// coord[res.stepped_axis] += int(sgn_dir[res.stepped_axis]);
 
-			t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
 
 			// Update t_current to the brick boundary
 			t_current = t_exit;
 			continue;
 		}
+		t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
 
 		// Find the closest exit point (min t)
 		float t_exit = min(t.x, min(t.y, t.z));
@@ -299,7 +347,7 @@ RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
 		coord[res.stepped_axis] += int(sgn_dir[res.stepped_axis]);
 
 		// Recalculate t for the new coordinate (to maintain precision relative to origin)
-		t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
+		// t = (vec3(coord) + 0.5 * (1.0 + sgn_dir) - curr_pos) * inv_dir;
 
 		// Update t_current to the voxel boundary
 		t_current = t_exit;
@@ -323,7 +371,7 @@ void fragment() {
 	float depth = res.depth / float(max(tex_size.x, max(tex_size.y, tex_size.z)));
 	//if (alpha_acc < 0.01 && render_setting != 3) discard;
 
-	vec3 sun_dir = sun_direction;
+	// vec3 sun_dir = sun_direction;
 
 	//vec3 lighting = blinn_phong(res.normal, -dir, res.material);
 
@@ -333,13 +381,13 @@ void fragment() {
 	if (rt_shadows) {
 		// Add bias to avoid self-shadowing (acne)
 		// Move along the light direction to ensure we clear the current voxel boundary
-		vec3 shadow_origin = res.position + sun_dir * 0.001;
+		vec3 shadow_origin = res.position + sun_direction * 0.001;
 
-		RayResult res2sun = dda_ray_march(shadow_origin, sun_dir, tex_size);
+		RayResult res2sun = dda_ray_march(shadow_origin, sun_direction, tex_size);
 
 		// If the shadow ray hits something BEFORE exiting the volume, apply shadow
-		if (res2sun.alpha > 0.0 && res.steps > 1u) {
-			my_color = res.material.diffuse_color * ambient_power * sun_color;
+		if (res2sun.alpha > 0.0 && res.steps > 1) {
+			my_color = diffuse_colors[res.material] * ambient_power * sun_color;
 			my_color += depth * 0.01;
 		} else {
 			my_color = blinn_phong(res.normal, -dir, res.material);
@@ -383,7 +431,7 @@ void fragment() {
 			ALPHA = 1.0;
 			break;
 		case 5: // exited
-			ALBEDO = vec3(res.exited);
+			ALBEDO = res.exited ? vec3(1.0) : vec3(0.0);
 			ALPHA = 1.0;
 			break;
 		case 6:
