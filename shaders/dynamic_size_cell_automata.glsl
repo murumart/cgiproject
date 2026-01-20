@@ -38,9 +38,11 @@ void main() {
     ivec3 half_k = pc.kernel_size / 2;
     int write_type_kernel_index = kernel_grid_volume * typecount * write_type;
     float sum = 0.0;
-    int ni = id.x + id.y * pc.stride_X + id.z * pc.stride_Y;
-    int out_index = ni;
-    ivec3 nullid = ivec3(0);
+    int out_index = id.x + id.y * pc.stride_X + id.z * pc.stride_Y;
+    int ni = out_index - half_k.x;
+    id.x -= half_k.x;
+    // ivec3 miinimum = ivec3(0);
+    ivec3 maksimum = pc.grid_size - id;
 
 
     // if not close to edge no out of bounds check in loop
@@ -57,7 +59,7 @@ void main() {
         // Loop through all kernel indexes from -halh_k to half_k
         for (int kz = -half_k.z; kz <= half_k.z && remaining_kernel_values > 0; kz++) {
             for (int ky = -half_k.y; ky <= half_k.y && remaining_kernel_values > 0; ky++) {
-                for (int kx = -half_k.x; kx <= half_k.x; kx++) {    // && remaining_kernel_values > 0 made slower
+                for (int kx = 0; kx < pc.kernel_size.x; kx++) {    // && remaining_kernel_values > 0 made slower
                     // Skip 0 values
                     float kernel_factor = kernel.data[kernel_index++];
                     if (kernel_factor == 0.0)
@@ -65,8 +67,8 @@ void main() {
                     // Reduce amount of remaining values
                     remaining_kernel_values--;
                     // Out of bounds check
-                    ivec3 nb = id + ivec3(kx, ky, kz);
-                    if (any(lessThan(nb, nullid)) || any(greaterThanEqual(nb, pc.grid_size)))
+                    // ivec3 nb = id + ivec3(kx, ky, kz);
+                    if (any(lessThan(id, -ivec3(kx, ky, kz))) || any(greaterThanEqual(ivec3(kx, ky, kz), maksimum)))
                         continue;
 
                     sum +=  kernel_factor * read.data[ni + kx + ky * pc.stride_X + kz * pc.stride_Y];
