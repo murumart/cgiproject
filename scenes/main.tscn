@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=51 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
 [ext_resource type="RDShaderFile" uid="uid://bvyd7pxebmgos" path="res://shaders/dynamic_size_cell_automata.glsl" id="2_yq6so"]
@@ -28,8 +28,10 @@
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="Script" uid="uid://bxor2jg5kddjc" path="res://scenes/renderers/multimesh_shader_renderer.gd" id="15_qkpxi"]
 [ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
+[ext_resource type="Material" uid="uid://emsjvmm7mtwf" path="res://shaders/multiMeshInstance.tres" id="24_tel4y"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
 sky_curve = 0.04616783
@@ -82,6 +84,15 @@ material = ExtResource("8_yc10j")
 [sub_resource type="MultiMesh" id="MultiMesh_qkpxi"]
 transform_format = 1
 mesh = SubResource("BoxMesh_fv21b")
+
+[sub_resource type="BoxMesh" id="BoxMesh_5q0nq"]
+material = ExtResource("24_tel4y")
+
+[sub_resource type="MultiMesh" id="MultiMesh_dgi5k"]
+transform_format = 1
+use_colors = true
+use_custom_data = true
+mesh = SubResource("BoxMesh_5q0nq")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wfyh"]
 transparency = 2
@@ -136,6 +147,7 @@ script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
 brick_size = 8
+disabled = true
 
 [node name="MesherRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instances", "sim")]
 editor_description = "This renderer creates a mesh (culled on the inside, no greedy meshing) on a different thread. There's a little fade out animation to make the mesh transitions a little less jarring."
@@ -158,6 +170,12 @@ instance_parent = NodePath("../../Meshes/MultimeshParent")
 core_mesh_instance = NodePath("../../Meshes/MultimeshParent/CoreMeshInstance")
 leaf_mesh_instance = NodePath("../../Meshes/MultimeshParent/LeafMeshInstance")
 bark_mesh_instance = NodePath("../../Meshes/MultimeshParent/BarkMeshInstance")
+disabled = true
+
+[node name="MultimeshShaderRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instance_parent", "cells_mesh_instance")]
+script = ExtResource("15_qkpxi")
+instance_parent = NodePath("../../Meshes/MultimeshParent")
+cells_mesh_instance = NodePath("../../Meshes/MultimeshParent/CellsMultiMeshInstance")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
@@ -186,13 +204,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/NaiveRenderer"), NodePath("../../Renderers/MultimeshShaderRenderer")]
 simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
 simulator_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationSwitch")
 simulator_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationDesc")
-grid_size = 64
+grid_size = 32
 grid_size_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/GridSizeSwitch")
 editor = NodePath("../../TextureEditor")
 camera = NodePath("..")
@@ -442,6 +460,9 @@ multimesh = SubResource("MultiMesh_tel4y")
 
 [node name="BarkMeshInstance" type="MultiMeshInstance3D" parent="Meshes/MultimeshParent"]
 multimesh = SubResource("MultiMesh_qkpxi")
+
+[node name="CellsMultiMeshInstance" type="MultiMeshInstance3D" parent="Meshes/MultimeshParent"]
+multimesh = SubResource("MultiMesh_dgi5k")
 
 [node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "simulator", "volume", "highlight", "block_select_buttons", "clear_board_button")]
 script = ExtResource("8_tipki")

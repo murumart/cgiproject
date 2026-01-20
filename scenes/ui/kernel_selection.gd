@@ -11,8 +11,8 @@ const CSAutomata = preload("res://scenes/simulators/CS_cellular_automata.gd")
 var _dopen := false
 
 const KFILES := [
-	{"name": "Test", "path": "res://scenes/simulators/test.txt", "size": 3},
 	{"name": "Mart's sequoia", "path": "res://scenes/simulators/martsequoia.txt", "size": 5},
+	{"name": "Test", "path": "res://scenes/simulators/test.txt", "size": 3},
 	{"name": "Bush", "path": "res://scenes/simulators/poosas1.txt", "size": 5},
 	{"name": "falling leaves", "path": "res://scenes/simulators/falling_leaves.txt", "size": 5},
 	{"name": "Cone", "path": "res://scenes/simulators/rasmus_kernels.txt", "size": 5},
