@@ -8,19 +8,20 @@ extends Renderer
 var simulator: Simulator
 
 var _cells: PackedByteArray
+var old_cells: PackedByteArray
 
 
 func _ready() -> void:
 	super()
-	cells_mesh_instance.multimesh.use_colors = true
-	cells_mesh_instance.multimesh.use_custom_data = true
-	# var mesh = cells_mesh_instance.multimesh.mesh
+	# cells_mesh_instance.multimesh.use_colors = true
+	# cells_mesh_instance.multimesh.use_custom_data = true
+	# # var mesh = cells_mesh_instance.multimesh.mesh
 
-	var mat := ShaderMaterial.new()
-	mat.shader = load("res://shaders/multiMeshInstance.gdshader")
+	# var mat := ShaderMaterial.new()
+	# mat.shader = load("res://shaders/multiMeshInstance.gdshader")
 
-	# mesh.surface_set_material(0, mat)
-	cells_mesh_instance.material_override = mat
+	# # mesh.surface_set_material(0, mat)
+	# cells_mesh_instance.material_override = mat
 
 
 func _data_get(d: PackedByteArray) -> void:
@@ -48,11 +49,13 @@ func set_simulator(sim: Simulator) -> void:
 		simulator.simulation_updated.disconnect(_sim_updated)
 	simulator = sim
 	var gs := sim.get_grid_size()
-	_cells.resize(gs * gs * gs)
+	var volume := gs * gs * gs
+	_cells.resize(volume)
+	old_cells.resize(volume)
+	old_cells.fill(0)
 	instance_parent.scale = Vector3.ONE * 100.0 / gs
 	var tf := Transform3D.IDENTITY
 	var offsetVector := Vector3.ONE * 0.5
-	var volume := gs * gs * gs
 	if (cells_mesh_instance.multimesh.instance_count != volume):
 		cells_mesh_instance.multimesh.instance_count = gs * gs * gs
 		var ix := 0
@@ -65,25 +68,11 @@ func set_simulator(sim: Simulator) -> void:
 
 func _draw_life() -> void:
 	var gs := simulator.get_grid_size()
-	# var zero := Basis.from_scale(Vector3.ZERO)
-	# var one := Basis.from_scale(Vector3.ONE)
-	# var tf := Transform3D.IDENTITY
-	# var ix := 0
-	for i in gs*gs*gs:
-		cells_mesh_instance.multimesh.set_instance_custom_data(i, Color(_cells[i],0,0,0))
-	# for z in gs: for y in gs: for x in gs:
-	# 	var cell := _cells[ix]
-	# 	if cell != 0:
-	# 		if cell < 0 or cell > 3: # something fucked is occurring
-	# 			simulator.get_draw_data_async(_data_get)
-	# 			return
-	# 		var instance := instances[cell]
-	# 		tf = instance.multimesh.get_instance_transform(ix)
-	# 		tf.basis = one
-	# 		instance.multimesh.set_instance_transform(ix, tf)
-	# 	else:
-	# 		tf = instances[1].multimesh.get_instance_transform(ix)
-	# 		tf.basis = zero
-	# 		for instance: MultiMeshInstance3D in instances.slice(1):
-	# 			instance.multimesh.set_instance_transform(ix, tf)
-	# 	ix += 1
+	var volume := gs * gs * gs
+	if (old_cells.size() != volume):
+		old_cells.resize(volume)
+		old_cells.fill(0)
+	for i in volume:
+		if _cells[i] != old_cells[i]:
+			cells_mesh_instance.multimesh.set_instance_custom_data(i, Color(_cells[i],0,0,0))
+	old_cells = _cells
