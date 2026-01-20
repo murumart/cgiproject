@@ -47,11 +47,11 @@ func _ready() -> void:
 	assert(rd, "Couldnt' get rendering device")
 
 	# Setup
+	_buffer_elements = grid_size * grid_size * grid_size * typecount
 	data_texture_rid = create_texture(rd, grid_size)
 	setup_compute_pipeline()
 	setup_texture_update_pipeline()
 	setup_aggregation_pipeline()
-	_buffer_elements = grid_size * grid_size * grid_size * typecount
 
 
 func _process(_delta) -> void:
