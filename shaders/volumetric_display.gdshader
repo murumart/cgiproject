@@ -149,14 +149,14 @@ vec3 my_color(uint cell) {
 vec3 blinn_phong(vec3 normal, vec3 view_dir, int material) {
 	// Blinn-Phong Shading
 	// normal = normalize(normal);
-	vec3 light_dir = sun_direction;
+	// vec3 light_dir = sun_direction;
 	// view_dir = normalize(view_dir);
 
 
-	float lambertian = max(dot(normal, light_dir), 0.0);
+	float lambertian = max(dot(normal, sun_direction), 0.0);
 	float specular = 0.0;
 	if (lambertian > 0.0) {
-		vec3 half_dir = normalize(light_dir + view_dir);
+		vec3 half_dir = normalize(sun_direction + view_dir);
 		specular = pow(max(dot(normal, half_dir), 0.0), shininess) * pow(1.0 - roughness[material], 1.0);
 	}
 
@@ -253,14 +253,14 @@ RayResult dda_ray_march(vec3 origin, vec3 dir, ivec3 tex_size) {
 				res.normal.y = 1.0;
 				res.depth = t_current;
 			}
-			return res;
+			break;
 		}
 
 		ivec3 brick_coord = ivec3(coord / brick_size); // brick coordinate
 
 		// Safety check for array bounds before texture fetch
 		if (any(lessThan(brick_coord, ivec3(0))) || any(greaterThanEqual(brick_coord, brick_map_size))) {
-			return res;
+			break;
 		}
 
 		// vec3 brick_uvw = (vec3(brick_coord) + 0.5) / vec3(textureSize(brick_map, 0)); // uvw coordinates of the brick
@@ -407,6 +407,8 @@ void fragment() {
 			ALPHA = res.alpha;
 			break;
 		case 2: // axis
+			// ALBEDO = abs(res.normal);
+			// ALPHA = res.alpha;
 			switch (res.stepped_axis) {
 				case 0:
 					ALBEDO = vec3(res.depth, 0.0, 0.0);
