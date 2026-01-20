@@ -30,7 +30,7 @@ A project exploring kernel-based cellular automata for tree "simulation", and so
 
 ## Kernel File Format
 
-The simulation looks at each cell in the current generation and sets the corresponding cell in the next generation to the sum of cell values multiplied by corresponding kernel coefficients. Each cell type has kernels for each other cell type. You can supply your own kernel text files to run the simulation with when using the compute shader simulation. It's easier to see this [empty example](https://github.com/murumart/cgiproject/blob/main/scenes/simulators/emptykernels.txt) than to explain the format, but essentially, each meaningful line consists of 5 floats, and all the lines together sequentially represent the kernels fed to the simulation in three dimensions. Each kernel would be 25 lines of 5 floats being 3D slices on the XY axis.
+The simulation looks at each cell in the current generation and sets the corresponding cell in the next generation to the sum of cell values multiplied by corresponding kernel coefficients. Each cell type has kernels for each other cell type. You can supply your own kernel text files to run the simulation with when using the compute shader simulation. It's easier to see this [empty example](https://github.com/murumart/cgiproject/blob/main/scenes/simulators/empty_5x5x5.txt) than to explain the format, but essentially, each meaningful line consists of 5 floats, and all the lines together sequentially represent the kernels fed to the simulation in three dimensions. Each kernel would be 25 lines of 5 floats being 3D slices on the XY axis.
 
 Sequentially, the lines represent:
 

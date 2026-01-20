@@ -515,7 +515,7 @@ func _parse_error(fpath: String, line: int, msg: String) -> void:
 	OS.alert("%s:%s: %s" % [fpath, line, msg], "Error parsing kernel file")
 
 
-func load_kernels_from_file(path: String, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5,5,5)) -> bool:
+func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,5), _typecount: int = 4) -> bool:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		var err := FileAccess.get_open_error()
@@ -525,7 +525,7 @@ func load_kernels_from_file(path: String, _typecount: int = 4, _kernel_size: Vec
 	var values: PackedFloat32Array = []
 	var tmp_values: PackedFloat32Array = []
 
-	var i := 0
+	var i := 1
 	while not file.eof_reached():
 		i += 1
 		var line := file.get_line().strip_edges()
@@ -533,10 +533,10 @@ func load_kernels_from_file(path: String, _typecount: int = 4, _kernel_size: Vec
 			continue
 
 		var floats := line.split_floats(" ")
-		if floats.size() > kernel_size.x:
+		if floats.size() > _kernel_size.x:
 			_parse_error(path, i, "Too many values in kernel line (need %s, got %s)" % [kernel_size.x, floats.size()])
 			return false
-		if floats.size() < kernel_size.x:
+		if floats.size() < _kernel_size.x:
 			_parse_error(path, i, "Too few values in kernel line (need %s, got %s)" % [kernel_size.x, floats.size()])
 			return false
 

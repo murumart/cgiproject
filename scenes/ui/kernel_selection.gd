@@ -11,12 +11,12 @@ const CSAutomata = preload("res://scenes/simulators/CS_cellular_automata.gd")
 var _dopen := false
 
 const KFILES := [
-	{"name": "Mart's sequoia", "path": "res://scenes/simulators/martsequoia.txt"},
-	{"name": "Bush", "path": "res://scenes/simulators/poosas1.txt"},
-	{"name": "falling leaves", "path": "res://scenes/simulators/falling_leaves.txt"},
-	{"name": "Cone", "path": "res://scenes/simulators/rasmus_kernels.txt"},
-	{"name": "Meh", "path": "res://scenes/simulators/wide_kernel.txt"},
-	{"name": "Test", "path": "res://scenes/simulators/test.txt"},
+	{"name": "Mart's sequoia", "path": "res://scenes/simulators/martsequoia.txt", "size": 5},
+	{"name": "Bush", "path": "res://scenes/simulators/poosas1.txt", "size": 5},
+	{"name": "falling leaves", "path": "res://scenes/simulators/falling_leaves.txt", "size": 5},
+	{"name": "Cone", "path": "res://scenes/simulators/rasmus_kernels.txt", "size": 5},
+	{"name": "Meh", "path": "res://scenes/simulators/wide_kernel.txt", "size": 5},
+	{"name": "Test", "path": "res://scenes/simulators/test.txt", "size": 3},
 ]
 
 func _ready() -> void:
@@ -36,7 +36,8 @@ func _ready() -> void:
 func _kernel_selected(which: int) -> void:
 	if which >= KFILES.size() or which < 0:
 		return
-	_custom_get(KFILES[which].path, false)
+	var size = KFILES[which].size
+	_custom_get(KFILES[which].path, false, Vector3i(size,size,size))
 
 
 func _load_custom() -> void:
@@ -52,11 +53,11 @@ func _dial_closed() -> void:
 	print("kernel_selection.gd::_dial_closed : closed")
 
 
-func _custom_get(filepath: String, custom := true) -> void:
+func _custom_get(filepath: String, custom := true, size: Vector3i = Vector3i(5,5,5)) -> void:
 	print("kernel_selection.gd::_custom_get : got filepath ", filepath)
 	if _dopen:
 		_dial_closed()
-	if (sim as CSAutomata).load_kernels_from_file(filepath):
+	if (sim as CSAutomata).load_kernels_from_file(filepath, size):
 		if custom:
 			kernel_switch.selected = kernel_switch.item_count - 1
 		sim.kernel_file_path = filepath
