@@ -81,7 +81,7 @@ func _simulator_selected(which: int) -> void:
 	s.set_grid_size(grid_size)
 	if (s is CPUSim):
 		s.reset()
-	s.sim_set_running(true)	
+	s.sim_set_running(true)
 	for r in renderers:
 		r.set_simulator(s)
 	current_simulator = s
@@ -99,7 +99,7 @@ func _grid_size_changed(which: int) -> void:
 	_simulator_selected(simulators.find(s))
 
 
-func _notification(what):
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 		get_tree().quit()
