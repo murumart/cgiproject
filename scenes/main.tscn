@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=47 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
 [ext_resource type="RDShaderFile" uid="uid://bvyd7pxebmgos" path="res://shaders/dynamic_size_cell_automata.glsl" id="2_yq6so"]
@@ -26,6 +26,7 @@
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
+[ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
@@ -60,6 +61,27 @@ material = SubResource("StandardMaterial3D_tipki")
 [sub_resource type="BoxMesh" id="BoxMesh_tefeu"]
 material = ExtResource("6_o6xl0")
 size = Vector3(100, 100, 100)
+
+[sub_resource type="BoxMesh" id="BoxMesh_tel4y"]
+material = ExtResource("6_0ld40")
+
+[sub_resource type="MultiMesh" id="MultiMesh_fv21b"]
+transform_format = 1
+mesh = SubResource("BoxMesh_tel4y")
+
+[sub_resource type="BoxMesh" id="BoxMesh_qkpxi"]
+material = ExtResource("7_gqmmt")
+
+[sub_resource type="MultiMesh" id="MultiMesh_tel4y"]
+transform_format = 1
+mesh = SubResource("BoxMesh_qkpxi")
+
+[sub_resource type="BoxMesh" id="BoxMesh_fv21b"]
+material = ExtResource("8_yc10j")
+
+[sub_resource type="MultiMesh" id="MultiMesh_qkpxi"]
+transform_format = 1
+mesh = SubResource("BoxMesh_fv21b")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wfyh"]
 transparency = 2
@@ -130,6 +152,13 @@ sim = NodePath("../../Simulators/GDSim")
 cell_materials = Array[BaseMaterial3D]([ExtResource("6_0ld40"), ExtResource("7_gqmmt"), ExtResource("8_yc10j")])
 disabled = true
 
+[node name="MultimeshRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instance_parent", "core_mesh_instance", "leaf_mesh_instance", "bark_mesh_instance")]
+script = ExtResource("14_fv21b")
+instance_parent = NodePath("../../Meshes/MultimeshParent")
+core_mesh_instance = NodePath("../../Meshes/MultimeshParent/CoreMeshInstance")
+leaf_mesh_instance = NodePath("../../Meshes/MultimeshParent/LeafMeshInstance")
+bark_mesh_instance = NodePath("../../Meshes/MultimeshParent/BarkMeshInstance")
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
 shadow_enabled = true
@@ -157,7 +186,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
@@ -401,6 +430,18 @@ visibility_range_fade_mode = 1
 
 [node name="NaiveParent" type="Node3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+
+[node name="MultimeshParent" type="Node3D" parent="Meshes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+
+[node name="CoreMeshInstance" type="MultiMeshInstance3D" parent="Meshes/MultimeshParent"]
+multimesh = SubResource("MultiMesh_fv21b")
+
+[node name="LeafMeshInstance" type="MultiMeshInstance3D" parent="Meshes/MultimeshParent"]
+multimesh = SubResource("MultiMesh_tel4y")
+
+[node name="BarkMeshInstance" type="MultiMeshInstance3D" parent="Meshes/MultimeshParent"]
+multimesh = SubResource("MultiMesh_qkpxi")
 
 [node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "simulator", "volume", "highlight", "block_select_buttons", "clear_board_button")]
 script = ExtResource("8_tipki")
