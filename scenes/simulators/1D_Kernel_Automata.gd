@@ -123,6 +123,34 @@ func dispatch_compute_pipeline(compute_list: int):
 		(grid_size * typecount + local_size - 1) / local_size
 	)
 
+	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_Y_rid) # Bind compute pipeline
+	uniform_set = compute_pipeline_uniform_set_y1 if uniform_flip else compute_pipeline_uniform_set_y2
+	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
+	
+	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
+
+	@warning_ignore("integer_division")
+	# Dispatch automata shader
+	rd.compute_list_dispatch(compute_list,
+		(grid_size + local_size - 1) / local_size, # grid_size / workgroup size
+		(grid_size + local_size - 1) / local_size,
+		(grid_size * typecount + local_size - 1) / local_size
+	)
+
+	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_Z_rid) # Bind compute pipeline
+	uniform_set = compute_pipeline_uniform_set_z1 if uniform_flip else compute_pipeline_uniform_set_z2
+	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
+	
+	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
+
+	@warning_ignore("integer_division")
+	# Dispatch automata shader
+	rd.compute_list_dispatch(compute_list,
+		(grid_size + local_size - 1) / local_size, # grid_size / workgroup size
+		(grid_size + local_size - 1) / local_size,
+		(grid_size * typecount + local_size - 1) / local_size
+	)
+
 
 func dispatch_aggregation_pipeline(compute_list: int):
 	rd.compute_list_bind_compute_pipeline(compute_list, aggregation_pipeline_rid) # Bind compute pipeline
@@ -336,7 +364,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 
 
 
-	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid() or not kernels_rid.is_valid()):
+	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers!")
 		return
 
@@ -535,25 +563,40 @@ func create_texture_update_uniforms() -> void:
 	texture_update_uniform_set = rd.uniform_set_create([texture_uniform], texture_update_shader_rid, 0)
 
 
-func load_kernels(kernels: PackedFloat32Array, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5,5,5)) -> bool:
-	kernel_size = _kernel_size
-	typecount = _typecount
-	return load_kernels_from_packed_byte_array(kernels.to_byte_array())
+# func load_kernels(kernels: PackedFloat32Array, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5,5,5)) -> bool:
+# 	kernel_size = _kernel_size
+# 	typecount = _typecount
+# 	return load_kernels_from_packed_byte_array(kernels.to_byte_array())
 
 
-func load_kernels_from_packed_byte_array(kernels: PackedByteArray) -> bool:
-	# + 1 for value count
-	var size = typecount * typecount * (kernel_size.x * kernel_size.y * kernel_size.z + 1) * 4
-	assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
-
-	# free_RID_if_valid(kernels_rid)
-
-	kernels_rid = rd.storage_buffer_create(size, kernels)
-
-	# allocated_RIDs.append(kernels_rid)
+func load_kernels_from_packed_byte_array(kernels: PackedByteArray, axis:int) -> bool:
+	match axis:
+		0:
+			var size = typecount * typecount * 4 * kernel_size.x
+			assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
+			kernels_X_rid = rd.storage_buffer_create(
+				size,
+				kernels
+			)
+		1:
+			var size = typecount * typecount * 4 * kernel_size.y
+			assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
+			kernels_Y_rid = rd.storage_buffer_create(
+				size,
+				kernels
+			)
+		2:
+			var size = typecount * typecount * 4 * kernel_size.z
+			assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
+			kernels_Z_rid = rd.storage_buffer_create(
+				size,
+				kernels
+			)
+		_:
+			push_error("Invalid axis for loading kernels")
+			return false
 
 	# setup_kernel_offset_array()
-	create_compute_pipeline_uniforms()
 
 	return true
 
@@ -569,8 +612,8 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,
 		OS.alert("Couldn't open kernel file (%s)" % error_string(err), "Error opening kernel file!")
 		return false
 
-	var values: PackedFloat32Array = []
-	var tmp_values: PackedFloat32Array = []
+	var axis := 0
+	var values: Array[PackedFloat32Array] = [[]]
 
 	var i := 1
 	while not file.eof_reached():
@@ -580,23 +623,24 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,
 			continue
 
 		var floats := line.split_floats(" ")
-		if floats.size() > _kernel_size.x:
-			_parse_error(path, i, "Too many values in kernel line (need %s, got %s)" % [kernel_size.x, floats.size()])
+		if floats.size() > _kernel_size[axis]:
+			_parse_error(path, i, "Too many values in kernel line (need %s, got %s)" % [kernel_size[axis], floats.size()])
 			return false
-		if floats.size() < _kernel_size.x:
-			_parse_error(path, i, "Too few values in kernel line (need %s, got %s)" % [kernel_size.x, floats.size()])
+		if floats.size() < _kernel_size[axis]:
+			_parse_error(path, i, "Too few values in kernel line (need %s, got %s)" % [kernel_size[axis], floats.size()])
 			return false
 
 		for factor in floats:
-			tmp_values.append(factor)
+			values[axis].append(factor)
+		axis = (axis + 1) % 3
 
-		if ((tmp_values.size() % (_kernel_size.x * _kernel_size.y * _kernel_size.z)) == 0):
-			var zeros = tmp_values.count(0.0)
-			values.append(tmp_values.size() - zeros)
-			# print("Loaded kernel with %s non-zero values" % [tmp_values.size() - zeros])
-			# print(tmp_values)
-			values.append_array(tmp_values)
-			tmp_values.clear()
+		# if ((tmp_values.size() % (_kernel_size.x * _kernel_size.y * _kernel_size.z)) == 0):
+		# 	var zeros = tmp_values.count(0.0)
+		# 	values.append(tmp_values.size() - zeros)
+		# 	# print("Loaded kernel with %s non-zero values" % [tmp_values.size() - zeros])
+		# 	# print(tmp_values)
+		# 	values.append_array(tmp_values)
+		# 	tmp_values.clear()
 
 	file.close()
 
@@ -621,7 +665,11 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,
 
 	typecount = _typecount
 	kernel_size = _kernel_size
-	return load_kernels_from_packed_byte_array(values.to_byte_array())
+	for k in range(3):
+		return load_kernels_from_packed_byte_array(values[k].to_byte_array(), k)
+
+	create_compute_pipeline_uniforms()
+	return true
 
 
 func free_RID_if_valid(rid: RID) -> bool:

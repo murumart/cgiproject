@@ -1,7 +1,7 @@
 [gd_scene load_steps=13 format=3 uid="uid://bd72pbxexio0w"]
 
 [ext_resource type="Script" uid="uid://c0ovgfnwusf2n" path="res://addons/freelookcamera/free_look_camera.gd" id="1_jjfih"]
-[ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_o5vmg"]
+[ext_resource type="RDShaderFile" uid="uid://d4mm0vntvguh6" path="res://shaders/simulators/dummy_simulation.glsl" id="2_o5vmg"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="2_qjyat"]
 [ext_resource type="Script" uid="uid://dfn07uje00brv" path="res://scenes/renderers/compute_renderer.gd" id="3_22u3y"]
 [ext_resource type="Script" uid="uid://c2snbfagjjxga" path="res://scenes/simulators/compute_simulator.gd" id="3_lqk3y"]

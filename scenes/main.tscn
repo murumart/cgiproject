@@ -25,7 +25,7 @@
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
-[ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
+[ext_resource type="Script" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="Script" path="res://scenes/renderers/instance_custom_data_renderer.gd" id="15_qkpxi"]
 [ext_resource type="Script" uid="uid://cq16qt7v1kge" path="res://scenes/renderers/lattice_mesh_renderer.gd" id="15_tel4y"]
@@ -152,7 +152,7 @@ grid_size = 48
 editor_description = "This isn't a simulation, but just a sphere with holes generated in a compute shader as written by AI. It was used for testing."
 script = ExtResource("6_tefeu")
 compute_shader_file = ExtResource("7_j8jky")
-grid_size = 256
+grid_size = 64
 
 [node name="Renderers" type="Node" parent="."]
 
@@ -168,7 +168,6 @@ editor_description = "This renderer creates a mesh (culled on the inside, no gre
 script = ExtResource("14_muem4")
 instances = [NodePath("../../Meshes/MesherMesh"), NodePath("../../Meshes/MesherMesh2")]
 sim = NodePath("../../Simulators/GDSim")
-disabled = true
 
 [node name="NaiveRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("parent", "sim")]
 editor_description = "This renderer manages a bunch of MeshInstances that each are a box. It hides or shows the boxes depending on the cell data. Needs to create boxes when switching to it, very bad on higher grid sizes."
@@ -201,6 +200,7 @@ disabled = true
 script = ExtResource("16_5q0nq")
 instance_parent = NodePath("../../Meshes/MultimeshParent3")
 cells_mesh_instance = NodePath("../../Meshes/MultimeshParent3/Texture_Instance")
+disabled = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
@@ -235,7 +235,7 @@ renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/Sc
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
 simulator_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationSwitch")
 simulator_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationDesc")
-grid_size = 128
+grid_size = 64
 grid_size_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/GridSizeSwitch")
 editor = NodePath("../../TextureEditor")
 camera = NodePath("..")
