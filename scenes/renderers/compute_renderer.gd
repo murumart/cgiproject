@@ -65,7 +65,7 @@ func set_simulator(sim: Simulator) -> void:
 
 	data_texture = ComputeAutomataSimulator.create_texture(rd, simulator.get_grid_size())
 
-	brick_size = simulator.get_grid_size() / 8
+	brick_size = max(4, int(simulator.get_grid_size() / 16))
 
 	brick_grid_size = Vector3i.ONE * int(ceil(float(simulator.get_grid_size()) / float(brick_size)))
 	create_brick_map_texture()
@@ -179,4 +179,4 @@ func bind_texture_to_material() -> void:
 
 func _on_control_grid_size_changed(new_grid_size: int) -> void:
 	print("Grid size changed: ", new_grid_size, " brick size: ", brick_size)
-	brick_size = new_grid_size / 8
+	brick_size = max(4, int(new_grid_size / 16))
