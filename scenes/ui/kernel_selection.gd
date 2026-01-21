@@ -22,12 +22,8 @@ const KFILES := [
 		{"name": "Meh", "path": "res://scenes/simulators/wide_kernel.txt", "size": 5},
 	],
 	[
-		{"name": "1D Test", "path": "res://scenes/simulators/1d_test.txt", "size": 5},
+		{"name": "1D Test", "path": "res://scenes/simulators/1D_test.txt", "size": 5},
 	]
-]
-
-const KFILES1D := [
-	{"name": "1D Test", "path": "res://scenes/simulators/1d_test.txt", "size": 5},
 ]
 
 func _ready() -> void:
