@@ -27,7 +27,7 @@
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
-[ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="Script" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="Script" uid="uid://b0mrd3macpera" path="res://scenes/renderers/instance_custom_data_renderer.gd" id="15_qkpxi"]
 [ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
 [ext_resource type="Script" uid="uid://drfn2djxr5k4s" path="res://scenes/renderers/instance_texture_renderer.gd" id="16_5q0nq"]
@@ -155,7 +155,6 @@ editor_description = "This renderer uses a shader with voxel ray traversal algri
 script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
-brick_size = 8
 disabled = true
 
 [node name="MesherRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instances", "sim")]
@@ -636,6 +635,8 @@ skeleton = NodePath("../..")
 [node name="Tree30" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
 transform = Transform3D(-0.033765644, 0, -0.99942994, 0, 1, 0, 0.99942994, 0, -0.033765644, 56.329388, 2.1527896, 72.83946)
 skeleton = NodePath("../..")
+
+[connection signal="grid_size_changed" from="Camera3D/Control" to="Renderers/RaytracedRender" method="_on_control_grid_size_changed"]
 
 [editable path="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Pause"]
 [editable path="Camera3D/Control/VBoxContainer/MarginContainer/HBoxContainer/Clear"]
