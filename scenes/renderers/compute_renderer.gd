@@ -93,7 +93,7 @@ func change_render_setting(by: int) -> void:
 
 
 func setup_brick_pipeline() -> void:
-	var shader_file: RDShaderFile = load("res://shaders/brick_map_builder.glsl")
+	var shader_file: RDShaderFile = load("res://shaders/util/brick_map_builder.glsl")
 	var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
 	brick_shader_rid = rd.shader_create_from_spirv(shader_spirv)
 	brick_pipeline_rid = rd.compute_pipeline_create(brick_shader_rid)

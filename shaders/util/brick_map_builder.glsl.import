@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bbdnfyw2snlg"
+path="res://.godot/imported/brick_map_builder.glsl-8a7ec0ea6238a0d66f0e744f4a41af56.res"
+
+[deps]
+
+source_file="res://shaders/util/brick_map_builder.glsl"
+dest_files=["res://.godot/imported/brick_map_builder.glsl-8a7ec0ea6238a0d66f0e744f4a41af56.res"]
+
+[params]
+

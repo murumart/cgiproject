@@ -42,6 +42,8 @@ func set_disabled(to: bool) -> void:
 	set_process(not to)
 	if instance_parent:
 		instance_parent.visible = not disabled
+	if (not disabled and simulator):
+		_sim_updated()
 
 
 func set_simulator(sim: Simulator) -> void:
@@ -62,6 +64,7 @@ func set_simulator(sim: Simulator) -> void:
 		for z in gs: for y in gs: for x in gs:
 			tf.origin = Vector3(x, y, z) + offsetVector
 			cells_mesh_instance.multimesh.set_instance_transform(ix, tf)
+			cells_mesh_instance.multimesh.set_instance_custom_data(ix, Color(0,0,0,0))
 			ix += 1
 	simulator.simulation_updated.connect(_sim_updated)
 

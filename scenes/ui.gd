@@ -65,9 +65,9 @@ func _renderer_selected(which: int) -> void:
 	print("switching render to ", r)
 	if current_renderer:
 		current_renderer.set_disabled(true)
-	r.set_disabled(false)
 	if (current_simulator):
 		r.set_simulator(current_simulator)
+	r.set_disabled(false)
 	current_renderer = r
 	renderer_description.text = r.editor_description
 	camera.renderer = r

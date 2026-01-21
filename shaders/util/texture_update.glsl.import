@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bkscxpkhwjyx7"
+path="res://.godot/imported/texture_update.glsl-54ad4765380aed45229697e907bd605f.res"
+
+[deps]
+
+source_file="res://shaders/util/texture_update.glsl"
+dest_files=["res://.godot/imported/texture_update.glsl-54ad4765380aed45229697e907bd605f.res"]
+
+[params]
+

@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dncsxsptwq78v"]
+
+[ext_resource type="Shader" uid="uid://b7qj2thfc5v4h" path="res://shaders/renderers/instance_texture.gdshader" id="1_kgxrm"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_kgxrm")

@@ -1,7 +1,0 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://emsjvmm7mtwf"]
-
-[ext_resource type="Shader" uid="uid://bb5rs6ju2upn7" path="res://shaders/multiMeshInstance.gdshader" id="1_abrr5"]
-
-[resource]
-render_priority = 0
-shader = ExtResource("1_abrr5")
