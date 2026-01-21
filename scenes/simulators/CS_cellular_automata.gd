@@ -265,6 +265,10 @@ func get_draw_data_async(callback: Callable) -> void:
 	rd.texture_get_data_async(data_texture_rid, 0, callback)
 
 
+func get_texture_rid() -> RID:
+	return data_texture_rid
+
+
 func get_grid_size() -> int:
 	return grid_size
 

@@ -190,7 +190,7 @@ disabled = true
 [node name="InstanceTextureRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instance_parent", "cells_mesh_instance")]
 script = ExtResource("16_5q0nq")
 instance_parent = NodePath("../../Meshes/MultimeshParent3")
-cells_mesh_instance = NodePath("../../Meshes/MultimeshParent3/MultiMeshInstance3D")
+cells_mesh_instance = NodePath("../../Meshes/MultimeshParent3/Texture_Instance")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
@@ -225,7 +225,7 @@ renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/Sc
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
 simulator_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationSwitch")
 simulator_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationDesc")
-grid_size = 32
+grid_size = 128
 grid_size_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/GridSizeSwitch")
 editor = NodePath("../../TextureEditor")
 camera = NodePath("..")
@@ -484,7 +484,7 @@ multimesh = SubResource("MultiMesh_dgi5k")
 [node name="MultimeshParent3" type="Node3D" parent="Meshes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
 
-[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="Meshes/MultimeshParent3"]
+[node name="Texture_Instance" type="MultiMeshInstance3D" parent="Meshes/MultimeshParent3"]
 multimesh = SubResource("MultiMesh_5q0nq")
 
 [node name="TextureEditor" type="Node" parent="." node_paths=PackedStringArray("camera", "simulator", "volume", "highlight", "block_select_buttons", "clear_board_button")]

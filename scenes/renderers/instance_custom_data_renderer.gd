@@ -7,21 +7,12 @@ extends Renderer
 
 var simulator: Simulator
 
-var _cells: PackedByteArray
-var old_cells: PackedByteArray
+var _cells: PackedByteArray = []
+var old_cells: PackedByteArray = []
 
 
 func _ready() -> void:
 	super()
-	# cells_mesh_instance.multimesh.use_colors = true
-	# cells_mesh_instance.multimesh.use_custom_data = true
-	# # var mesh = cells_mesh_instance.multimesh.mesh
-
-	# var mat := ShaderMaterial.new()
-	# mat.shader = load("res://shaders/multiMeshInstance.gdshader")
-
-	# # mesh.surface_set_material(0, mat)
-	# cells_mesh_instance.material_override = mat
 
 
 func _data_get(d: PackedByteArray) -> void:
@@ -59,7 +50,7 @@ func set_simulator(sim: Simulator) -> void:
 	var tf := Transform3D.IDENTITY
 	var offsetVector := Vector3.ONE * 0.5
 	if (cells_mesh_instance.multimesh.instance_count != volume):
-		cells_mesh_instance.multimesh.instance_count = gs * gs * gs
+		cells_mesh_instance.multimesh.instance_count = volume
 		var ix := 0
 		for z in gs: for y in gs: for x in gs:
 			tf.origin = Vector3(x, y, z) + offsetVector

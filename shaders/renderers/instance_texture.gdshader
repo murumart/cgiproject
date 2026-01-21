@@ -12,7 +12,11 @@ const vec3 diffuse_colors[4] = vec3[](
 varying flat int type;
 
 void vertex() {
-	ivec3 coords = ivec3(INSTANCE_CUSTOM.xyz);
+	// ivec3 coords = ivec3(INSTANCE_CUSTOM.xyz);
+	int grid_size = int(INSTANCE_CUSTOM.x);
+	ivec3 coords = ivec3(INSTANCE_ID % grid_size,
+                        (INSTANCE_ID / grid_size) % grid_size,
+                        INSTANCE_ID / (grid_size * grid_size));
 	type = int(texelFetch(cell_tex, coords, 0).r * 255.0);
 }
 
