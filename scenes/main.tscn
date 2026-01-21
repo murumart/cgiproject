@@ -1,4 +1,4 @@
-[gd_scene load_steps=55 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=57 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://d2mwckm533qi" path="res://shaders/simulators/dynamic_size_cell_automata.glsl" id="2_qkpxi"]
 [ext_resource type="RDShaderFile" uid="uid://rtb2hsjiitos" path="res://shaders/util/state_argmax.glsl" id="3_5q0nq"]
@@ -10,7 +10,6 @@
 [ext_resource type="Script" uid="uid://dfal1x20mt0gc" path="res://scenes/simulators/CS_cellular_automata.gd" id="4_vxglm"]
 [ext_resource type="Script" uid="uid://cx2kw01uyi1ko" path="res://scenes/renderers/naive_renderer.gd" id="5_dp3eg"]
 [ext_resource type="Texture2D" uid="uid://3sp4y4a4vg4k" path="res://scenes/decor/smoke.png" id="5_eb6dy"]
-[ext_resource type="Material" uid="uid://dl42s6e68ocqk" path="res://shaders/renderers/lattice_material.tres" id="5_tefeu"]
 [ext_resource type="Material" uid="uid://dx6c5rrjvdgb" path="res://scenes/renderers/fleshmat.tres" id="6_0ld40"]
 [ext_resource type="PackedScene" uid="uid://bfnvaccj5chko" path="res://scenes/ui/ui_button.tscn" id="6_85g3d"]
 [ext_resource type="Material" uid="uid://yo1slvqoknh0" path="res://shaders/volumetric_display.tres" id="6_o6xl0"]
@@ -27,12 +26,14 @@
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
-[ext_resource type="Script" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
-[ext_resource type="Script" uid="uid://b0mrd3macpera" path="res://scenes/renderers/instance_custom_data_renderer.gd" id="15_qkpxi"]
+[ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="Script" path="res://scenes/renderers/instance_custom_data_renderer.gd" id="15_qkpxi"]
+[ext_resource type="Script" uid="uid://cq16qt7v1kge" path="res://scenes/renderers/lattice_mesh_renderer.gd" id="15_tel4y"]
 [ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
-[ext_resource type="Script" uid="uid://drfn2djxr5k4s" path="res://scenes/renderers/instance_texture_renderer.gd" id="16_5q0nq"]
+[ext_resource type="Script" path="res://scenes/renderers/instance_texture_renderer.gd" id="16_5q0nq"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 [ext_resource type="Material" uid="uid://emsjvmm7mtwf" path="res://shaders/renderers/instance_custom.tres" id="24_tel4y"]
+[ext_resource type="Shader" uid="uid://bnmx777p5ijxw" path="res://shaders/renderers/lattice.gdshader" id="28_j8jky"]
 [ext_resource type="Material" uid="uid://dncsxsptwq78v" path="res://shaders/renderers/instance_texture.tres" id="29_5q0nq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
@@ -65,6 +66,11 @@ material = SubResource("StandardMaterial3D_tipki")
 [sub_resource type="BoxMesh" id="BoxMesh_tefeu"]
 material = ExtResource("6_o6xl0")
 size = Vector3(100, 100, 100)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kmb1v"]
+render_priority = 0
+shader = ExtResource("28_j8jky")
+shader_parameter/grid_size = 0
 
 [sub_resource type="BoxMesh" id="BoxMesh_tel4y"]
 material = ExtResource("6_0ld40")
@@ -172,6 +178,11 @@ sim = NodePath("../../Simulators/GDSim")
 cell_materials = Array[BaseMaterial3D]([ExtResource("6_0ld40"), ExtResource("7_gqmmt"), ExtResource("8_yc10j")])
 disabled = true
 
+[node name="LatticeRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("lattice")]
+script = ExtResource("15_tel4y")
+lattice = NodePath("../../Meshes/LatticeMeshInstance")
+disabled = true
+
 [node name="MultimeshRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instance_parent", "core_mesh_instance", "leaf_mesh_instance", "bark_mesh_instance")]
 script = ExtResource("14_fv21b")
 instance_parent = NodePath("../../Meshes/MultimeshParent")
@@ -218,7 +229,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/NaiveRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/LatticeRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
@@ -444,8 +455,8 @@ mesh = SubResource("BoxMesh_tefeu")
 metadata/_edit_lock_ = true
 
 [node name="LatticeMeshInstance" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2125053, 0, 0)
-material_override = ExtResource("5_tefeu")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
+material_override = SubResource("ShaderMaterial_kmb1v")
 skeleton = NodePath("../..")
 script = ExtResource("4_jyhfs")
 metadata/_custom_type_script = "uid://o2qjsa51xmt1"

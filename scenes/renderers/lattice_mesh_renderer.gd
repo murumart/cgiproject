@@ -1,8 +1,6 @@
 extends Renderer
 
-const LatticeMesh = preload("res://scenes/lattice_mesh.gd")
-
-@export var lattice: LatticeMesh
+@export var lattice: LatticeMeshInstance
 
 var simulator: Simulator
 
@@ -22,9 +20,11 @@ func change_render_setting(_by: int) -> void: pass
 
 
 func set_disabled(to: bool) -> void:
-	set_process(not to)
+	disabled = to
+	print("lattice_mesh_renderer.gd::set_disabled : setting disabled to ", to)
 	if lattice:
 		lattice.visible = not disabled
+		print("lattice_mesh_renderer.gd::set_disabled : lattice visible: ", lattice.visible)
 
 
 func set_simulator(sim: Simulator) -> void:
