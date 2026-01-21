@@ -6,20 +6,29 @@ extends Control
 @export var read_switch: OptionButton
 @export var write_switch: OptionButton
 
+@export var simulator: Simulator
+
 const cell_types = ["Air", "Core", "Leaf", "Bark"]
 
 var current_layer := 0
 var current_write_to_cell := 0
 
 # Kernel data array
-var kernels_rid: RID
+var kernels: PackedFloat32Array
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	for type in cell_types:
 		read_switch.add_item(type)
 		write_switch.add_item(type)
-
+	
+	kernels = simulator.get_kernel()
+	var string = ""
+	for i in range(kernels.size()):
+		string += str(kernels[i]) + " "
+		if ((i + 1) % 5 == 0):
+			string += "\n"
+	print(string)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta: float) -> void:

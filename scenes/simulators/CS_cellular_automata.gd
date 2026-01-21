@@ -41,9 +41,11 @@ var _buffer_elements: int
 @export var texture_update_shader_file: RDShaderFile
 @export_file("*.txt") var kernel_file_path: String
 
+var cpu_kernel: PackedFloat32Array # for editing
+
 
 func _ready() -> void:
-	super()
+	super ()
 	assert(rd, "Couldnt' get rendering device")
 
 	# Setup
@@ -144,7 +146,7 @@ func dispatch_texture_update(value_and_location: PackedInt32Array) -> void:
 	rd.compute_list_bind_compute_pipeline(compute_list, texture_update_pipeline_rid)
 	rd.compute_list_bind_uniform_set(compute_list, texture_update_uniform_set, 0)
 	rd.compute_list_set_push_constant(compute_list, value_and_location.to_byte_array(), 16)
-	rd.compute_list_dispatch(compute_list,1,1,1)
+	rd.compute_list_dispatch(compute_list, 1, 1, 1)
 	rd.compute_list_end()
 
 
@@ -154,7 +156,6 @@ func setup_compute_pipeline() -> void:
 	# free_RID_if_valid(compute_read_state_rid)
 	# free_RID_if_valid(compute_write_state_rid)
 	# free_RID_if_valid(kernels_rid)
-
 	if compute_shader_file == null:
 		push_error("Failed to load compute shader file")
 		return
@@ -183,12 +184,12 @@ func setup_compute_pipeline() -> void:
 	size = grid_size * grid_size * grid_size * typecount * 4
 
 	if (compute_read_state_rid.is_valid() and air.size() == _buffer_elements):
-		rd.buffer_update(compute_read_state_rid, 0, air.size()*4, air.to_byte_array())
+		rd.buffer_update(compute_read_state_rid, 0, air.size() * 4, air.to_byte_array())
 	else:
 		compute_read_state_rid = rd.storage_buffer_create(size, air.to_byte_array())
 
 	if (compute_write_state_rid.is_valid() and air.size() == _buffer_elements):
-		rd.buffer_update(compute_write_state_rid, 0, air.size()*4, air.to_byte_array())
+		rd.buffer_update(compute_write_state_rid, 0, air.size() * 4, air.to_byte_array())
 	else:
 		compute_write_state_rid = rd.storage_buffer_create(size, air.to_byte_array())
 
@@ -209,7 +210,6 @@ func setup_compute_pipeline() -> void:
 func setup_aggregation_pipeline() -> void:
 	# free_RID_if_valid(aggregation_shader_rid)
 	# free_RID_if_valid(aggregation_pipeline_rid)
-
 	### Aggregation pipeline
 	if aggregator_shader_file == null:
 		push_error("Failed to load aggregation shader file")
@@ -251,7 +251,6 @@ func reset() -> void:
 	# 	if rid.is_valid():
 	# 		rd.free_rid(rid)
 	# allocated_RIDs.clear()
-
 	load_kernels_from_file(kernel_file_path)
 	data_texture_rid = create_texture(rd, grid_size)
 	simulation_updated.emit.call_deferred()
@@ -302,7 +301,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 
 	if (not uniform_flip):
 		for i in typecount:
-			rd.buffer_copy(compute_write_state_rid, tmp, old_size*i, new_size*i, min_size)
+			rd.buffer_copy(compute_write_state_rid, tmp, old_size * i, new_size * i, min_size)
 
 		await RenderingServer.frame_post_draw
 		# free_RID_if_valid(compute_read_state_rid)
@@ -312,7 +311,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 		compute_read_state_rid = rd.storage_buffer_create(buffer_size)
 	else:
 		for i in typecount:
-			rd.buffer_copy(compute_read_state_rid, tmp, old_size*i, new_size*i, min_size)
+			rd.buffer_copy(compute_read_state_rid, tmp, old_size * i, new_size * i, min_size)
 
 		await RenderingServer.frame_post_draw
 		# free_RID_if_valid(compute_read_state_rid)
@@ -320,7 +319,6 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 
 		compute_read_state_rid = tmp
 		compute_write_state_rid = rd.storage_buffer_create(buffer_size)
-
 
 
 	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid() or not kernels_rid.is_valid()):
@@ -349,13 +347,13 @@ func update_data(data: PackedByteArray) -> void:
 	for cell_idx in range(cell_grid_size):
 		# if (data[cell_idx] > 0):
 			# if (cell_values[cell_idx] >= typecount): continue
-		tmp_buffer[cell_idx + clamp(data[cell_idx], 0, typecount - 1)*cell_grid_size] = 200
+		tmp_buffer[cell_idx + clamp(data[cell_idx], 0, typecount - 1) * cell_grid_size] = 200
 
 	var read_buffer = compute_write_state_rid if uniform_flip else compute_read_state_rid
 	rd.buffer_update(read_buffer, 0, tmp_buffer.size() * 4, tmp_buffer.to_byte_array())
 
 
-func update_data_at(value: int, x: int, y: int, z:int):
+func update_data_at(value: int, x: int, y: int, z: int):
 	if (x >= grid_size or x < 0 or y >= grid_size or y < 0 or z >= grid_size or z < 0 or value < 0 or value >= typecount):
 		return
 
@@ -365,13 +363,13 @@ func update_data_at(value: int, x: int, y: int, z:int):
 	simulation_updated.emit.call_deferred()
 	simulation_updated_texture.emit(data_texture_rid)
 
-	var grid_index = (x + y*grid_size + z*grid_size*grid_size)*4
-	var type_stride = grid_size*grid_size*grid_size*4
+	var grid_index = (x + y * grid_size + z * grid_size * grid_size) * 4
+	var type_stride = grid_size * grid_size * grid_size * 4
 	for i in typecount:
 		if (i == value):
-			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [255,0,0,0])
+			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [255, 0, 0, 0])
 		else:
-			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [0,0,0,0])
+			rd.buffer_update(read_buffer, grid_index + (i * type_stride), 4, [0, 0, 0, 0])
 
 
 func is_sim_running() -> bool:
@@ -407,7 +405,6 @@ static func create_texture(rds: RenderingDevice, grid_sizes: int) -> RID:
 func create_compute_pipeline_uniforms() -> void:
 	# free_RID_if_valid(compute_pipeline_uniform_set_1)
 	# free_RID_if_valid(compute_pipeline_uniform_set_2)
-
 	# Create uniforms for cell automata
 	var read_u := RDUniform.new()
 	read_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
@@ -457,7 +454,6 @@ func create_compute_pipeline_uniforms() -> void:
 func create_aggregation_pipeline_uniforms():
 	# free_RID_if_valid(aggregation_uniform_set_1)
 	# free_RID_if_valid(aggregation_uniform_set_2)
-
 	# Bind SSBO with latest read_state
 	var read_uniform := RDUniform.new()
 	read_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
@@ -492,7 +488,7 @@ func create_texture_update_uniforms() -> void:
 	texture_update_uniform_set = rd.uniform_set_create([texture_uniform], texture_update_shader_rid, 0)
 
 
-func load_kernels(kernels: PackedFloat32Array, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5,5,5)) -> bool:
+func load_kernels(kernels: PackedFloat32Array, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5, 5, 5)) -> bool:
 	kernel_size = _kernel_size
 	typecount = _typecount
 	return load_kernels_from_packed_byte_array(kernels.to_byte_array())
@@ -519,7 +515,7 @@ func _parse_error(fpath: String, line: int, msg: String) -> void:
 	OS.alert("%s:%s: %s" % [fpath, line, msg], "Error parsing kernel file")
 
 
-func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,5), _typecount: int = 4) -> bool:
+func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5, 5, 5), _typecount: int = 4) -> bool:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		var err := FileAccess.get_open_error()
@@ -578,6 +574,8 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,
 
 	typecount = _typecount
 	kernel_size = _kernel_size
+
+	cpu_kernel = values
 	return load_kernels_from_packed_byte_array(values.to_byte_array())
 
 
@@ -590,6 +588,18 @@ func free_RID_if_valid(rid: RID) -> bool:
 		return true
 	return false
 
+func get_kernel() -> PackedFloat32Array:
+	return cpu_kernel
+
+func get_kernel_size() -> Vector3i:
+	return kernel_size
+
+func get_typecount() -> int:
+	return typecount
+
+func set_kernel(kernels: PackedFloat32Array) -> void:
+	cpu_kernel = kernels
+	load_kernels_from_packed_byte_array(kernels.to_byte_array())
 
 '''
 func setup_kernel_offset_array() -> void:

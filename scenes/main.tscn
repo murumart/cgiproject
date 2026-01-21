@@ -294,8 +294,9 @@ autowrap_mode = 0
 [node name="HBoxContainer2" type="HBoxContainer" parent="Camera3D/Control/VBoxContainer/Hbox/Center"]
 layout_mode = 2
 
-[node name="KernelEditor" parent="Camera3D/Control/VBoxContainer/Hbox/Center/HBoxContainer2" instance=ExtResource("21_kmb1v")]
+[node name="KernelEditor" parent="Camera3D/Control/VBoxContainer/Hbox/Center/HBoxContainer2" node_paths=PackedStringArray("simulator") instance=ExtResource("21_kmb1v")]
 layout_mode = 2
+simulator = NodePath("../../../../../../../Simulators/ComputeShaderSim")
 
 [node name="PanelContainer" type="PanelContainer" parent="Camera3D/Control/VBoxContainer/Hbox"]
 custom_minimum_size = Vector2(180, 0)
