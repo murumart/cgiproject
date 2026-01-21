@@ -1,5 +1,7 @@
 class_name LatticeMeshInstance extends MeshInstance3D
 
+const ComputeShaderSim = preload("res://scenes/simulators/CS_cellular_automata.gd")
+
 static var PLANE_VERTICES: Array[PackedVector3Array] = [
 	# +x
 	[Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(0, 1, 1), Vector3(0, 1, 0)],
@@ -17,28 +19,60 @@ static var PLANE_VERTICES: Array[PackedVector3Array] = [
 
 static var PLANE_UVS: Array[PackedVector2Array] = [
 	# +x
-	[Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0)],
+	[Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)],
 	# -x
-	[Vector2(0, 1), Vector2(0, 0), Vector2(1, 0), Vector2(1, 1)],
+	[Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0)],
 	# +y
-	[Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0)],
+	[Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)],
 	# -y
-	[Vector2(0, 1), Vector2(0, 0), Vector2(1, 0), Vector2(1, 1)],
+	[Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0)],
 	# +z
-	[Vector2(1, 1), Vector2(0, 1), Vector2(0, 0), Vector2(1, 0)],
+	[Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0)],
 	# -z
-	[Vector2(0, 1), Vector2(0, 0), Vector2(1, 0), Vector2(1, 1)],
+	[Vector2(0, 0), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)],
 ]
 
-static var PLANES: PackedVector3Array = [Vector3.RIGHT, Vector3.LEFT, Vector3.UP, Vector3.DOWN, Vector3.BACK, Vector3.FORWARD]
-static var PLANE_COLORS: PackedColorArray = [Color.RED, Color.RED, Color.GREEN, Color.GREEN, Color.BLUE, Color.BLUE]
+static var PLANES: PackedVector3Array = [
+	Vector3.RIGHT, Vector3.LEFT,
+	Vector3.UP, Vector3.DOWN,
+	Vector3.BACK, Vector3.FORWARD
+]
+static var PLANE_COLORS: PackedColorArray = [
+	Color.RED, Color.RED,
+	Color.GREEN, Color.GREEN,
+	Color.BLUE, Color.BLUE
+]
 
 static var PLANE_INDICES: PackedInt32Array = [0, 1, 2, 2, 3, 0]
 
-@export var grid_size: int
+var texture: RID
+var cells: PackedByteArray
+var grid_size: int
+
+var mat: ShaderMaterial:
+	get: return (get_active_material(0) as ShaderMaterial)
+var rd := RenderingServer.get_rendering_device()
 
 
-func generate() -> void:
+func _process(delta: float) -> void:
+	mat.set_shader_parameter("grid_size", grid_size)
+	pass
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.keycode == KEY_SEMICOLON and event.is_pressed():
+		print("lm ö")
+		var d := rd.texture_get_data(texture, 0)
+		#var img := Image.create_from_data(brick_grid_size.x, brick_grid_size.y * brick_grid_size.z, false, Image.FORMAT_R8, d)
+		var img := Image.create_from_data(grid_size, grid_size * grid_size, false, Image.FORMAT_R8, d)
+		img.save_png("res://coolimage.2.png")
+
+
+func generate(gs: int) -> void:
+	grid_size = gs
+	texture = ComputeShaderSim.create_texture(rd, gs)
+	cells.resize(grid_size * grid_size * grid_size)
+	update_texture(cells)
 	var arrays := generate_mesh_arrays(grid_size)
 
 	var m := ArrayMesh.new()
@@ -60,33 +94,30 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 
 	var outof := 1.0 / grid_size
 
-	var ix := 0
+	var index_count := 0
 
 	for i in [0, 1, 2, 3, 4, 5]:
 		var plane := PLANES[i]
 		var plane_vtx := PLANE_VERTICES[i]
 		var plane_uv := PLANE_UVS[i]
 		var plane_col := PLANE_COLORS[i]
-
+		var back := plane.abs() != plane
 		for j in grid_size + 1:
-			var back := plane.abs() != plane
 			var out := Vector3()
 			if back:
 				# so that the back planes are put in correct positions
 				out = - plane * grid_size
 			for pvi in 4:
 				var vtx := out + plane_vtx[pvi] * grid_size + plane * j
-				# adding 0.5 because reasons???
-				vtx += plane * 0.5
 				vertices.append(vtx)
 				uvs.append(plane_uv[pvi])
 				normals.append(plane)
 				colors.append(Color.RED * outof * j)
 
 			for index in PLANE_INDICES:
-				indices.append(index + ix)
+				indices.append(index + index_count)
 
-			ix += 4
+			index_count += 4
 
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_INDEX] = indices
@@ -100,3 +131,14 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 			printt(i, arrays[i])
 
 	return arrays
+
+
+var _dtex := Texture3DRD.new()
+func update_texture(data: PackedByteArray) -> void:
+	cells = data
+	rd.texture_update.call_deferred(texture, 0, data)
+
+	_dtex.texture_rd_rid = texture
+	mat.set_shader_parameter("simulation_data", _dtex)
+	mat.set_shader_parameter("grid_size", grid_size)
+	assert(mat.get_shader_parameter("simulation_data") == _dtex)

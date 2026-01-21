@@ -27,6 +27,8 @@ var current_simulator: Simulator
 @export var kernel_selection: KernelSelection
 
 
+signal grid_size_changed(new_grid_size: int)
+
 func _ready() -> void:
 	pause_button.selected.connect(pause_changed)
 
@@ -101,6 +103,7 @@ func _grid_size_changed(which: int) -> void:
 	if tmp == grid_size:
 		return
 	grid_size = tmp
+	grid_size_changed.emit(grid_size)
 	var s := current_simulator
 	current_simulator = null
 	_simulator_selected(simulators.find(s))

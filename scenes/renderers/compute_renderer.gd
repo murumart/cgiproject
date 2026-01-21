@@ -29,11 +29,11 @@ var data_texture: RID
 
 
 func _ready() -> void:
+	super()
 	setup_brick_pipeline()
 	var s := simulator
 	simulator = null
 	set_simulator(s)
-
 
 
 func _data_got(data: PackedByteArray) -> void:
@@ -65,6 +65,8 @@ func set_simulator(sim: Simulator) -> void:
 		simulator.simulation_updated.connect(_sim_updated)
 
 	data_texture = ComputeAutomataSimulator.create_texture(rd, simulator.get_grid_size())
+
+	brick_size = max(4, int(simulator.get_grid_size() / 16))
 
 	brick_grid_size = Vector3i.ONE * int(ceil(float(simulator.get_grid_size()) / float(brick_size)))
 	create_brick_map_texture()
@@ -174,3 +176,8 @@ func bind_texture_to_material() -> void:
 	mat.set_shader_parameter("brick_size", brick_size) # Set brick size
 	mat.set_shader_parameter("render_setting", render_setting) # Set render setting
 	#mat.set_shader_parameter("seed", sim_seed) # Set seed
+
+
+func _on_control_grid_size_changed(new_grid_size: int) -> void:
+	print("Grid size changed: ", new_grid_size, " brick size: ", brick_size)
+	brick_size = max(4, int(new_grid_size / 16))
