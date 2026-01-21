@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://mgwoue5ea0eh"
+path="res://.godot/imported/1d_kernel.glsl-a4275585a91e9dd68f10dc44a397bfbf.res"
+
+[deps]
+
+source_file="res://shaders/simulators/1d_kernel.glsl"
+dest_files=["res://.godot/imported/1d_kernel.glsl-a4275585a91e9dd68f10dc44a397bfbf.res"]
+
+[params]
+

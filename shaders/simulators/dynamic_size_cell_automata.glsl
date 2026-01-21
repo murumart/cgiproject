@@ -27,9 +27,9 @@ void main() {
     id.y = int(gl_GlobalInvocationID.y);
     id.z = int(gl_GlobalInvocationID.z / typecount);
 
-    // if (any(greaterThanEqual(id, pc.grid_size))) {
-    //     return;
-    // }
+    if (any(greaterThanEqual(id, pc.grid_size))) {
+        return;
+    }
 
     int write_type = int(gl_GlobalInvocationID.z % typecount);
     // if (write_type == 0) return;    // Don't calculate air
