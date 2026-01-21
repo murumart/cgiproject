@@ -1,4 +1,4 @@
-[gd_scene load_steps=47 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=48 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://4goh1vt5y1tc" path="res://shaders/dummy_simulation.glsl" id="2_eb6dy"]
 [ext_resource type="RDShaderFile" uid="uid://bvyd7pxebmgos" path="res://shaders/dynamic_size_cell_automata.glsl" id="2_yq6so"]
@@ -28,6 +28,7 @@
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
 [ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="Script" uid="uid://cq16qt7v1kge" path="res://scenes/renderers/lattice_mesh_renderer.gd" id="15_tel4y"]
 [ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 
@@ -136,6 +137,7 @@ script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
 brick_size = 8
+disabled = true
 
 [node name="MesherRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instances", "sim")]
 editor_description = "This renderer creates a mesh (culled on the inside, no greedy meshing) on a different thread. There's a little fade out animation to make the mesh transitions a little less jarring."
@@ -158,6 +160,11 @@ instance_parent = NodePath("../../Meshes/MultimeshParent")
 core_mesh_instance = NodePath("../../Meshes/MultimeshParent/CoreMeshInstance")
 leaf_mesh_instance = NodePath("../../Meshes/MultimeshParent/LeafMeshInstance")
 bark_mesh_instance = NodePath("../../Meshes/MultimeshParent/BarkMeshInstance")
+disabled = true
+
+[node name="LatticeMeshRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("lattice")]
+script = ExtResource("15_tel4y")
+lattice = NodePath("../../Meshes/LatticeMeshInstance")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
@@ -186,7 +193,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/LatticeMeshRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
@@ -412,12 +419,10 @@ mesh = SubResource("BoxMesh_tefeu")
 metadata/_edit_lock_ = true
 
 [node name="LatticeMeshInstance" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2125053, 0, 0)
-visible = false
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
 material_override = ExtResource("5_tefeu")
 skeleton = NodePath("../..")
 script = ExtResource("4_jyhfs")
-grid_size = 16
 metadata/_custom_type_script = "uid://o2qjsa51xmt1"
 
 [node name="MesherMesh" type="MeshInstance3D" parent="Meshes"]

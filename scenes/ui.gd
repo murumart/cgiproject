@@ -35,6 +35,7 @@ func _ready() -> void:
 	for r in renderers:
 		renderer_switch.add_item(r.name)
 		if not r.disabled:
+			assert(current_renderer == null, "Only enable one renderer at a time")
 			_renderer_selected(i)
 		i += 1
 	renderer_switch.item_selected.connect(_renderer_selected)

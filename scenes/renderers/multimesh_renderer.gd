@@ -31,7 +31,8 @@ func change_render_setting(_by: int) -> void: pass
 
 
 func set_disabled(to: bool) -> void:
-	pass
+	if instance_parent:
+		instance_parent.visible = not disabled
 
 
 func set_simulator(sim: Simulator) -> void:

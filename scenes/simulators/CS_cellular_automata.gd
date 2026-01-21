@@ -104,7 +104,7 @@ func dispatch_compute_pipeline(compute_list: int):
 		kernel_size.y,
 		kernel_size.z,
 		0]
-	
+
 	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
 
 	@warning_ignore("integer_division")
@@ -186,12 +186,12 @@ func setup_compute_pipeline() -> void:
 		rd.buffer_update(compute_read_state_rid, 0, air.size()*4, air.to_byte_array())
 	else:
 		compute_read_state_rid = rd.storage_buffer_create(size, air.to_byte_array())
-	
+
 	if (compute_write_state_rid.is_valid() and air.size() == _buffer_elements):
 		rd.buffer_update(compute_write_state_rid, 0, air.size()*4, air.to_byte_array())
 	else:
 		compute_write_state_rid = rd.storage_buffer_create(size, air.to_byte_array())
-	
+
 	load_kernels_from_file(kernel_file_path)
 	# kernels_rid = rd.storage_buffer_create(4 * typecount * typecount * kernel_size.x * kernel_size.y * kernel_size.z)
 
@@ -289,7 +289,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 	# var cell_type = 0
 	for j in range(new_size):
 			air[j] = 250
-	
+
 	old_size *= 4
 	new_size *= 4
 

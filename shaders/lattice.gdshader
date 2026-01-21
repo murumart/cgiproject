@@ -1,57 +1,77 @@
 shader_type spatial;
 
-render_mode depth_prepass_alpha;
+render_mode depth_prepass_alpha, unshaded;
 
 uniform sampler3D simulation_data : filter_nearest; // The texture from the compute shader
+uniform int grid_size;
 
 varying vec3 vxNormal;
 
+const float EPSILON = 0.001;
+
 void vertex() {
-	// Called for every vertex the material is visible on.
+	// set because NORMAL in fragment is not in world space
 	vxNormal = NORMAL;
+	//if (abs(NORMAL.x) < EPSILON) POSITION.xyz = vec3(0);
 }
 
 void fragment() {
 
-	// Get texture dimensions
-	ivec3 tex_size = textureSize(simulation_data, 0);
-	int voxel_resolution = tex_size.x;
-	float div_by_resolution = 1.0 / float(voxel_resolution);
-	float dadd = 0.5 * div_by_resolution; // adding this because reasons??
+	float uvw_cell_size = 1.0 / float(grid_size + 1);
+	float dadd = 0.5 * uvw_cell_size; // adding this to get center of block??
 
 	vec3 color = vec3(0.0);
 
-	/* if (COLOR.r > 1.0 || COLOR.g > 1.0 || COLOR.b > 1.0) {
-		ALBEDO = vec3(0);
-		ALPHA = sin(TIME) * 0.5 + 0.5;
-	} */
-
-
 	// converting fragment coordinates to 3d texture coordinates
-	vec3 uvw = vec3(0);
-	// these probably have mistakes in many places...
-	if (vxNormal.x != 0.0) {
-		uvw.x = COLOR.r + dadd;
-		uvw.y = 1.0 - UV.y + dadd;
-		uvw.z = 1.0 - UV.x + dadd;
-		color.r += COLOR.r * 0.75;
-	} else if (vxNormal.z != 0.0) {
-		uvw.x = UV.x + dadd;
-		uvw.y = 1.0 - UV.y + dadd;
-		uvw.z = COLOR.r + dadd;
-		color.b += COLOR.r * 0.75;
-	} else if (vxNormal.y != 0.0) {
-		uvw.x = 1.0 - UV.y + dadd;
-		uvw.y = COLOR.r + dadd;
-		uvw.z = 1.0 - UV.x + dadd;
-		color.g += COLOR.r * 0.75;
+	ivec3 uvw = ivec3(0);
+	if (abs(vxNormal.x) > EPSILON) {
+		float s = sign(vxNormal.x);
+		float axisCoef = float(grid_size);
+		if (s > 0.0) {
+			uvw.x = int(COLOR.r * axisCoef);
+		} else {
+			uvw.x = int((1.0 - COLOR.r) * axisCoef);
+		}
+		uvw.z = int(UV.x * axisCoef);
+		uvw.y = int(UV.y * axisCoef);
+		color.r = COLOR.r;
+		float cell = texelFetch(simulation_data, uvw, 0).r; // value of the voxel
+		if (cell <= 0.0) {
+			ALPHA *= 0.005;
+		}
+	} else if (abs(vxNormal.z) > EPSILON) {
+		float s = sign(vxNormal.z);
+		float axisCoef = float(grid_size);
+		if (s > 0.0) {
+			uvw.z = int(COLOR.r * axisCoef);
+		} else {
+			uvw.z = int((1.0 - COLOR.r) * axisCoef);
+		}
+		uvw.x = int(UV.x * axisCoef);
+		uvw.y = int(UV.y * axisCoef);
+		color.b = COLOR.r;
+		float cell = texelFetch(simulation_data, uvw, 0).r; // value of the voxel
+		if (cell <= 0.0) {
+			ALPHA *= 0.005;
+		}
+	} else if (abs(vxNormal.y) > EPSILON) {
+		float s = sign(vxNormal.y);
+		float axisCoef = float(grid_size);
+		if (s > 0.0) {
+			uvw.y = int(COLOR.r * axisCoef);
+		} else {
+			uvw.y = int((1.0 - COLOR.r) * axisCoef);
+		}
+		uvw.x = int(UV.x * axisCoef);
+		uvw.z = int(UV.y * axisCoef);
+		color.g = COLOR.r;
+		float cell = texelFetch(simulation_data, uvw, 0).r; // value of the voxel
+		if (cell <= 0.0) {
+			ALPHA *= 0.005;
+		}
 	}
-
-	float cell = texture(simulation_data, uvw).r; // value of the voxel
-	if (cell <= 0.0) {
-		ALPHA = 0.0;
-	}
-	color += vxNormal * 0.25;
+	//ALPHA = 1.0;
+	//color = vxNormal;
 
 	ALBEDO = color;
 }

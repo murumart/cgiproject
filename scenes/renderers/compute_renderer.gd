@@ -29,11 +29,11 @@ var data_texture: RID
 
 
 func _ready() -> void:
+	super()
 	setup_brick_pipeline()
 	var s := simulator
 	simulator = null
 	set_simulator(s)
-
 
 
 func _data_got(data: PackedByteArray) -> void:
