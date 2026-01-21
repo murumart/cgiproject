@@ -1,4 +1,4 @@
-[gd_scene load_steps=57 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=58 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://d2mwckm533qi" path="res://shaders/simulators/dynamic_size_cell_automata.glsl" id="2_qkpxi"]
 [ext_resource type="RDShaderFile" uid="uid://rtb2hsjiitos" path="res://shaders/util/state_argmax.glsl" id="3_5q0nq"]
@@ -26,11 +26,12 @@
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
-[ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
-[ext_resource type="Script" path="res://scenes/renderers/instance_custom_data_renderer.gd" id="15_qkpxi"]
-[ext_resource type="Script" uid="uid://cq16qt7v1kge" path="res://scenes/renderers/lattice_mesh_renderer.gd" id="15_tel4y"]
+[ext_resource type="Script" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="Script" uid="uid://b0mrd3macpera" path="res://scenes/renderers/instance_custom_data_renderer.gd" id="15_qkpxi"]
+[ext_resource type="Script" path="res://scenes/renderers/lattice_mesh_renderer.gd" id="15_tel4y"]
 [ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
-[ext_resource type="Script" path="res://scenes/renderers/instance_texture_renderer.gd" id="16_5q0nq"]
+[ext_resource type="Script" uid="uid://drfn2djxr5k4s" path="res://scenes/renderers/instance_texture_renderer.gd" id="16_5q0nq"]
+[ext_resource type="PackedScene" uid="uid://b8qw165sso7ts" path="res://scenes/ui/Kernel_editor.tscn" id="21_kmb1v"]
 [ext_resource type="PackedScene" uid="uid://ceo2v28nin3jo" path="res://scenes/decor/ass_tree.tscn" id="22_jscy8"]
 [ext_resource type="Material" uid="uid://emsjvmm7mtwf" path="res://shaders/renderers/instance_custom.tres" id="24_tel4y"]
 [ext_resource type="Shader" uid="uid://bnmx777p5ijxw" path="res://shaders/renderers/lattice.gdshader" id="28_j8jky"]
@@ -161,7 +162,6 @@ editor_description = "This renderer uses a shader with voxel ray traversal algri
 script = ExtResource("3_ya4ey")
 simulator = NodePath("../../Simulators/GDSim")
 mesh_instance = NodePath("../../Meshes/RaytracedVolume")
-disabled = true
 
 [node name="MesherRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instances", "sim")]
 editor_description = "This renderer creates a mesh (culled on the inside, no greedy meshing) on a different thread. There's a little fade out animation to make the mesh transitions a little less jarring."
@@ -201,6 +201,7 @@ disabled = true
 script = ExtResource("16_5q0nq")
 instance_parent = NodePath("../../Meshes/MultimeshParent3")
 cells_mesh_instance = NodePath("../../Meshes/MultimeshParent3/Texture_Instance")
+disabled = true
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.074490994, -0.8297716, 0.55310935, 0.6719433, 0.36806604, 0.6426658, -0.73684675, 0.41953108, 0.53014207, 0, 0, 0)
@@ -289,6 +290,12 @@ You can place blocks (click) on the green
 area when the simulation is paused (Space)"
 fit_content = true
 autowrap_mode = 0
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Camera3D/Control/VBoxContainer/Hbox/Center"]
+layout_mode = 2
+
+[node name="KernelEditor" parent="Camera3D/Control/VBoxContainer/Hbox/Center/HBoxContainer2" instance=ExtResource("21_kmb1v")]
+layout_mode = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="Camera3D/Control/VBoxContainer/Hbox"]
 custom_minimum_size = Vector2(180, 0)
