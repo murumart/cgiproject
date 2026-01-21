@@ -1,6 +1,6 @@
 shader_type spatial;
 
-render_mode depth_prepass_alpha, unshaded;
+render_mode unshaded;
 
 uniform sampler3D simulation_data : filter_nearest; // The texture from the compute shader
 uniform int grid_size;
@@ -37,7 +37,7 @@ void fragment() {
 		color.r = COLOR.r;
 		float cell = texelFetch(simulation_data, uvw, 0).r; // value of the voxel
 		if (cell <= 0.0) {
-			ALPHA *= 0.005;
+			ALPHA = 0.0;
 		}
 	} else if (abs(vxNormal.z) > EPSILON) {
 		float s = sign(vxNormal.z);
@@ -52,7 +52,7 @@ void fragment() {
 		color.b = COLOR.r;
 		float cell = texelFetch(simulation_data, uvw, 0).r; // value of the voxel
 		if (cell <= 0.0) {
-			ALPHA *= 0.005;
+			ALPHA = 0.0;
 		}
 	} else if (abs(vxNormal.y) > EPSILON) {
 		float s = sign(vxNormal.y);
@@ -67,7 +67,7 @@ void fragment() {
 		color.g = COLOR.r;
 		float cell = texelFetch(simulation_data, uvw, 0).r; // value of the voxel
 		if (cell <= 0.0) {
-			ALPHA *= 0.005;
+			ALPHA = 0.0;
 		}
 	}
 	//ALPHA = 1.0;
