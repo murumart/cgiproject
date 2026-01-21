@@ -229,7 +229,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/LatticeRenderer"), NodePath("../../Renderers/NaiveRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/LatticeRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
@@ -455,7 +455,7 @@ mesh = SubResource("BoxMesh_tefeu")
 metadata/_edit_lock_ = true
 
 [node name="LatticeMeshInstance" type="MeshInstance3D" parent="Meshes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2125053, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -50)
 material_override = SubResource("ShaderMaterial_kmb1v")
 skeleton = NodePath("../..")
 script = ExtResource("4_jyhfs")
