@@ -9,13 +9,21 @@ var allocated_RIDs: Array[RID] = []
 var local_size := 8
 var uniform_flip: bool = false
 var compute_shader_rid: RID
-var pipeline_rid: RID
+var pipeline_X_rid: RID
+var pipeline_Y_rid: RID
+var pipeline_Z_rid: RID
 var compute_read_state_rid: RID
 var compute_write_state_rid: RID
-var kernels_rid: RID
+var kernels_X_rid: RID
+var kernels_Y_rid: RID
+var kernels_Z_rid: RID
 # var kernel_offsets_rid: RID
-var compute_pipeline_uniform_set_1: RID
-var compute_pipeline_uniform_set_2: RID
+var compute_pipeline_uniform_set_x1: RID
+var compute_pipeline_uniform_set_x2: RID
+var compute_pipeline_uniform_set_y1: RID
+var compute_pipeline_uniform_set_y2: RID
+var compute_pipeline_uniform_set_z1: RID
+var compute_pipeline_uniform_set_z2: RID
 
 # Aggregation shader
 var data_texture_rid: RID
@@ -86,8 +94,8 @@ func run_simulation_once() -> void:
 
 
 func dispatch_compute_pipeline(compute_list: int):
-	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_rid) # Bind compute pipeline
-	var uniform_set = compute_pipeline_uniform_set_1 if uniform_flip else compute_pipeline_uniform_set_2
+	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_X_rid) # Bind compute pipeline
+	var uniform_set = compute_pipeline_uniform_set_x1 if uniform_flip else compute_pipeline_uniform_set_x2
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 	# Push constants for cell automata
@@ -167,9 +175,14 @@ func setup_compute_pipeline() -> void:
 	if compute_shader_rid == null:
 		push_error("Shader is null(SPIR-V shader failed)")
 
-	# allocated_RIDs.append(compute_shader_rid)
+	var spec := RDPipelineSpecializationConstant.new()
+	spec.set_value(0)
 
-	pipeline_rid = rd.compute_pipeline_create(compute_shader_rid)
+	pipeline_X_rid = rd.compute_pipeline_create(compute_shader_rid, [spec])
+	spec.set_value(1)
+	pipeline_Y_rid = rd.compute_pipeline_create(compute_shader_rid, [spec])
+	spec.set_value(2)
+	pipeline_Z_rid = rd.compute_pipeline_create(compute_shader_rid, [spec])
 
 	# allocated_RIDs.append(pipeline_rid)
 	var size = grid_size * grid_size * grid_size
@@ -195,7 +208,7 @@ func setup_compute_pipeline() -> void:
 	load_kernels_from_file(kernel_file_path)
 	# kernels_rid = rd.storage_buffer_create(4 * typecount * typecount * kernel_size.x * kernel_size.y * kernel_size.z)
 
-	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid() or not kernels_rid.is_valid()):
+	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers!")
 		return
 
@@ -405,8 +418,8 @@ static func create_texture(rds: RenderingDevice, grid_sizes: int) -> RID:
 
 
 func create_compute_pipeline_uniforms() -> void:
-	# free_RID_if_valid(compute_pipeline_uniform_set_1)
-	# free_RID_if_valid(compute_pipeline_uniform_set_2)
+	# free_RID_if_valid(compute_pipeline_uniform_set_x1)
+	# free_RID_if_valid(compute_pipeline_uniform_set_x2)
 
 	# Create uniforms for cell automata
 	var read_u := RDUniform.new()
@@ -429,29 +442,59 @@ func create_compute_pipeline_uniforms() -> void:
 	write_u2.binding = 1
 	write_u2.add_id(compute_read_state_rid)
 
-	var kernel_u := RDUniform.new()
-	kernel_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	kernel_u.binding = 2
-	kernel_u.add_id(kernels_rid)
+	var kernel_x := RDUniform.new()
+	kernel_x.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	kernel_x.binding = 2
+	kernel_x.add_id(kernels_X_rid)
+
+	var kernel_y := RDUniform.new()
+	kernel_y.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	kernel_y.binding = 2
+	kernel_y.add_id(kernels_Y_rid)
+
+	var kernel_z := RDUniform.new()
+	kernel_z.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	kernel_z.binding = 2
+	kernel_z.add_id(kernels_Z_rid)
 
 	# var offset_u := RDUniform.new()
 	# offset_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	# offset_u.binding = 3
 	# offset_u.add_id(kernel_offsets_rid)
 
-	compute_pipeline_uniform_set_1 = rd.uniform_set_create(
-		[read_u, write_u, kernel_u],
+	compute_pipeline_uniform_set_x1 = rd.uniform_set_create(
+		[read_u, write_u, kernel_x],
 		compute_shader_rid,
 		0
 	)
-	compute_pipeline_uniform_set_2 = rd.uniform_set_create(
-		[read_u2, write_u2, kernel_u],
+	compute_pipeline_uniform_set_x2 = rd.uniform_set_create(
+		[read_u2, write_u2, kernel_x],
+		compute_shader_rid,
+		0
+	)
+	compute_pipeline_uniform_set_y1 = rd.uniform_set_create(
+		[write_u, read_u, kernel_y],
+		compute_shader_rid,
+		0
+	)
+	compute_pipeline_uniform_set_y2 = rd.uniform_set_create(
+		[write_u2, read_u2, kernel_y],
+		compute_shader_rid,
+		0
+	)
+	compute_pipeline_uniform_set_z1 = rd.uniform_set_create(
+		[read_u, write_u, kernel_z],
+		compute_shader_rid,
+		0
+	)
+	compute_pipeline_uniform_set_z2 = rd.uniform_set_create(
+		[read_u2, write_u2, kernel_z],
 		compute_shader_rid,
 		0
 	)
 
-	# allocated_RIDs.append(compute_pipeline_uniform_set_1)
-	# allocated_RIDs.append(compute_pipeline_uniform_set_2)
+	# allocated_RIDs.append(compute_pipeline_uniform_set_x1)
+	# allocated_RIDs.append(compute_pipeline_uniform_set_x2)
 
 
 func create_aggregation_pipeline_uniforms():

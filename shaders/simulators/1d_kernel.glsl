@@ -42,15 +42,20 @@ void main() {
     int write_type_kernel_index = kernel_grid_volume * typecount * write_type;
     int kernel_radius = pc.kernel_size[AXIS] / 2;
     int base_index = id.x + id.y * pc.stride_X + id.z * pc.stride_Y;
+    int kernel_stride = 1;
+    if (AXIS == 1) kernel_stride = pc.stride_X;
+    if (AXIS == 2) kernel_stride = pc.stride_Y;
 
     float sum = 0.0;
 
     for (int read_type = 0; read_type < pc.typecount; read_type++) {
 
         int kernel_base = write_type_kernel_index + read_type * kernel_grid_volume;
+        int read_type_index = base_index + read_type * pc.stride_Z;
 
         for (int k = -kernel_radius; k <= kernel_radius; k++) {
             float w = kernel.data[kernel_base + k];
+            if (w == 0.0) continue;
 
             ivec3 nb = id;
             if (AXIS == 0) nb.x += k;
@@ -61,11 +66,11 @@ void main() {
                 any(greaterThanEqual(nb, pc.grid_size)))
                 continue;
 
-            int ni = nb.x + nb.y * pc.stride_X + nb.z * pc.stride_Y
-                    + read_type * pc.stride_Z;
+            // int ni = nb.x + nb.y * pc.stride_X + nb.z * pc.stride_Y
+            //         + read_type * pc.stride_Z;
 
 
-            sum += w * float(read.data[ni]);
+            sum += w * read.data[k * kernel_stride + read_type_index];
         }
     }
 
