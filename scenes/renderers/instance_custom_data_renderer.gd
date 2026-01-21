@@ -1,0 +1,72 @@
+extends Renderer
+
+@export var instance_parent: Node3D
+@export var cells_mesh_instance: MultiMeshInstance3D
+
+# var instance: MultiMeshInstance3D
+
+var simulator: Simulator
+
+var _cells: PackedByteArray = []
+var old_cells: PackedByteArray = []
+
+
+func _ready() -> void:
+	super()
+
+
+func _data_get(d: PackedByteArray) -> void:
+	if disabled: return
+	_cells = d
+	_draw_life()
+
+
+func _sim_updated() -> void:
+	simulator.get_draw_data_async(_data_get)
+
+
+func change_render_setting(_by: int) -> void: pass
+
+
+func set_disabled(to: bool) -> void:
+	disabled = to
+	set_process(not to)
+	if instance_parent:
+		instance_parent.visible = not disabled
+	if (not disabled and simulator):
+		_sim_updated()
+
+
+func set_simulator(sim: Simulator) -> void:
+	if simulator:
+		simulator.simulation_updated.disconnect(_sim_updated)
+	simulator = sim
+	var gs := sim.get_grid_size()
+	var volume := gs * gs * gs
+	_cells.resize(volume)
+	old_cells.resize(volume)
+	old_cells.fill(0)
+	instance_parent.scale = Vector3.ONE * 100.0 / gs
+	var tf := Transform3D.IDENTITY
+	var offsetVector := Vector3.ONE * 0.5
+	if (cells_mesh_instance.multimesh.instance_count != volume):
+		cells_mesh_instance.multimesh.instance_count = volume
+		var ix := 0
+		for z in gs: for y in gs: for x in gs:
+			tf.origin = Vector3(x, y, z) + offsetVector
+			cells_mesh_instance.multimesh.set_instance_transform(ix, tf)
+			cells_mesh_instance.multimesh.set_instance_custom_data(ix, Color(0,0,0,0))
+			ix += 1
+	simulator.simulation_updated.connect(_sim_updated)
+
+
+func _draw_life() -> void:
+	var gs := simulator.get_grid_size()
+	var volume := gs * gs * gs
+	if (old_cells.size() != volume):
+		old_cells.resize(volume)
+		old_cells.fill(0)
+	for i in volume:
+		if _cells[i] != old_cells[i]:
+			cells_mesh_instance.multimesh.set_instance_custom_data(i, Color(_cells[i],0,0,0))
+	old_cells = _cells

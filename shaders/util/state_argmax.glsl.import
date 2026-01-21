@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://rtb2hsjiitos"
+path="res://.godot/imported/state_argmax.glsl-5b71143afb596863b1189fa34b644563.res"
+
+[deps]
+
+source_file="res://shaders/util/state_argmax.glsl"
+dest_files=["res://.godot/imported/state_argmax.glsl-5b71143afb596863b1189fa34b644563.res"]
+
+[params]
+

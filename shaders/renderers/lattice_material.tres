@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dl42s6e68ocqk"]
+
+[ext_resource type="Shader" uid="uid://bnmx777p5ijxw" path="res://shaders/renderers/lattice.gdshader" id="1_i8rqf"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_i8rqf")

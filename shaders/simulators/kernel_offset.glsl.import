@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cai6cm1qfxisy"
+path="res://.godot/imported/kernel_offset.glsl-4950d2b6aa41b5ba8d7a74047df89270.res"
+
+[deps]
+
+source_file="res://shaders/simulators/kernel_offset.glsl"
+dest_files=["res://.godot/imported/kernel_offset.glsl-4950d2b6aa41b5ba8d7a74047df89270.res"]
+
+[params]
+

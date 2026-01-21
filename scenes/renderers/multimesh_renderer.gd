@@ -31,6 +31,8 @@ func change_render_setting(_by: int) -> void: pass
 
 
 func set_disabled(to: bool) -> void:
+	disabled = to
+	set_process(not to)
 	if instance_parent:
 		instance_parent.visible = not disabled
 
@@ -42,12 +44,13 @@ func set_simulator(sim: Simulator) -> void:
 	var gs := sim.get_grid_size()
 	_cells.resize(gs * gs * gs)
 	instance_parent.scale = Vector3.ONE * 100.0 / gs
+	var tf := Transform3D.IDENTITY
+	var offsetVector := Vector3.ONE * 0.5
 	for inst: MultiMeshInstance3D in instances.slice(1):
 		inst.multimesh.instance_count = gs * gs * gs
 		var ix := 0
 		for z in gs: for y in gs: for x in gs:
-			var tf := Transform3D.IDENTITY
-			tf.origin = Vector3(x, y, z) + Vector3.ONE * 0.5
+			tf.origin = Vector3(x, y, z) + offsetVector
 			inst.multimesh.set_instance_transform(ix, tf)
 			ix += 1
 	simulator.simulation_updated.connect(_sim_updated)
@@ -55,6 +58,9 @@ func set_simulator(sim: Simulator) -> void:
 
 func _draw_life() -> void:
 	var gs := simulator.get_grid_size()
+	var zero := Basis.from_scale(Vector3.ZERO)
+	var one := Basis.from_scale(Vector3.ONE)
+	var tf := Transform3D.IDENTITY
 	var ix := 0
 	for z in gs: for y in gs: for x in gs:
 		var cell := _cells[ix]
@@ -63,12 +69,12 @@ func _draw_life() -> void:
 				simulator.get_draw_data_async(_data_get)
 				return
 			var instance := instances[cell]
-			var tf := instance.multimesh.get_instance_transform(ix)
-			tf.basis = Basis.from_scale(Vector3.ONE)
+			tf = instance.multimesh.get_instance_transform(ix)
+			tf.basis = one
 			instance.multimesh.set_instance_transform(ix, tf)
 		else:
+			tf = instances[1].multimesh.get_instance_transform(ix)
+			tf.basis = zero
 			for instance: MultiMeshInstance3D in instances.slice(1):
-				var tf := instance.multimesh.get_instance_transform(ix)
-				tf.basis = Basis.from_scale(Vector3.ZERO)
 				instance.multimesh.set_instance_transform(ix, tf)
 		ix += 1

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://d2mwckm533qi"
+path="res://.godot/imported/dynamic_size_cell_automata.glsl-54b282567bcbbae84471b27a410c635c.res"
+
+[deps]
+
+source_file="res://shaders/simulators/dynamic_size_cell_automata.glsl"
+dest_files=["res://.godot/imported/dynamic_size_cell_automata.glsl-54b282567bcbbae84471b27a410c635c.res"]
+
+[params]
+

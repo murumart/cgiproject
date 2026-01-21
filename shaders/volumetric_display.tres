@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://yo1slvqoknh0"]
 
-[ext_resource type="Shader" uid="uid://8pdmscum8ja3" path="res://shaders/volumetric_display.gdshader" id="1_5h8l5"]
+[ext_resource type="Shader" uid="uid://dn2eyf0yii06w" path="res://shaders/renderers/volumetric_display.gdshader" id="1_5h8l5"]
 
 [resource]
 render_priority = 0
