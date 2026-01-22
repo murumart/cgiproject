@@ -61,6 +61,7 @@ func _ready() -> void:
 	setup_compute_pipeline()
 	setup_texture_update_pipeline()
 	setup_aggregation_pipeline()
+	#init_done = false
 
 
 func _process(_delta) -> void:
@@ -650,11 +651,12 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,
 
 	typecount = _typecount
 	kernel_size = _kernel_size
+	var ok := true
 	for k in range(3):
-		return load_kernels_from_packed_byte_array(values[k].to_byte_array(), k)
+		ok = ok and load_kernels_from_packed_byte_array(values[k].to_byte_array(), k)
 
 	create_compute_pipeline_uniforms()
-	return true
+	return ok
 
 
 func free_RID_if_valid(rid: RID) -> bool:

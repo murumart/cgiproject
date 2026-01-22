@@ -38,6 +38,7 @@
 [ext_resource type="Material" uid="uid://emsjvmm7mtwf" path="res://shaders/renderers/instance_custom.tres" id="24_tel4y"]
 [ext_resource type="Shader" uid="uid://bnmx777p5ijxw" path="res://shaders/renderers/lattice.gdshader" id="28_j8jky"]
 [ext_resource type="Material" uid="uid://dncsxsptwq78v" path="res://shaders/renderers/instance_texture.tres" id="29_5q0nq"]
+[ext_resource type="Texture2D" uid="uid://cyoa676psrvtn" path="res://scenes/renderers/meshblocks.png" id="30_fuf3a"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ya4ey"]
 sky_curve = 0.04616783
@@ -74,6 +75,13 @@ size = Vector3(100, 100, 100)
 render_priority = 0
 shader = ExtResource("28_j8jky")
 shader_parameter/grid_size = 0
+shader_parameter/cell_colors = PackedColorArray(0.8152507, 0.40018785, 0.36556464, 1, 0.4366271, 0.8400777, 0.30748522, 1, 0.49560964, 0.3282248, 0.16007765, 1)
+shader_parameter/cell_texture = ExtResource("30_fuf3a")
+shader_parameter/cell_texture_size = 16.0
+shader_parameter/tiles_in_atlas = 4.0
+shader_parameter/cell_specs = PackedFloat32Array(0.2, 1, 0.1)
+shader_parameter/cell_shines = PackedFloat32Array(70, 90, 0)
+shader_parameter/sun_direction = Vector3(0.75, 1, 0.9)
 
 [sub_resource type="BoxMesh" id="BoxMesh_tel4y"]
 material = ExtResource("6_0ld40")
@@ -139,7 +147,6 @@ size = Vector3(100, 1, 100)
 [node name="ComputeShaderSim" type="Node" parent="Simulators"]
 editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("4_vxglm")
-simulate = true
 grid_size = 64
 compute_shader_file = ExtResource("2_qkpxi")
 aggregator_shader_file = ExtResource("3_5q0nq")
@@ -160,6 +167,7 @@ grid_size = 64
 [node name="1D Shader Sim" type="Node" parent="Simulators"]
 editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("8_pibwh")
+simulate = true
 grid_size = 64
 compute_shader_file = ExtResource("9_c6pm6")
 aggregator_shader_file = ExtResource("3_5q0nq")
