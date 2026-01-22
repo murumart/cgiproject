@@ -14,6 +14,8 @@ extends Control
 @export var save_button: Button
 @export var apply_button: Button
 
+@export var export_button: Button
+
 
 const cell_types = ["Air", "Core", "Leaf", "Bark"]
 const layer_label_texts = ["Layer ->|<-||||", "Layer |->|<-|||", "Layer ||->|<-||", "Layer |||->|<-|", "Layer ||||->|<-"]
@@ -42,8 +44,9 @@ func _ready() -> void:
 	
 	save_button.pressed.connect(_on_save_button_pressed)
 	apply_button.pressed.connect(_apply_kernel)
+	export_button.pressed.connect(_export_kernel)
 	
-	#print_kernels()
+	print_kernels()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta: float) -> void:
@@ -56,24 +59,33 @@ func get_kernel_slice_at(write_type: int, read_type: int, layer: int):
 	#print(slice)
 	return slice
 
-func print_kernels() -> void:
+func kernel_to_string(kernel: PackedFloat32Array) -> String:
 	var string = ""
 	var i = 0
-	#var j = 0
-	#var row_i = 0
-	#var kernel_i = 0
-	while kernels.size() > i:
-		string += str(kernels[i]) + "\n"
+	var read_type_ix = 0
+	var write_type_ix = 0
+	while kernel.size() > i:
+		string += str(kernel[i]) + "\n"
 		i += 1
-		for um in range(5):
-			for j in range(5):
-				for k in range(5):
-					string += str(kernels[i]) + " "
+		string += "# Wrinting " + cell_types[write_type_ix] + "\n"
+		string += "# Reading " + cell_types[read_type_ix%4] + "\n"
+		if ((read_type_ix + 1)%4 == 0):
+			write_type_ix += 1
+			
+		read_type_ix += 1
+		for um in range(5): # 
+			#string += cell_types[um%4] + "\n"
+			#string += "reading " + cell_types[um%4] + "\n"
+			for j in range(5): # layer
+				for k in range(5): # char
+					string += str(kernel[i]) + " "
 					i += 1
 				string += "\n"
 			string += "\n"
-	#print("!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print(string)
+	return string
+
+func print_kernels() -> void:
+	print(kernel_to_string(kernels))
 	
 
 func _on_button_pressed() -> void:
@@ -126,3 +138,10 @@ func _save_kernel_slice(write_type: int, read_type: int, layer: int) -> void:
 
 func _apply_kernel() -> void:
 	simulator.set_kernel(kernels)
+
+
+func _export_kernel() -> void:
+	print("export_kernel")
+	#var file = FileAccess.open("user://kernel.txt", FileAccess.WRITE)
+	#file.store_string()
+	#file.close()
