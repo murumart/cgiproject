@@ -197,7 +197,6 @@ cells_mesh_instance = NodePath("../../Meshes/MultimeshParent2/CellsMultiMeshInst
 disabled = true
 
 [node name="InstanceTextureRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instance_parent", "cells_mesh_instance")]
-editor_description = "Instances 3D MultiMeshes for each cell in the grid and samples a texture for the cell type."
 script = ExtResource("16_5q0nq")
 instance_parent = NodePath("../../Meshes/MultimeshParent3")
 cells_mesh_instance = NodePath("../../Meshes/MultimeshParent3/Texture_Instance")

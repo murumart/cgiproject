@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://nfd3t63mseqr" path="res://scenes/ui/kernel_editor.gd" id="1_rektp"]
 
-[node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "layer_label", "read_switch", "write_switch", "buttons", "kernel_edit_field", "save_button", "apply_button")]
+[node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "layer_label", "read_switch", "write_switch", "buttons")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,9 +15,6 @@ layer_label = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2
 read_switch = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/VBoxContainer/Read_option")
 write_switch = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/VBoxContainer/Write_option")
 buttons = [NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer1_button"), NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer2_button"), NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer3_button"), NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer4_button"), NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer5_button")]
-kernel_edit_field = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/TextEdit")
-save_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/Save_button")
-apply_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/Apply_button")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
@@ -70,7 +67,7 @@ text = "0 0 0 0 0
 placeholder_text = "Enter kernels
 "
 
-[node name="Save_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer"]
+[node name="Button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Save"
 
@@ -114,7 +111,7 @@ focus_mode = 0
 text = "5
 "
 
-[node name="Apply_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
+[node name="Button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 focus_mode = 0
 text = "Apply"
