@@ -9,6 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_force_pass_scroll_events = false
 script = ExtResource("1_rektp")
 kernel_editor = NodePath("HBoxContainer/Kernel Editor")
 open_button = NodePath("HBoxContainer/Kernel_open_button")
@@ -63,7 +64,7 @@ layout_mode = 2
 focus_mode = 0
 
 [node name="TextEdit" type="TextEdit" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(300, 200)
 layout_mode = 2
 text = "0 0 0 0 0
 0 0 0 0 0

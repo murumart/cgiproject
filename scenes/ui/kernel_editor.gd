@@ -75,8 +75,8 @@ func _ready() -> void:
 #	pass
 
 func get_kernel_slice_at(write_type: int, read_type: int, layer: int):
-	var start = write_type * (5 * 5 * 5 + 1) * type_count + read_type * (5 * 5 * 5 + 1) + 1 + layer * 5 * 5
-	var end = start + 5 * 5
+	var start = write_type * (kernel_size.x * kernel_size.y * kernel_size.z + 1) * type_count + read_type * (kernel_size.x * kernel_size.y * kernel_size.z + 1) + 1 + layer * kernel_size.x * kernel_size.y
+	var end = start + kernel_size.x * kernel_size.y
 	var slice = kernels.slice(start, end)
 	#print(slice)
 	return slice
@@ -90,18 +90,21 @@ func kernel_to_string(kernel: PackedFloat32Array) -> String:
 		string += "# " + str(kernel[i]) + "\n"
 		i += 1
 		string += "# Wrinting " + cell_types[write_type_ix] + "\n"
-		string += "# Reading " + cell_types[read_type_ix % 4] + "\n"
-		if ((read_type_ix + 1) % 4 == 0):
+		string += "# Reading " + cell_types[read_type_ix % type_count] + "\n"
+		if ((read_type_ix + 1) % type_count == 0):
 			write_type_ix += 1
 			
 		read_type_ix += 1
-		for um in range(5): #
+		for um in range(kernel_size.z): #
 			#string += cell_types[um%4] + "\n"
 			#string += "reading " + cell_types[um%4] + "\n"
-			for j in range(5): # layer
-				for k in range(5): # char
+			for j in range(kernel_size.y): # layer
+				for k in range(kernel_size.x): # char
 					string += str(kernel[i]) + " "
 					i += 1
+					if (i >= kernel.size()):
+						print(kernel_size)
+						print("!!!!!!!!!!!!!!1")
 				string += "\n"
 			string += "\n"
 	return string
@@ -111,6 +114,9 @@ func print_kernels() -> void:
 
 func update_editor():
 	kernels = simulator.get_kernel()
+	kernel_size = simulator.get_kernel_size()
+	type_count = simulator.get_typecount()
+	#print_kernels()
 	kernel_slice = get_kernel_slice_at(write_switch.get_selected_id(), read_switch.get_selected_id(), current_layer)
 	_change_kernel_edit_field_value(kernel_slice)
 
@@ -140,7 +146,7 @@ func _change_kernel_edit_field_value(slice: PackedFloat32Array) -> void:
 	var string = ""
 	for i in range(slice.size()):
 		string += str(snapped(slice[i], 0.00001)) + " "
-		if (i + 1) % 5 == 0:
+		if (i + 1) % kernel_size.x == 0:
 			string += "\n"
 	kernel_edit_field.text = string
 
@@ -149,7 +155,7 @@ func _on_slice_text_edit() -> void:
 
 func _save_kernel_slice(write_type: int, read_type: int, layer: int) -> void:
 	# print("save_slice to kernels")
-	var start = write_type * (5 * 5 * 5 + 1) * type_count + read_type * (5 * 5 * 5 + 1) + 1 + layer * 5 * 5
+	var start = write_type * (kernel_size.x * kernel_size.y * kernel_size.z + 1) * type_count + read_type * (kernel_size.x * kernel_size.y * kernel_size.z + 1) + 1 + layer * kernel_size.x * kernel_size.y
 	#var end = start + 5 * 5
 
 	var string = kernel_edit_field.text
