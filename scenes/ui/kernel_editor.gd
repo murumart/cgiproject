@@ -116,7 +116,7 @@ func update_editor():
 	kernels = simulator.get_kernel()
 	kernel_size = simulator.get_kernel_size()
 	type_count = simulator.get_typecount()
-	print_kernels()
+	#print_kernels()
 	kernel_slice = get_kernel_slice_at(write_switch.get_selected_id(), read_switch.get_selected_id(), current_layer)
 	_change_kernel_edit_field_value(kernel_slice)
 
