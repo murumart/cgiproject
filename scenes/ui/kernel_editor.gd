@@ -93,7 +93,7 @@ func _on_layer_button_pressed(which: int) -> void:
 	_change_kernel_edit_field_value(kernel_slice)
 
 func _on_option_button_selected(_index: int) -> void:
-	print("!!!!!!!!!!!!!!!ssss")
+	# print("!!!!!!!!!!!!!!!ssss")
 	kernel_slice = get_kernel_slice_at(write_switch.get_selected_id(), read_switch.get_selected_id(), current_layer)
 	_change_kernel_edit_field_value(kernel_slice)
 
@@ -109,7 +109,7 @@ func _on_save_button_pressed() -> void:
 	_save_kernel_slice(write_switch.get_selected_id(), read_switch.get_selected_id(), current_layer)
 
 func _save_kernel_slice(write_type: int, read_type: int, layer: int) -> void:
-	print("save_slice to kernels")
+	# print("save_slice to kernels")
 	var start = write_type * 5 * 5 * 5 * 4 + write_type * 4 + read_type * 125 + read_type + 1 + layer * 5 * 5
 	#var end = start + 5 * 5
 
@@ -125,7 +125,4 @@ func _save_kernel_slice(write_type: int, read_type: int, layer: int) -> void:
 		kernels[start + i] = slice[i]
 
 func _apply_kernel() -> void:
-	print("apply_kernel")
-	print_kernels()
-	print(kernels.size())
 	simulator.set_kernel(kernels)
