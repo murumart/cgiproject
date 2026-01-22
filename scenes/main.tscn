@@ -139,7 +139,6 @@ size = Vector3(100, 1, 100)
 [node name="ComputeShaderSim" type="Node" parent="Simulators"]
 editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("4_vxglm")
-simulate = true
 grid_size = 64
 compute_shader_file = ExtResource("2_qkpxi")
 aggregator_shader_file = ExtResource("3_5q0nq")
@@ -160,6 +159,7 @@ grid_size = 64
 [node name="1D Shader Sim" type="Node" parent="Simulators"]
 editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("8_pibwh")
+simulate = true
 grid_size = 64
 compute_shader_file = ExtResource("9_c6pm6")
 aggregator_shader_file = ExtResource("3_5q0nq")
