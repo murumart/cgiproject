@@ -46,17 +46,19 @@ func set_simulator(sim: Simulator) -> void:
 	instance_parent.scale = Vector3.ONE * 100.0 / gs
 	var tf := Transform3D.IDENTITY
 	var offsetVector := Vector3.ONE * 0.5
-	for inst: MultiMeshInstance3D in instances.slice(1):
-		inst.multimesh.instance_count = gs * gs * gs
+	for i in range(1, instances.size()):
+		instances[i].multimesh.instance_count = gs * gs * gs
 		var ix := 0
 		for z in gs: for y in gs: for x in gs:
 			tf.origin = Vector3(x, y, z) + offsetVector
-			inst.multimesh.set_instance_transform(ix, tf)
+			instances[i].multimesh.set_instance_transform(ix, tf)
 			ix += 1
 	simulator.simulation_updated.connect(_sim_updated)
 
 
 func _draw_life() -> void:
+	for i in range(1, instances.size()):
+		instances[i].hide()
 	var gs := simulator.get_grid_size()
 	var zero := Basis.from_scale(Vector3.ZERO)
 	var one := Basis.from_scale(Vector3.ONE)
@@ -75,6 +77,8 @@ func _draw_life() -> void:
 		else:
 			tf = instances[1].multimesh.get_instance_transform(ix)
 			tf.basis = zero
-			for instance: MultiMeshInstance3D in instances.slice(1):
-				instance.multimesh.set_instance_transform(ix, tf)
+			for i in range(1, instances.size()):
+				instances[i].multimesh.set_instance_transform(ix, tf)
 		ix += 1
+	for i in range(1, instances.size()):
+		instances[i].show()
