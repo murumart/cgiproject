@@ -197,6 +197,7 @@ cell_materials = Array[BaseMaterial3D]([ExtResource("6_0ld40"), ExtResource("7_g
 disabled = true
 
 [node name="LatticeRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("lattice")]
+editor_description = "This renderer uses a lattice rendering method as shown by Davis Morley in the talk Greedy Meshing Voxels Fast. It uses a once-generated mesh consisting of planes for each axis. The mesh is never regenerated as the data changes. Instead, voxel display is done in the fragment shader, based on voxel data input as a uniform (and Blinn-Phong shaded and textured for fun). It seems to perform really bad on lower-end machines, but okay otherwise."
 script = ExtResource("15_tel4y")
 lattice = NodePath("../../Meshes/LatticeMeshInstance")
 disabled = true
