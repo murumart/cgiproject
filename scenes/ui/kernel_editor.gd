@@ -50,7 +50,7 @@ func _ready() -> void:
 #	pass
 
 func get_kernel_slice_at(write_type: int, read_type: int, layer: int):
-	var start = write_type * 5 * 5 * 5 * 4 + write_type * 4 + read_type * 125 + read_type + 1 + layer * 5 * 5
+	var start = write_type * (5 * 5 * 5 + 1) * 4 + read_type * (5 * 5 * 5 + 1) + 1 + layer * 5 * 5
 	var end = start + 5 * 5
 	var slice = kernels.slice(start, end)
 	#print(slice)
@@ -126,4 +126,6 @@ func _save_kernel_slice(write_type: int, read_type: int, layer: int) -> void:
 
 func _apply_kernel() -> void:
 	print("apply_kernel")
+	print_kernels()
+	print(kernels.size())
 	simulator.set_kernel(kernels)
