@@ -1,7 +1,8 @@
 extends PanelContainer
 
-const CS3DAutomata = preload("res://scenes/simulators/CS_cellular_automata.gd")
+# const CS3DAutomata = preload("res://scenes/simulators/CS_cellular_automata.gd")
 const CS1DAutomata = preload("res://scenes/simulators/1D_Kernel_Automata.gd")
+const CPUSim = preload("res://scenes/simulators/gd_sim.gd")
 const Kernel_editor = preload("res://scenes/ui/kernel_editor.gd")
 
 @export var kernel_switch: OptionButton
@@ -75,7 +76,7 @@ func _custom_get(filepath: String, custom := true, kernel_size: Vector3i = Vecto
 
 func set_simulator(s: Simulator) -> void:
 	sim = s
-	if (s is not CS1DAutomata and s is not CS3DAutomata):
+	if (s is CPUSim):
 		set_enabled(false)
 		return
 	var old = kernel_type

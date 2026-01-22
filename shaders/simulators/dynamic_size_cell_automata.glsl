@@ -4,9 +4,9 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 // As typecount is < 4 we could back all types into one uint
-layout(set = 0, binding = 0, std430) buffer ReadArray { readonly uint data[]; } read;
+layout(set = 0, binding = 0, std430) buffer ReadArray { readonly int data[]; } read;
 
-layout(set = 0, binding = 1, std430) buffer WriteArray { writeonly uint data[]; } write;
+layout(set = 0, binding = 1, std430) buffer WriteArray { writeonly int data[]; } write;
 
 layout(set = 0, binding = 2, std430) buffer KernelArray { readonly float data[]; } kernel;
 

@@ -2,7 +2,7 @@
 #version 450
 layout(local_size_x=8, local_size_y=8, local_size_z=8) in;
 
-layout(set=0, binding=0, std430) buffer State { readonly uint data[]; } state;
+layout(set=0, binding=0, std430) buffer State { readonly int data[]; } state;
 
 layout(set=0, binding=1, r8) uniform writeonly image3D out_types;
 
@@ -27,7 +27,7 @@ void main() {
     int stride_z = pc.size.x * pc.size.y * pc.size.z;
     // ivec3 stride = ivec3(stride_x, stride_y, stride_z);
 
-    uint best_val = 0;
+    int best_val = 0;
     int best_type = 0;
 
     int t = id.x +
@@ -36,7 +36,7 @@ void main() {
 
     for (int i = 0; i < 4; i++) {
         // int i = idx4D(t, id, stride);
-        uint v = state.data[t];
+        int v = state.data[t];
         if (v > best_val) {
             best_val = v;
             best_type = i;

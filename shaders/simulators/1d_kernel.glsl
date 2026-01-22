@@ -4,11 +4,11 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
 layout(set = 0, binding = 0, std430) buffer ReadArray {
-    readonly uint data[];
+    readonly int data[];
 } read;
 
 layout(set = 0, binding = 1, std430) buffer WriteArray {
-    writeonly uint data[];
+    writeonly int data[];
 } write;
 
 layout(set = 0, binding = 2, std430) buffer Kernel {
@@ -75,5 +75,5 @@ void main() {
     }
 
     write.data[base_index + write_type * pc.stride_Z] =
-        uint(clamp(sum, 0.0, 255.0));
+        int(clamp(sum, 0.0, 255.0));
 }
