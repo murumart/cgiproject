@@ -2,6 +2,7 @@ extends Renderer
 
 const ComputeSimulator = preload("res://scenes/simulators/compute_simulator.gd")
 const ComputeAutomataSimulator = preload("res://scenes/simulators/CS_cellular_automata.gd")
+const CPUSim = preload("res://scenes/simulators/gd_sim.gd")
 
 var rd := RenderingServer.get_rendering_device()
 
@@ -54,12 +55,12 @@ func _sim_updated_tex(tex: RID) -> void:
 
 func set_simulator(sim: Simulator) -> void:
 	if simulator:
-		if simulator is ComputeSimulator or simulator is ComputeAutomataSimulator:
+		if simulator is not CPUSim:
 			simulator.simulation_updated_texture.disconnect(_sim_updated_tex)
 		else:
 			simulator.simulation_updated.disconnect(_sim_updated)
 	simulator = sim
-	if simulator is ComputeSimulator or simulator is ComputeAutomataSimulator:
+	if simulator is not CPUSim:
 		simulator.simulation_updated_texture.connect(_sim_updated_tex)
 	else:
 		simulator.simulation_updated.connect(_sim_updated)
