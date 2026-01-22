@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b8qw165sso7ts"]
 
-[ext_resource type="Script" uid="uid://nfd3t63mseqr" path="res://scenes/ui/kernel_editor.gd" id="1_rektp"]
+[ext_resource type="Script" path="res://scenes/ui/kernel_editor.gd" id="1_rektp"]
 
 [node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "layer_label", "read_switch", "write_switch")]
 layout_mode = 3
@@ -23,6 +23,7 @@ offset_bottom = 40.0
 [node name="Kernel_open_button" type="Button" parent="HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
+focus_mode = 0
 toggle_mode = true
 text = "Edit Kernels >"
 
@@ -44,6 +45,7 @@ text = "Read"
 
 [node name="Read_option" type="OptionButton" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 
 [node name="Write_label" type="Label" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
@@ -51,6 +53,7 @@ text = "Write"
 
 [node name="Write_option" type="OptionButton" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 
 [node name="TextEdit" type="TextEdit" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(200, 200)
@@ -82,32 +85,39 @@ layout_mode = 2
 
 [node name="Layer1_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+focus_mode = 0
 text = "1
 "
 
 [node name="Layer2_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+focus_mode = 0
 text = "2"
 
 [node name="Layer3_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+focus_mode = 0
 text = "3"
 
 [node name="Layer4_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+focus_mode = 0
 text = "4"
 
 [node name="Layer5_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+focus_mode = 0
 text = "5
 "
 
 [node name="Button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+focus_mode = 0
 text = "Apply"
 
 [node name="Button2" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+focus_mode = 0
 text = "Export"
 
 [connection signal="pressed" from="HBoxContainer/Kernel_open_button" to="." method="_on_button_pressed"]

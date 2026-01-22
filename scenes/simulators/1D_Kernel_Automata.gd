@@ -48,6 +48,7 @@ var _buffer_elements: int
 @export var aggregator_shader_file: RDShaderFile
 @export var texture_update_shader_file: RDShaderFile
 @export_file("*.txt") var kernel_file_path: String
+var init_done: bool = false
 
 
 func _ready() -> void:
@@ -63,7 +64,7 @@ func _ready() -> void:
 
 
 func _process(_delta) -> void:
-	if not simulate:
+	if not simulate or not init_done:
 		return
 	run_simulation_once()
 
@@ -86,8 +87,6 @@ func run_simulation_once() -> void:
 	# Aggregate automata result into cells
 	dispatch_aggregation_pipeline(compute_list)
 
-	rd.compute_list_add_barrier(compute_list)
-
 	rd.compute_list_end() # End compute list
 	simulation_updated.emit.call_deferred()
 	simulation_updated_texture.emit(data_texture_rid)
@@ -96,6 +95,9 @@ func run_simulation_once() -> void:
 func dispatch_compute_pipeline(compute_list: int):
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_X_rid) # Bind compute pipeline
 	var uniform_set = compute_pipeline_uniform_set_x1 if uniform_flip else compute_pipeline_uniform_set_x2
+	if (uniform_set == null):
+		push_error("Compute pipeline X uniform set is null!")
+		return
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 
 	# Push constants for cell automata
@@ -112,6 +114,44 @@ func dispatch_compute_pipeline(compute_list: int):
 		kernel_size.y,
 		kernel_size.z,
 		0]
+	
+	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
+
+	@warning_ignore("integer_division")
+	# Dispatch automata shader
+	rd.compute_list_dispatch(compute_list,
+		(grid_size + local_size - 1) / local_size, # grid_size / workgroup size
+		(grid_size + local_size - 1) / local_size,
+		(grid_size * typecount + local_size - 1) / local_size
+	)
+	
+	rd.compute_list_add_barrier(compute_list)
+
+	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_Y_rid) # Bind compute pipeline
+	uniform_set = compute_pipeline_uniform_set_y1 if uniform_flip else compute_pipeline_uniform_set_y2
+	if (uniform_set == null):
+		push_error("Compute pipeline Y uniform set is null!")
+		return
+	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
+	
+	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
+
+	@warning_ignore("integer_division")
+	# Dispatch automata shader
+	rd.compute_list_dispatch(compute_list,
+		(grid_size + local_size - 1) / local_size, # grid_size / workgroup size
+		(grid_size + local_size - 1) / local_size,
+		(grid_size * typecount + local_size - 1) / local_size
+	)
+	
+	rd.compute_list_add_barrier(compute_list)
+
+	rd.compute_list_bind_compute_pipeline(compute_list, pipeline_Z_rid) # Bind compute pipeline
+	uniform_set = compute_pipeline_uniform_set_z1 if uniform_flip else compute_pipeline_uniform_set_z2
+	if (uniform_set == null):
+		push_error("Compute pipeline Z uniform set is null!")
+		return
+	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0) # Bind uniform set
 	
 	rd.compute_list_set_push_constant(compute_list, push.to_byte_array(), 48)
 
@@ -289,8 +329,10 @@ func get_grid_size() -> int:
 func set_grid_size(to: int) -> void:
 	if (to * to * to * typecount > _buffer_elements):
 		set_grid_size_FORCE_BUFFER_RESIZE(to)
+		init_done = true
 		return
 	set_grid_size_FORCE_BUFFER_RESIZE(to)
+	init_done = true
 
 
 func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
@@ -336,7 +378,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 
 
 
-	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid() or not kernels_rid.is_valid()):
+	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers!")
 		return
 
@@ -418,83 +460,59 @@ static func create_texture(rds: RenderingDevice, grid_sizes: int) -> RID:
 
 
 func create_compute_pipeline_uniforms() -> void:
-	# free_RID_if_valid(compute_pipeline_uniform_set_x1)
-	# free_RID_if_valid(compute_pipeline_uniform_set_x2)
+	compute_pipeline_uniform_set_x1 = make_compute_uniform_set(
+		compute_read_state_rid,
+		compute_write_state_rid,
+		kernels_X_rid
+	)
+	compute_pipeline_uniform_set_x2 = make_compute_uniform_set(
+		compute_write_state_rid,
+		compute_read_state_rid,
+		kernels_X_rid
+	)
+	compute_pipeline_uniform_set_y2 = make_compute_uniform_set(
+		compute_read_state_rid,
+		compute_write_state_rid,
+		kernels_Y_rid
+	)
+	compute_pipeline_uniform_set_y1 = make_compute_uniform_set(
+		compute_write_state_rid,
+		compute_read_state_rid,
+		kernels_Y_rid
+	)
+	compute_pipeline_uniform_set_z1 = make_compute_uniform_set(
+		compute_read_state_rid,
+		compute_write_state_rid,
+		kernels_Z_rid
+	)
+	compute_pipeline_uniform_set_z2 = make_compute_uniform_set(
+		compute_write_state_rid,
+		compute_read_state_rid,
+		kernels_Z_rid
+	)
 
-	# Create uniforms for cell automata
+
+func make_compute_uniform_set(read_buffer: RID, write_buffer: RID, kernel_buffer: RID) -> RID:
 	var read_u := RDUniform.new()
 	read_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	read_u.binding = 0
-	read_u.add_id(compute_read_state_rid)
-
-	var read_u2 := RDUniform.new()
-	read_u2.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	read_u2.binding = 0
-	read_u2.add_id(compute_write_state_rid)
+	read_u.add_id(read_buffer)
 
 	var write_u := RDUniform.new()
 	write_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	write_u.binding = 1
-	write_u.add_id(compute_write_state_rid)
+	write_u.add_id(write_buffer)
 
-	var write_u2 := RDUniform.new()
-	write_u2.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	write_u2.binding = 1
-	write_u2.add_id(compute_read_state_rid)
+	var kernel_u := RDUniform.new()
+	kernel_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	kernel_u.binding = 2
+	kernel_u.add_id(kernel_buffer)
 
-	var kernel_x := RDUniform.new()
-	kernel_x.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	kernel_x.binding = 2
-	kernel_x.add_id(kernels_X_rid)
-
-	var kernel_y := RDUniform.new()
-	kernel_y.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	kernel_y.binding = 2
-	kernel_y.add_id(kernels_Y_rid)
-
-	var kernel_z := RDUniform.new()
-	kernel_z.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	kernel_z.binding = 2
-	kernel_z.add_id(kernels_Z_rid)
-
-	# var offset_u := RDUniform.new()
-	# offset_u.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	# offset_u.binding = 3
-	# offset_u.add_id(kernel_offsets_rid)
-
-	compute_pipeline_uniform_set_x1 = rd.uniform_set_create(
-		[read_u, write_u, kernel_x],
+	return rd.uniform_set_create(
+		[read_u, write_u, kernel_u],
 		compute_shader_rid,
 		0
 	)
-	compute_pipeline_uniform_set_x2 = rd.uniform_set_create(
-		[read_u2, write_u2, kernel_x],
-		compute_shader_rid,
-		0
-	)
-	compute_pipeline_uniform_set_y1 = rd.uniform_set_create(
-		[write_u, read_u, kernel_y],
-		compute_shader_rid,
-		0
-	)
-	compute_pipeline_uniform_set_y2 = rd.uniform_set_create(
-		[write_u2, read_u2, kernel_y],
-		compute_shader_rid,
-		0
-	)
-	compute_pipeline_uniform_set_z1 = rd.uniform_set_create(
-		[read_u, write_u, kernel_z],
-		compute_shader_rid,
-		0
-	)
-	compute_pipeline_uniform_set_z2 = rd.uniform_set_create(
-		[read_u2, write_u2, kernel_z],
-		compute_shader_rid,
-		0
-	)
-
-	# allocated_RIDs.append(compute_pipeline_uniform_set_x1)
-	# allocated_RIDs.append(compute_pipeline_uniform_set_x2)
 
 
 func create_aggregation_pipeline_uniforms():
@@ -535,25 +553,40 @@ func create_texture_update_uniforms() -> void:
 	texture_update_uniform_set = rd.uniform_set_create([texture_uniform], texture_update_shader_rid, 0)
 
 
-func load_kernels(kernels: PackedFloat32Array, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5,5,5)) -> bool:
-	kernel_size = _kernel_size
-	typecount = _typecount
-	return load_kernels_from_packed_byte_array(kernels.to_byte_array())
+# func load_kernels(kernels: PackedFloat32Array, _typecount: int = 4, _kernel_size: Vector3i = Vector3i(5,5,5)) -> bool:
+# 	kernel_size = _kernel_size
+# 	typecount = _typecount
+# 	return load_kernels_from_packed_byte_array(kernels.to_byte_array())
 
 
-func load_kernels_from_packed_byte_array(kernels: PackedByteArray) -> bool:
-	# + 1 for value count
-	var size = typecount * typecount * (kernel_size.x * kernel_size.y * kernel_size.z + 1) * 4
-	assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
-
-	# free_RID_if_valid(kernels_rid)
-
-	kernels_rid = rd.storage_buffer_create(size, kernels)
-
-	# allocated_RIDs.append(kernels_rid)
+func load_kernels_from_packed_byte_array(kernels: PackedByteArray, axis:int) -> bool:
+	match axis:
+		0:
+			var size = typecount * typecount * 4 * kernel_size.x
+			assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
+			kernels_X_rid = rd.storage_buffer_create(
+				size,
+				kernels
+			)
+		1:
+			var size = typecount * typecount * 4 * kernel_size.y
+			assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
+			kernels_Y_rid = rd.storage_buffer_create(
+				size,
+				kernels
+			)
+		2:
+			var size = typecount * typecount * 4 * kernel_size.z
+			assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
+			kernels_Z_rid = rd.storage_buffer_create(
+				size,
+				kernels
+			)
+		_:
+			push_error("Invalid axis for loading kernels")
+			return false
 
 	# setup_kernel_offset_array()
-	create_compute_pipeline_uniforms()
 
 	return true
 
@@ -569,8 +602,8 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,
 		OS.alert("Couldn't open kernel file (%s)" % error_string(err), "Error opening kernel file!")
 		return false
 
-	var values: PackedFloat32Array = []
-	var tmp_values: PackedFloat32Array = []
+	var axis := 0
+	var values: Array[PackedFloat32Array] = [[],[],[]]
 
 	var i := 1
 	while not file.eof_reached():
@@ -580,48 +613,48 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,
 			continue
 
 		var floats := line.split_floats(" ")
-		if floats.size() > _kernel_size.x:
-			_parse_error(path, i, "Too many values in kernel line (need %s, got %s)" % [kernel_size.x, floats.size()])
+		if floats.size() > _kernel_size[axis]:
+			_parse_error(path, i, "Too many values in kernel line (need %s, got %s)" % [kernel_size[axis], floats.size()])
 			return false
-		if floats.size() < _kernel_size.x:
-			_parse_error(path, i, "Too few values in kernel line (need %s, got %s)" % [kernel_size.x, floats.size()])
+		if floats.size() < _kernel_size[axis]:
+			_parse_error(path, i, "Too few values in kernel line (need %s, got %s)" % [kernel_size[axis], floats.size()])
 			return false
 
 		for factor in floats:
-			tmp_values.append(factor)
+			values[axis].append(factor)
+		axis = (axis + 1) % 3
 
-		if ((tmp_values.size() % (_kernel_size.x * _kernel_size.y * _kernel_size.z)) == 0):
-			var zeros = tmp_values.count(0.0)
-			values.append(tmp_values.size() - zeros)
-			# print("Loaded kernel with %s non-zero values" % [tmp_values.size() - zeros])
-			# print(tmp_values)
-			values.append_array(tmp_values)
-			tmp_values.clear()
+		# if ((tmp_values.size() % (_kernel_size.x * _kernel_size.y * _kernel_size.z)) == 0):
+		# 	var zeros = tmp_values.count(0.0)
+		# 	values.append(tmp_values.size() - zeros)
+		# 	# print("Loaded kernel with %s non-zero values" % [tmp_values.size() - zeros])
+		# 	# print(tmp_values)
+		# 	values.append_array(tmp_values)
+		# 	tmp_values.clear()
 
 	file.close()
 
-	var expected := (
-		_typecount * _typecount *
-		(_kernel_size.x * _kernel_size.y * _kernel_size.z + 1) # +1 for value count
-	)
-
-	if values.size() < expected:
-		_parse_error(path, i, "Too few kernel values (need %s) (missing %s)" % [expected, expected - values.size()])
-		return false
-
-	if values.size() > expected:
-		_parse_error(path, i, "Too many kernel values (need %s) (%s would be ignored)" % [expected, values.size() - expected])
-		return false
-
-	assert(
-		values.size() == expected,
-		"Kernel count mismatch: got %d expected %d"
-		% [values.size(), expected]
-	)
+	for k in range(3):
+		var expected = _kernel_size[k] * _typecount * _typecount
+		if values[k].size() < expected:
+			_parse_error(path, i, "Too few kernel values for axis %s (need %s, got %s)" % [k, expected, values[k].size()])
+			return false
+		if values[k].size() > expected:
+			_parse_error(path, i, "Too many kernel values for axis %s (need %s, got %s)" % [k, expected, values[k].size()])
+			return false
+	# assert(
+	# 	values.size() == expected,
+	# 	"Kernel count mismatch: got %d expected %d"
+	# 	% [values.size(), expected]
+	# )
 
 	typecount = _typecount
 	kernel_size = _kernel_size
-	return load_kernels_from_packed_byte_array(values.to_byte_array())
+	for k in range(3):
+		return load_kernels_from_packed_byte_array(values[k].to_byte_array(), k)
+
+	create_compute_pipeline_uniforms()
+	return true
 
 
 func free_RID_if_valid(rid: RID) -> bool:

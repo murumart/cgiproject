@@ -42,9 +42,13 @@ func _process(_delta) -> void:
 func get_draw_data_async(callback: Callable) -> void:
 	rd.texture_get_data_async(data_texture_rid, 0, callback)
 
+func get_texture_rid() -> RID:
+	return data_texture_rid
 
 func get_grid_size() -> int: return grid_size
-func set_grid_size(to: int) -> void: grid_size = to
+func set_grid_size(to: int) -> void:
+	grid_size = to
+	data_texture_rid = ComputeAutomataSimulator.create_texture(rd, grid_size)
 
 
 func update_data(data: PackedByteArray) -> void:
