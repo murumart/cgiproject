@@ -203,6 +203,7 @@ lattice = NodePath("../../Meshes/LatticeMeshInstance")
 disabled = true
 
 [node name="MultimeshRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instance_parent", "core_mesh_instance", "leaf_mesh_instance", "bark_mesh_instance")]
+editor_description = "This renderer uses Godot's MultiMesh to render many blocks with different materials. The slow part is manually looping through and updating each instance's scale in GDScript to show and hide them based on the cell type in the grid."
 script = ExtResource("14_fv21b")
 instance_parent = NodePath("../../Meshes/MultimeshParent")
 core_mesh_instance = NodePath("../../Meshes/MultimeshParent/CoreMeshInstance")
@@ -250,7 +251,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/LatticeRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/LatticeRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim"), NodePath("../../Simulators/1D Shader Sim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
