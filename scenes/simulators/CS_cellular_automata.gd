@@ -394,7 +394,10 @@ static func create_texture(rds: RenderingDevice, grid_sizes: int) -> RID:
 		| RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
 		| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT)
 
-	var s_data_texture_rid := rds.texture_create(fmt, RDTextureView.new())
+	var empty := PackedByteArray()
+	empty.resize(grid_sizes * grid_sizes * grid_sizes)
+	empty.fill(0)
+	var s_data_texture_rid := rds.texture_create(fmt, RDTextureView.new(), [empty])
 	if not s_data_texture_rid.is_valid():
 		printerr("CRITICAL ERROR: Failed to create voxel texture! Grid size ", grid_sizes, " might be too large for VRAM.")
 
