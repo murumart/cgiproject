@@ -15,12 +15,15 @@ extends Control
 @export var apply_button: Button
 
 @export var export_button: Button
+@export var dialog: FileDialog
+var _dopen := false
+
+var path = "C:/Users/kauri/Desktop/ylikool/HetkeTunnid/Graphics/test_kernel/kernel.txt"
 
 
 const cell_types = ["Air", "Core", "Leaf", "Bark"]
 const layer_label_texts = ["Layer ->|<-||||", "Layer |->|<-|||", "Layer ||->|<-||", "Layer |||->|<-|", "Layer ||||->|<-"]
 var current_layer := 0
-var current_write_to_cell := 0
 
 # Kernel data array
 var kernels: PackedFloat32Array
@@ -45,6 +48,10 @@ func _ready() -> void:
 	save_button.pressed.connect(_on_save_button_pressed)
 	apply_button.pressed.connect(_apply_kernel)
 	export_button.pressed.connect(_export_kernel)
+
+	dialog.canceled.connect(_dial_closed)
+	dialog.confirmed.connect(_dial_closed)
+	dialog.file_selected.connect(_export_get)
 	
 	print_kernels()
 
@@ -65,15 +72,15 @@ func kernel_to_string(kernel: PackedFloat32Array) -> String:
 	var read_type_ix = 0
 	var write_type_ix = 0
 	while kernel.size() > i:
-		string += str(kernel[i]) + "\n"
+		string += "# " + str(kernel[i]) + "\n"
 		i += 1
 		string += "# Wrinting " + cell_types[write_type_ix] + "\n"
-		string += "# Reading " + cell_types[read_type_ix%4] + "\n"
-		if ((read_type_ix + 1)%4 == 0):
+		string += "# Reading " + cell_types[read_type_ix % 4] + "\n"
+		if ((read_type_ix + 1) % 4 == 0):
 			write_type_ix += 1
 			
 		read_type_ix += 1
-		for um in range(5): # 
+		for um in range(5): #
 			#string += cell_types[um%4] + "\n"
 			#string += "reading " + cell_types[um%4] + "\n"
 			for j in range(5): # layer
@@ -142,6 +149,20 @@ func _apply_kernel() -> void:
 
 func _export_kernel() -> void:
 	print("export_kernel")
-	#var file = FileAccess.open("user://kernel.txt", FileAccess.WRITE)
-	#file.store_string()
-	#file.close()
+	if _dopen:
+		return
+	_dopen = true
+	print("kernel_selection.gd::_export_kernel : opened")
+	dialog.popup_centered()
+
+func _dial_closed() -> void:
+	_dopen = false
+	print("kernel_selection.gd::_dial_closed : closed")
+
+func _export_get(filepath: String) -> void:
+	print("kernel_selection.gd::_export_get : got filepath ", filepath)
+	if _dopen:
+		_dial_closed()
+	var file = FileAccess.open(filepath, FileAccess.WRITE)
+	file.store_string(kernel_to_string(kernels))
+	file.close()
