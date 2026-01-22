@@ -94,7 +94,7 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 
 	var index_count := 0
 
-	for i in grid_size + 1:
+	for i in range(grid_size + 1):
 		for p in 6:
 			var normal := PLANES[p]
 			var vtcis := PLANE_VERTICES[p]
@@ -132,7 +132,7 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 var _dtex := Texture3DRD.new()
 func update_texture(data: PackedByteArray) -> void:
 	cells = data
-	rd.texture_update.call_deferred(texture, 0, data)
+	rd.texture_update.call(texture, 0, data)
 
 	_dtex.texture_rd_rid = texture
 	mat.set_shader_parameter("simulation_data", _dtex)
