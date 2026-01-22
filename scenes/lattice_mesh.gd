@@ -94,39 +94,23 @@ static func generate_mesh_arrays(grid_size: int) -> Array:
 
 	var index_count := 0
 
-	#for i in [0, 1, 2, 3, 4, 5]:
-		#var plane := PLANES[i]
-		#var plane_vtx := PLANE_VERTICES[i]
-		#var plane_uv := PLANE_UVS[i]
-		#var back := plane.abs() != plane
-		#for j in grid_size + 1:
-			#var out := Vector3()
-			#if back:
-				## so that the back planes are put in correct positions
-				#out = -plane * grid_size
-			#for pvi in 4:
-				#var vtx := out + plane_vtx[pvi] * grid_size + plane * j
-				#vertices.append(vtx)
-				#uvs.append(plane_uv[pvi])
-				#normals.append(plane)
-				#colors.append(Color.RED * outof * j)
-#
-			#for index in PLANE_INDICES:
-				#indices.append(index + index_count)
-#
-			#index_count += 4
-
-	for i in range(grid_size + 1 - 1, -1, -1):
-		for p in 3:
+	for i in grid_size + 1:
+		for p in 6:
 			var normal := PLANES[p]
 			var vtcis := PLANE_VERTICES[p]
 			var uv := PLANE_UVS[p]
+			var negative_direction := p >= 3
 			for pvi in 4:
 				var vtx := vtcis[pvi] * grid_size + normal * i
+				if negative_direction:
+					vtx += -normal * grid_size
 				vertices.append(vtx)
 				uvs.append(uv[pvi])
 				normals.append(normal)
-				colors.append(Color.RED * outof * i)
+				if negative_direction:
+					colors.append(Color.RED * (1 - (outof * (i - 1))))
+				else:
+					colors.append(Color.RED * outof * i)
 			for index in PLANE_INDICES:
 				indices.append(index + index_count)
 			index_count += 4

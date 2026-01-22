@@ -1,6 +1,6 @@
 shader_type spatial;
 
-render_mode unshaded;
+render_mode unshaded, depth_prepass_alpha;
 
 uniform sampler3D simulation_data : filter_nearest; // The texture from the compute shader
 uniform int grid_size;
@@ -23,15 +23,10 @@ void fragment() {
 	vec3 color = vec3(0.0);
 
 	// converting fragment coordinates to 3d texture coordinates
+	float axisCoef = float(grid_size);
 	ivec3 uvw = ivec3(0);
 	if (abs(vxNormal.x) > EPSILON) {
-		float s = sign(vxNormal.x);
-		float axisCoef = float(grid_size);
-		if (s > 0.0) {
-			uvw.x = int(COLOR.r * axisCoef);
-		} else {
-			uvw.x = int((1.0 - COLOR.r) * axisCoef);
-		}
+		uvw.x = int(COLOR.r * axisCoef);
 		uvw.z = int(UV.x * axisCoef);
 		uvw.y = int(UV.y * axisCoef);
 		color.r = COLOR.r;
@@ -40,13 +35,7 @@ void fragment() {
 			ALPHA = 0.0;
 		}
 	} else if (abs(vxNormal.z) > EPSILON) {
-		float s = sign(vxNormal.z);
-		float axisCoef = float(grid_size);
-		if (s > 0.0) {
-			uvw.z = int(COLOR.r * axisCoef);
-		} else {
-			uvw.z = int((1.0 - COLOR.r) * axisCoef);
-		}
+		uvw.z = int(COLOR.r * axisCoef);
 		uvw.x = int(UV.x * axisCoef);
 		uvw.y = int(UV.y * axisCoef);
 		color.b = COLOR.r;
@@ -55,13 +44,7 @@ void fragment() {
 			ALPHA = 0.0;
 		}
 	} else if (abs(vxNormal.y) > EPSILON) {
-		float s = sign(vxNormal.y);
-		float axisCoef = float(grid_size);
-		if (s > 0.0) {
-			uvw.y = int(COLOR.r * axisCoef);
-		} else {
-			uvw.y = int((1.0 - COLOR.r) * axisCoef);
-		}
+		uvw.y = int(COLOR.r * axisCoef);
 		uvw.x = int(UV.x * axisCoef);
 		uvw.z = int(UV.y * axisCoef);
 		color.g = COLOR.r;
