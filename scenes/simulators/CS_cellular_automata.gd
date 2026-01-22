@@ -598,7 +598,14 @@ func get_typecount() -> int:
 	return typecount
 
 func set_kernel(kernels: PackedFloat32Array) -> void:
-	cpu_kernel = kernels
+	cpu_kernel.clear()
+	var volume = kernel_size.x * kernel_size.y * kernel_size.z + 1
+	var kernel_count = typecount * typecount
+	for i in kernel_count:
+		var kernel = kernels.slice(i * volume + 1, (i + 1) * volume + 1)
+		cpu_kernel.append(volume - kernel.count(0.0))
+		cpu_kernel.append_array(kernel)
+
 	load_kernels_from_packed_byte_array(kernels.to_byte_array())
 
 '''
