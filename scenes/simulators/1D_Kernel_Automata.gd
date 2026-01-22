@@ -1,5 +1,7 @@
 extends Simulator
 
+const ComputeAutomataSimulator = preload("res://scenes/simulators/CS_cellular_automata.gd")
+
 signal simulation_updated_texture(data: RID)
 
 var rd := RenderingServer.get_rendering_device()
@@ -57,7 +59,7 @@ func _ready() -> void:
 
 	# Setup
 	_buffer_elements = grid_size * grid_size * grid_size * typecount
-	data_texture_rid = create_texture(rd, grid_size)
+	data_texture_rid = ComputeAutomataSimulator.create_texture(rd, grid_size)
 	setup_compute_pipeline()
 	setup_texture_update_pipeline()
 	setup_aggregation_pipeline()
@@ -297,7 +299,7 @@ func setup_texture_update_pipeline() -> void:
 
 	texture_update_pipeline_rid = rd.compute_pipeline_create(texture_update_shader_rid)
 
-	# create_texture_update_uniforms() # called in create_aggregation_pipeline_uniforms
+	# ComputeAutomataSimulator.create_texture_update_uniforms() # called in create_aggregation_pipeline_uniforms
 
 
 func reset() -> void:
@@ -307,7 +309,7 @@ func reset() -> void:
 	# allocated_RIDs.clear()
 
 	load_kernels_from_file(kernel_file_path)
-	data_texture_rid = create_texture(rd, grid_size)
+	data_texture_rid = ComputeAutomataSimulator.create_texture(rd, grid_size)
 	simulation_updated.emit.call_deferred()
 	simulation_updated_texture.emit(data_texture_rid)
 	setup_compute_pipeline()
@@ -337,7 +339,7 @@ func set_grid_size(to: int) -> void:
 
 
 func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
-	data_texture_rid = create_texture(rd, to)
+	data_texture_rid = ComputeAutomataSimulator.create_texture(rd, to)
 	_buffer_elements = to * to * to * typecount
 	var buffer_size = _buffer_elements * 4
 	var new_size = to * to * to
@@ -385,7 +387,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 
 	create_compute_pipeline_uniforms()
 	create_aggregation_pipeline_uniforms()
-	# create_texture_update_uniforms()
+	# ComputeAutomataSimulator.create_texture_update_uniforms()
 
 
 func update_data(data: PackedByteArray) -> void:
@@ -436,28 +438,6 @@ func is_sim_running() -> bool:
 
 func sim_set_running(to: bool) -> void:
 	simulate = to
-
-
-static func create_texture(rds: RenderingDevice, grid_sizes: int) -> RID:
-	var fmt := RDTextureFormat.new()
-	fmt.width = grid_sizes # No packing - each voxel gets its own texel
-	fmt.height = grid_sizes
-	fmt.depth = grid_sizes
-	fmt.format = RenderingDevice.DATA_FORMAT_R8_UNORM
-	fmt.texture_type = RenderingDevice.TEXTURE_TYPE_3D
-
-	# Usage bits: Storage (Compute Write) + Sampling (Shader Read)
-	fmt.usage_bits = (RenderingDevice.TEXTURE_USAGE_STORAGE_BIT
-		| RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
-		| RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
-		| RenderingDevice.TEXTURE_USAGE_CAN_COPY_FROM_BIT)
-
-	var s_data_texture_rid := rds.texture_create(fmt, RDTextureView.new())
-	if not s_data_texture_rid.is_valid():
-		printerr("CRITICAL ERROR: Failed to create voxel texture! Grid size ", grid_sizes, " might be too large for VRAM.")
-
-	# allocated_RIDs.append(s_data_texture_rid)
-	return s_data_texture_rid
 
 
 func create_compute_pipeline_uniforms() -> void:
