@@ -55,7 +55,7 @@ void fragment() {
 
 	// converting fragment coordinates to 3d texture coordinates
 	float axisCoef = float(grid_size);
-	int mainAxis = int(COLOR.r * axisCoef);
+	int mainAxis = int(COLOR.r * (axisCoef - 1.0));
 	ivec2 UVAxis = ivec2(UV * axisCoef);
 	ivec3 uvw = ivec3(0);
 	if (abs(vxNormal.x) > EPSILON) {
@@ -73,8 +73,10 @@ void fragment() {
 	}
 	float cellF = texelFetch(simulation_data, uvw, 0).r;
 	if (cellF <= 0.0) {
-		ALPHA = 0.0001;
+		ALPHA = 0.5;
+		discard;
 	}
+	
 	int cell = int(cellF * 255.0); // cell type of the voxel
 	
 	vec2 tileuv = mod((vec2(1) - UV) * axisCoef, vec2(1));

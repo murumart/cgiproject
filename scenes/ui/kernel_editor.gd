@@ -1,17 +1,21 @@
 extends Control
 
+const ComputeSim = preload("res://scenes/simulators/CS_cellular_automata.gd")
+
 @export var kernel_editor: PanelContainer
+
+@export var open_button: Button
+
 @export var layer_label: Label
 
 @export var read_switch: OptionButton
 @export var write_switch: OptionButton
 
-@export var simulator: Simulator
+@export var simulator: ComputeSim
 @export var buttons: Array[Button]
 
 @export var kernel_edit_field: TextEdit
 
-@export var save_button: Button
 @export var apply_button: Button
 
 @export var export_button: Button
@@ -29,9 +33,18 @@ var current_layer := 0
 var kernels: PackedFloat32Array
 var kernel_slice: PackedFloat32Array
 
+var kernel_size: Vector3i
+var type_count: int
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	kernels = simulator.get_kernel()
+	
+	kernel_size = simulator.get_kernel_size()
+	type_count = simulator.get_typecount()
+	
+	open_button.pressed.connect(_open_editor)
+	
 	
 	for type in cell_types:
 		read_switch.add_item(type)
@@ -45,7 +58,6 @@ func _ready() -> void:
 		b.pressed.connect(_on_layer_button_pressed.bind(i))
 		i += 1
 	
-	save_button.pressed.connect(_on_save_button_pressed)
 	apply_button.pressed.connect(_apply_kernel)
 	export_button.pressed.connect(_export_kernel)
 
@@ -53,6 +65,9 @@ func _ready() -> void:
 	dialog.confirmed.connect(_dial_closed)
 	dialog.file_selected.connect(_export_get)
 	
+	kernel_edit_field.text_changed.connect(_on_slice_text_edit)
+	
+
 	#print_kernels()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -60,7 +75,7 @@ func _ready() -> void:
 #	pass
 
 func get_kernel_slice_at(write_type: int, read_type: int, layer: int):
-	var start = write_type * (5 * 5 * 5 + 1) * 4 + read_type * (5 * 5 * 5 + 1) + 1 + layer * 5 * 5
+	var start = write_type * (5 * 5 * 5 + 1) * type_count + read_type * (5 * 5 * 5 + 1) + 1 + layer * 5 * 5
 	var end = start + 5 * 5
 	var slice = kernels.slice(start, end)
 	#print(slice)
@@ -93,16 +108,21 @@ func kernel_to_string(kernel: PackedFloat32Array) -> String:
 
 func print_kernels() -> void:
 	print(kernel_to_string(kernels))
-	
 
-func _on_button_pressed() -> void:
+func update_editor():
+	kernels = simulator.get_kernel()
+	kernel_slice = get_kernel_slice_at(write_switch.get_selected_id(), read_switch.get_selected_id(), current_layer)
+	_change_kernel_edit_field_value(kernel_slice)
+
+func _open_editor() -> void:
 	if kernel_editor.is_visible():
 		kernel_editor.hide()
 	else:
 		kernel_editor.show()
-		kernels = simulator.get_kernel()
-		kernel_slice = get_kernel_slice_at(write_switch.get_selected_id(), read_switch.get_selected_id(), current_layer)
-		_change_kernel_edit_field_value(kernel_slice)
+		update_editor()
+
+func _on_new_kernel_selected(_index: int) -> void:
+	update_editor()
 
 func _on_layer_button_pressed(which: int) -> void:
 	current_layer = which
@@ -124,12 +144,12 @@ func _change_kernel_edit_field_value(slice: PackedFloat32Array) -> void:
 			string += "\n"
 	kernel_edit_field.text = string
 
-func _on_save_button_pressed() -> void:
+func _on_slice_text_edit() -> void:
 	_save_kernel_slice(write_switch.get_selected_id(), read_switch.get_selected_id(), current_layer)
 
 func _save_kernel_slice(write_type: int, read_type: int, layer: int) -> void:
 	# print("save_slice to kernels")
-	var start = write_type * 5 * 5 * 5 * 4 + write_type * 4 + read_type * 125 + read_type + 1 + layer * 5 * 5
+	var start = write_type * (5 * 5 * 5 + 1) * type_count + read_type * (5 * 5 * 5 + 1) + 1 + layer * 5 * 5
 	#var end = start + 5 * 5
 
 	var string = kernel_edit_field.text

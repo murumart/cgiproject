@@ -28,7 +28,7 @@
 [ext_resource type="Texture2D" uid="uid://bltojdrt2a4qe" path="res://scenes/decor/zsign.png" id="11_eb6dy"]
 [ext_resource type="Script" uid="uid://bljsaxs4vphti" path="res://scenes/ui.gd" id="12_y6deb"]
 [ext_resource type="Script" uid="uid://bu18fhalg7pa0" path="res://scenes/renderers/multimesh_renderer.gd" id="14_fv21b"]
-[ext_resource type="Script" uid="uid://co2d3r81swwxe" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
+[ext_resource type="Script" path="res://scenes/renderers/mesher_renderer.gd" id="14_muem4"]
 [ext_resource type="Script" uid="uid://b0mrd3macpera" path="res://scenes/renderers/instance_custom_data_renderer.gd" id="15_qkpxi"]
 [ext_resource type="Script" uid="uid://cq16qt7v1kge" path="res://scenes/renderers/lattice_mesh_renderer.gd" id="15_tel4y"]
 [ext_resource type="PackedScene" uid="uid://cpv5ew4yt0hl8" path="res://scenes/ui/kernel_selection.tscn" id="16_2f3dj"]
@@ -79,7 +79,7 @@ shader_parameter/cell_colors = PackedColorArray(0.8152507, 0.40018785, 0.3655646
 shader_parameter/cell_texture = ExtResource("30_fuf3a")
 shader_parameter/cell_texture_size = 16.0
 shader_parameter/tiles_in_atlas = 4.0
-shader_parameter/cell_specs = PackedFloat32Array(0.2, 1, 0.1)
+shader_parameter/cell_specs = PackedFloat32Array(0.2, 0.6, 0.1)
 shader_parameter/cell_shines = PackedFloat32Array(70, 90, 10)
 shader_parameter/sun_direction = Vector3(0.75, 1, 0.9)
 
@@ -197,11 +197,13 @@ cell_materials = Array[BaseMaterial3D]([ExtResource("6_0ld40"), ExtResource("7_g
 disabled = true
 
 [node name="LatticeRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("lattice")]
+editor_description = "This renderer uses a lattice rendering method as shown by Davis Morley in the talk Greedy Meshing Voxels Fast. It uses a once-generated mesh consisting of planes for each axis. The mesh is never regenerated as the data changes. Instead, voxel display is done in the fragment shader, based on voxel data input as a uniform (and Blinn-Phong shaded and textured for fun). It seems to perform really bad on lower-end machines, but okay otherwise."
 script = ExtResource("15_tel4y")
 lattice = NodePath("../../Meshes/LatticeMeshInstance")
 disabled = true
 
 [node name="MultimeshRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instance_parent", "core_mesh_instance", "leaf_mesh_instance", "bark_mesh_instance")]
+editor_description = "This renderer uses Godot's MultiMesh to render many blocks with different materials. The slow part is manually looping through and updating each instance's scale in GDScript to show and hide them based on the cell type in the grid."
 script = ExtResource("14_fv21b")
 instance_parent = NodePath("../../Meshes/MultimeshParent")
 core_mesh_instance = NodePath("../../Meshes/MultimeshParent/CoreMeshInstance")
@@ -249,7 +251,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
-renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/LatticeRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer"), NodePath("../../Renderers/NaiveRenderer")]
+renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/LatticeRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer"), NodePath("../../Renderers/NaiveRenderer")]
 simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim"), NodePath("../../Simulators/1D Shader Sim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
@@ -354,9 +356,10 @@ popup/item_1/id = 1
 layout_mode = 2
 fit_content = true
 
-[node name="KernelSelection" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer" node_paths=PackedStringArray("sim") instance=ExtResource("16_2f3dj")]
+[node name="KernelSelection" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer" node_paths=PackedStringArray("sim", "kernel_editor") instance=ExtResource("16_2f3dj")]
 layout_mode = 2
 sim = NodePath("../../../../../../../../../Simulators/ComputeShaderSim")
+kernel_editor = NodePath("../../../../../Center/HBoxContainer2/KernelEditor")
 
 [node name="HSeparator2" type="HSeparator" parent="Camera3D/Control/VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2

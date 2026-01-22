@@ -2,12 +2,15 @@ extends PanelContainer
 
 const CS3DAutomata = preload("res://scenes/simulators/CS_cellular_automata.gd")
 const CS1DAutomata = preload("res://scenes/simulators/1D_Kernel_Automata.gd")
+const Kernel_editor = preload("res://scenes/ui/kernel_editor.gd")
 
 @export var kernel_switch: OptionButton
 @export var file_button: Button
 
 @export var dialog: FileDialog
 @export var sim: Simulator
+
+@export var kernel_editor: Kernel_editor
 
 var kernel_type := 0
 var _dopen := false
@@ -44,7 +47,9 @@ func _kernel_selected(which: int) -> void:
 	if which >= KFILES[kernel_type].size() or which < 0:
 		return
 	var kernel_size = KFILES[kernel_type][which].size
-	_custom_get(KFILES[kernel_type][which].path, false, Vector3i(kernel_size,kernel_size,kernel_size))
+	_custom_get(KFILES[kernel_type][which].path, false, Vector3i(kernel_size, kernel_size, kernel_size))
+	
+	kernel_editor.update_editor()
 
 func _load_custom() -> void:
 	if _dopen:
@@ -59,7 +64,7 @@ func _dial_closed() -> void:
 	print("kernel_selection.gd::_dial_closed : closed")
 
 
-func _custom_get(filepath: String, custom := true, kernel_size: Vector3i = Vector3i(5,5,5)) -> void:
+func _custom_get(filepath: String, custom := true, kernel_size: Vector3i = Vector3i(5, 5, 5)) -> void:
 	print("kernel_selection.gd::_custom_get : got filepath ", filepath)
 	if _dopen:
 		_dial_closed()
