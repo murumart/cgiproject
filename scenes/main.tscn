@@ -1,4 +1,4 @@
-[gd_scene load_steps=60 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=61 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://d2mwckm533qi" path="res://shaders/simulators/dynamic_size_cell_automata.glsl" id="2_qkpxi"]
 [ext_resource type="RDShaderFile" uid="uid://rtb2hsjiitos" path="res://shaders/util/state_argmax.glsl" id="3_5q0nq"]
@@ -80,7 +80,7 @@ shader_parameter/cell_texture = ExtResource("30_fuf3a")
 shader_parameter/cell_texture_size = 16.0
 shader_parameter/tiles_in_atlas = 4.0
 shader_parameter/cell_specs = PackedFloat32Array(0.2, 1, 0.1)
-shader_parameter/cell_shines = PackedFloat32Array(70, 90, 0)
+shader_parameter/cell_shines = PackedFloat32Array(70, 90, 10)
 shader_parameter/sun_direction = Vector3(0.75, 1, 0.9)
 
 [sub_resource type="BoxMesh" id="BoxMesh_tel4y"]
