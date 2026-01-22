@@ -13,7 +13,7 @@ func _on_sim_update() -> void:
 
 
 func _data_get(data: PackedByteArray) -> void:
-	lattice.update_texture(data)
+	lattice.update_texture.call_deferred(data)
 
 
 func change_render_setting(_by: int) -> void: pass
