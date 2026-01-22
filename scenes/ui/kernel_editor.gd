@@ -53,7 +53,7 @@ func _ready() -> void:
 	dialog.confirmed.connect(_dial_closed)
 	dialog.file_selected.connect(_export_get)
 	
-	print_kernels()
+	#print_kernels()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta: float) -> void:
