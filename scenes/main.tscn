@@ -79,7 +79,7 @@ shader_parameter/cell_colors = PackedColorArray(0.8152507, 0.40018785, 0.3655646
 shader_parameter/cell_texture = ExtResource("30_fuf3a")
 shader_parameter/cell_texture_size = 16.0
 shader_parameter/tiles_in_atlas = 4.0
-shader_parameter/cell_specs = PackedFloat32Array(0.2, 1, 0.1)
+shader_parameter/cell_specs = PackedFloat32Array(0.2, 0.6, 0.1)
 shader_parameter/cell_shines = PackedFloat32Array(70, 90, 10)
 shader_parameter/sun_direction = Vector3(0.75, 1, 0.9)
 
