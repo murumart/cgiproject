@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3 uid="uid://b8qw165sso7ts"]
 
-[ext_resource type="Script" path="res://scenes/ui/kernel_editor.gd" id="1_rektp"]
+[ext_resource type="Script" uid="uid://nfd3t63mseqr" path="res://scenes/ui/kernel_editor.gd" id="1_rektp"]
 
-[node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "layer_label", "read_switch", "write_switch")]
+[node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "layer_label", "read_switch", "write_switch", "buttons", "kernel_edit_field", "save_button", "apply_button", "export_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,6 +14,11 @@ kernel_editor = NodePath("HBoxContainer/Kernel Editor")
 layer_label = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/Layer_label")
 read_switch = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/VBoxContainer/Read_option")
 write_switch = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/VBoxContainer/Write_option")
+buttons = [NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer1_button"), NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer2_button"), NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer3_button"), NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer4_button"), NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer5_button")]
+kernel_edit_field = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/TextEdit")
+save_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/Save_button")
+apply_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/Apply_button")
+export_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/Export_button")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
@@ -67,6 +72,10 @@ text = "0 0 0 0 0
 placeholder_text = "Enter kernels
 "
 
+[node name="Save_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Save"
+
 [node name="HBoxContainer2" type="HBoxContainer" parent="HBoxContainer/Kernel Editor/VBoxContainer"]
 layout_mode = 2
 
@@ -107,19 +116,14 @@ focus_mode = 0
 text = "5
 "
 
-[node name="Button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
+[node name="Apply_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 focus_mode = 0
 text = "Apply"
 
-[node name="Button2" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
+[node name="Export_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 focus_mode = 0
 text = "Export"
 
 [connection signal="pressed" from="HBoxContainer/Kernel_open_button" to="." method="_on_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer1_button" to="." method="_on_layer_1_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer2_button" to="." method="_on_layer_2_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer3_button" to="." method="_on_layer_3_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer4_button" to="." method="_on_layer_4_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VBoxContainer/HBoxContainer2/Layer5_button" to="." method="_on_layer_5_button_pressed"]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=59 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=60 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://d2mwckm533qi" path="res://shaders/simulators/dynamic_size_cell_automata.glsl" id="2_qkpxi"]
 [ext_resource type="RDShaderFile" uid="uid://rtb2hsjiitos" path="res://shaders/util/state_argmax.glsl" id="3_5q0nq"]
@@ -18,8 +18,10 @@
 [ext_resource type="RDShaderFile" uid="uid://d4mm0vntvguh6" path="res://shaders/simulators/dummy_simulation.glsl" id="7_j8jky"]
 [ext_resource type="Texture2D" uid="uid://0q8vy1pc0gmt" path="res://scenes/ui/icons/none.png" id="7_trceg"]
 [ext_resource type="Texture2D" uid="uid://dn5bo1crtqp0g" path="res://scenes/ui/icons/flesh.png" id="8_a8y0u"]
+[ext_resource type="Script" uid="uid://b4bstp53gyl2b" path="res://scenes/simulators/1D_Kernel_Automata.gd" id="8_pibwh"]
 [ext_resource type="Script" uid="uid://ba3tbmolvdy7o" path="res://scenes/texture_editor.gd" id="8_tipki"]
 [ext_resource type="Material" uid="uid://cr5n400hw00n2" path="res://scenes/renderers/barkmat.tres" id="8_yc10j"]
+[ext_resource type="RDShaderFile" uid="uid://mgwoue5ea0eh" path="res://shaders/simulators/1d_kernel.glsl" id="9_c6pm6"]
 [ext_resource type="Texture2D" uid="uid://dcmtudcbcp6kh" path="res://scenes/ui/icons/leaf.png" id="9_jkv2x"]
 [ext_resource type="Texture2D" uid="uid://cqfrsyhqts2pu" path="res://scenes/ui/icons/bark.png" id="10_jbj1t"]
 [ext_resource type="PackedScene" uid="uid://ckebvitsc78ta" path="res://scenes/decor/sign.tscn" id="10_ya4ey"]
@@ -145,7 +147,6 @@ size = Vector3(100, 1, 100)
 [node name="ComputeShaderSim" type="Node" parent="Simulators"]
 editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("4_vxglm")
-simulate = true
 grid_size = 64
 compute_shader_file = ExtResource("2_qkpxi")
 aggregator_shader_file = ExtResource("3_5q0nq")
@@ -162,6 +163,16 @@ editor_description = "This isn't a simulation, but just a sphere with holes gene
 script = ExtResource("6_tefeu")
 compute_shader_file = ExtResource("7_j8jky")
 grid_size = 64
+
+[node name="1D Shader Sim" type="Node" parent="Simulators"]
+editor_description = "Simulates cellural automata via running a compute shader on the GPU."
+script = ExtResource("8_pibwh")
+simulate = true
+grid_size = 64
+compute_shader_file = ExtResource("9_c6pm6")
+aggregator_shader_file = ExtResource("3_5q0nq")
+texture_update_shader_file = ExtResource("4_dgi5k")
+kernel_file_path = "res://scenes/simulators/1D_test.txt"
 
 [node name="Renderers" type="Node" parent="."]
 
@@ -205,6 +216,7 @@ cells_mesh_instance = NodePath("../../Meshes/MultimeshParent2/CellsMultiMeshInst
 disabled = true
 
 [node name="InstanceTextureRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("instance_parent", "cells_mesh_instance")]
+editor_description = "Instances 3D MultiMeshes for each cell in the grid and samples a texture for the cell type."
 script = ExtResource("16_5q0nq")
 instance_parent = NodePath("../../Meshes/MultimeshParent3")
 cells_mesh_instance = NodePath("../../Meshes/MultimeshParent3/Texture_Instance")
@@ -238,7 +250,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("12_y6deb")
 renderers = [NodePath("../../Renderers/RaytracedRender"), NodePath("../../Renderers/MesherRenderer"), NodePath("../../Renderers/MultimeshRenderer"), NodePath("../../Renderers/LatticeRenderer"), NodePath("../../Renderers/InstanceCustomDataRenderer"), NodePath("../../Renderers/InstanceTextureRenderer"), NodePath("../../Renderers/NaiveRenderer")]
-simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim")]
+simulators = [NodePath("../../Simulators/ComputeShaderSim"), NodePath("../../Simulators/GDSim"), NodePath("../../Simulators/DummySim"), NodePath("../../Simulators/1D Shader Sim")]
 renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererSwitch")
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
 simulator_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationSwitch")
@@ -301,8 +313,9 @@ autowrap_mode = 0
 [node name="HBoxContainer2" type="HBoxContainer" parent="Camera3D/Control/VBoxContainer/Hbox/Center"]
 layout_mode = 2
 
-[node name="KernelEditor" parent="Camera3D/Control/VBoxContainer/Hbox/Center/HBoxContainer2" instance=ExtResource("21_kmb1v")]
+[node name="KernelEditor" parent="Camera3D/Control/VBoxContainer/Hbox/Center/HBoxContainer2" node_paths=PackedStringArray("simulator") instance=ExtResource("21_kmb1v")]
 layout_mode = 2
+simulator = NodePath("../../../../../../../Simulators/ComputeShaderSim")
 
 [node name="PanelContainer" type="PanelContainer" parent="Camera3D/Control/VBoxContainer/Hbox"]
 custom_minimum_size = Vector2(180, 0)
