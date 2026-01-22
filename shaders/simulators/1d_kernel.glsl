@@ -54,7 +54,7 @@ void main() {
         int read_type_index = base_index + read_type * pc.stride_Z;
 
         for (int k = -kernel_radius; k <= kernel_radius; k++) {
-            float w = kernel.data[kernel_base + k];
+            float w = kernel.data[kernel_base++];
             if (w == 0.0) continue;
 
             ivec3 nb = id;
