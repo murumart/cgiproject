@@ -40,8 +40,8 @@ vec3 bf(vec3 normal, vec3 viewdir, vec3 lightdir, vec3 amb, vec3 diff, float spe
 	color += diff * lambert;
 	color += vec3(0.5) * specular;
 	
-	color = min(color, vec3(1.0));
-	color = max(color, amb * 0.5);
+	color = min(max(color, amb * 0.5), vec3(1.0));
+	//color = ;
 	
 	return color;
 }
@@ -62,6 +62,7 @@ void fragment() {
 		uvw.x = mainAxis;
 		uvw.y = UVAxis.y;
 		uvw.z = UVAxis.x;
+		if (uvw.x >= grid_size) uvw.x -= 1;
 	} else if (abs(vxNormal.z) > EPSILON) {
 		uvw.x = UVAxis.x;
 		uvw.y = UVAxis.y;
