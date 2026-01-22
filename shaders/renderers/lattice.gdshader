@@ -62,7 +62,6 @@ void fragment() {
 		uvw.x = mainAxis;
 		uvw.y = UVAxis.y;
 		uvw.z = UVAxis.x;
-		if (uvw.x >= grid_size) uvw.x -= 1;
 	} else if (abs(vxNormal.z) > EPSILON) {
 		uvw.x = UVAxis.x;
 		uvw.y = UVAxis.y;
