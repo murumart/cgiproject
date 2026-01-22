@@ -37,7 +37,7 @@ text = "The compute shader simulator can take in and use custom kernels! Try the
 fit_content = true
 
 [node name="FileDialog" type="FileDialog" parent="."]
-title = "Open a Kernel File"
+title = "Open a File"
 file_mode = 0
 access = 2
 use_native_dialog = true
