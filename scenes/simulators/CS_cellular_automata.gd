@@ -598,15 +598,19 @@ func get_typecount() -> int:
 	return typecount
 
 func set_kernel(kernels: PackedFloat32Array) -> void:
-	cpu_kernel.clear()
 	var volume = kernel_size.x * kernel_size.y * kernel_size.z + 1
 	var kernel_count = typecount * typecount
+	assert(kernels.size() == volume * kernel_count, "Kernels size(%s) doesn't match expected size(%s)" % [kernels.size(), volume * kernel_count])
+	var tmp := PackedFloat32Array()
 	for i in kernel_count:
-		var kernel = kernels.slice(i * volume + 1, (i + 1) * volume + 1)
-		cpu_kernel.append(volume - kernel.count(0.0))
-		cpu_kernel.append_array(kernel)
+		var kernel = kernels.slice(i * volume + 1, (i + 1) * volume)
+		# print("Setting kernel with %s non-zero values" % [volume - kernel.count(0.0)])
+		# print(kernel)
+		# print(kernel.size())
+		tmp.append(volume - kernel.count(0.0))
+		tmp.append_array(kernel)
 
-	load_kernels_from_packed_byte_array(kernels.to_byte_array())
+	load_kernels_from_packed_byte_array(tmp.to_byte_array())
 
 '''
 func setup_kernel_offset_array() -> void:
