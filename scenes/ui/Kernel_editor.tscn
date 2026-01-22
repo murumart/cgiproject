@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://nfd3t63mseqr" path="res://scenes/ui/kernel_editor.gd" id="1_rektp"]
 
-[node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "layer_label", "read_switch", "write_switch", "buttons", "kernel_edit_field", "save_button", "apply_button")]
+[node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "layer_label", "read_switch", "write_switch", "buttons", "kernel_edit_field", "save_button", "apply_button", "export_button")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -18,6 +18,7 @@ buttons = [NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/VB
 kernel_edit_field = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/TextEdit")
 save_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer/Save_button")
 apply_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/Apply_button")
+export_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/Export_button")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
@@ -120,7 +121,7 @@ layout_mode = 2
 focus_mode = 0
 text = "Apply"
 
-[node name="Button2" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
+[node name="Export_button" type="Button" parent="HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 focus_mode = 0
 text = "Export"
