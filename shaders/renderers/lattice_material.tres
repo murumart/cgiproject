@@ -1,7 +1,16 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dl42s6e68ocqk"]
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://dl42s6e68ocqk"]
 
 [ext_resource type="Shader" uid="uid://bnmx777p5ijxw" path="res://shaders/renderers/lattice.gdshader" id="1_i8rqf"]
+[ext_resource type="Texture2D" uid="uid://cyoa676psrvtn" path="res://scenes/renderers/meshblocks.png" id="2_208fl"]
 
 [resource]
 render_priority = 0
 shader = ExtResource("1_i8rqf")
+shader_parameter/grid_size = 128
+shader_parameter/cell_colors = PackedColorArray(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+shader_parameter/cell_texture = ExtResource("2_208fl")
+shader_parameter/cell_texture_size = 16.0
+shader_parameter/tiles_in_atlas = 4.0
+shader_parameter/cell_specs = PackedFloat32Array(0, 0, 0)
+shader_parameter/cell_shines = PackedFloat32Array(0, 0, 0)
+shader_parameter/sun_direction = Vector3(0.35355338, 0.70710677, 0.35355338)

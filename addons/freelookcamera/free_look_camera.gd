@@ -35,6 +35,13 @@ func _input(event):
 	# 			_velocity = clamp(_velocity * speed_scale, min_speed, max_speed)
 	# 		MOUSE_BUTTON_WHEEL_DOWN: # decrease fly velocity
 	# 			_velocity = clamp(_velocity / speed_scale, min_speed, max_speed)
+	if event is InputEventKey:
+		if event.pressed and event.keycode == KEY_F11:
+			var wm := DisplayServer.window_get_mode(0)
+			if wm == DisplayServer.WINDOW_MODE_FULLSCREEN:
+				DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MAXIMIZED)
+			else:
+				DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 
 

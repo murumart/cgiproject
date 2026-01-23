@@ -16,7 +16,7 @@ varying vec3 vxNormal;
 varying vec3 local_cam;
 varying vec3 view_dir;
 
-const float EPSILON = 0.001;
+const float EPSILON = 0.1;
 
 
 void vertex() {
@@ -55,18 +55,19 @@ void fragment() {
 
 	// converting fragment coordinates to 3d texture coordinates
 	float axisCoef = float(grid_size);
-	int mainAxis = int(COLOR.r * (axisCoef - 1.0));
+	// adding tiny epsilon to coordinate to avoid some sort of floating point nonsense (would flicker on the grid edges otherwise)
+	int mainAxis = int((COLOR.r + 0.00001) * float(grid_size - 1));
 	ivec2 UVAxis = ivec2(UV * axisCoef);
 	ivec3 uvw = ivec3(0);
 	if (abs(vxNormal.x) > EPSILON) {
 		uvw.x = mainAxis;
 		uvw.y = UVAxis.y;
 		uvw.z = UVAxis.x;
-	} else if (abs(vxNormal.z) > EPSILON) {
+	}else if (abs(vxNormal.z) > EPSILON) {
 		uvw.x = UVAxis.x;
 		uvw.y = UVAxis.y;
 		uvw.z = mainAxis;
-	} else /*if (abs(vxNormal.y) > EPSILON)*/ {
+	} else {
 		uvw.x = UVAxis.x;
 		uvw.y = mainAxis;
 		uvw.z = UVAxis.y;
