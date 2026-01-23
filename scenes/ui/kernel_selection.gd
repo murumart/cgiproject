@@ -26,6 +26,7 @@ const KFILES := [
 		{"name": "Meh", "path": "res://scenes/simulators/wide_kernel.txt", "size": 5},
 	],
 	[
+		{"name": "1D Falling leaves", "path": "res://scenes/simulators/1D_falling_leaves.txt", "size": 5},
 		{"name": "1D Test", "path": "res://scenes/simulators/1D_test.txt", "size": 5},
 	]
 ]
