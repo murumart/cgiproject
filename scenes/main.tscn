@@ -159,7 +159,7 @@ grid_size = 64
 compute_shader_file = ExtResource("9_c6pm6")
 aggregator_shader_file = ExtResource("3_5q0nq")
 texture_update_shader_file = ExtResource("4_dgi5k")
-kernel_file_path = "res://scenes/simulators/1D_test.txt"
+kernel_file_path = "res://scenes/simulators/1D_falling_leaves.txt"
 
 [node name="Renderers" type="Node" parent="."]
 
