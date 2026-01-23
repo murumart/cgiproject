@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://nfd3t63mseqr" path="res://scenes/ui/kernel_editor.gd" id="1_rektp"]
 
-[node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "open_button", "layer_label", "read_switch", "write_switch", "buttons", "kernel_edit_field", "apply_button", "export_button", "dialog")]
+[node name="KernelEditor" type="Control" node_paths=PackedStringArray("kernel_editor", "open_button", "layer_label", "read_switch", "write_switch", "buttons", "kernel_edit_field", "apply_button", "export_button", "dialog", "no_editor_labe")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,6 +21,7 @@ kernel_edit_field = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxCont
 apply_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/Apply_button")
 export_button = NodePath("HBoxContainer/Kernel Editor/VBoxContainer/HBoxContainer2/Export_button")
 dialog = NodePath("FileDialog")
+no_editor_labe = NodePath("HBoxContainer/Label")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
@@ -123,6 +124,11 @@ text = "Apply"
 layout_mode = 2
 focus_mode = 0
 text = "Export"
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+visible = false
+layout_mode = 2
+text = "No editor for this simulator"
 
 [node name="FileDialog" type="FileDialog" parent="."]
 oversampling_override = 1.0

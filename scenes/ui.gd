@@ -25,6 +25,7 @@ var current_simulator: Simulator
 @export var fps_label: Label
 @export var pause_button: ButtonScript
 @export var kernel_selection: KernelSelection
+@export var kernel_editor: Control
 
 
 signal grid_size_changed(new_grid_size: int)
@@ -96,6 +97,8 @@ func _simulator_selected(which: int) -> void:
 	simulator_switch.selected = which
 	kernel_selection.set_simulator(s)
 	# kernel_selection.set_enabled()
+	kernel_editor.set_simulator(s)
+
 
 
 const _GRID_SIZES: PackedInt32Array = [8, 16, 32, 48, 64, 128, 256, 512]

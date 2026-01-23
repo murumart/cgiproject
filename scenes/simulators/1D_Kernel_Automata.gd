@@ -52,6 +52,8 @@ var _buffer_elements: int
 @export_file("*.txt") var kernel_file_path: String
 var init_done: bool = false
 
+var cpu_kernel: Array[PackedFloat32Array] # for editing
+
 
 func _ready() -> void:
 	super()
@@ -636,6 +638,8 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5,5,
 			values[axis].append(factor)
 		axis = (axis + 1) % 3
 
+	cpu_kernel = values
+
 		# if ((tmp_values.size() % (_kernel_size.x * _kernel_size.y * _kernel_size.z)) == 0):
 		# 	var zeros = tmp_values.count(0.0)
 		# 	values.append(tmp_values.size() - zeros)
@@ -676,6 +680,25 @@ func free_RID_if_valid(rid: RID) -> bool:
 		return true
 	return false
 
+
+func get_kernel() -> PackedFloat32Array:
+	var ker: PackedFloat32Array = []
+	for i in typecount * typecount:
+		var start = i * kernel_size.x
+		var end = start + kernel_size.x
+		var slice = cpu_kernel[0].slice(start, end)
+		ker.append_array(slice)
+		slice = cpu_kernel[1].slice(start, end)
+		ker.append_array(slice)
+		slice = cpu_kernel[2].slice(start, end)
+		ker.append_array(slice)
+	return ker
+
+func get_kernel_size() -> Vector3i:
+	return kernel_size
+
+func get_typecount() -> int:
+	return typecount
 
 '''
 func setup_kernel_offset_array() -> void:
