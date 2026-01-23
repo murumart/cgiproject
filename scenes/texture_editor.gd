@@ -84,7 +84,7 @@ func _physics_process(_delta: float) -> void:
 	var action_position := ((bpos + normal * 0.5) * 100.0 / gs
 		+ volume.position - Vector3.ONE * 100 * 0.5
 		+ Vector3.ONE * 100 / gs * 0.5)
-	if Input.is_action_pressed("mouse_left") and not simulator.is_sim_running():
+	if Input.is_action_pressed("mouse_left"):# and not simulator.is_sim_running():
 		var addpos := bpos + normal
 		if _selected_block == 0:
 			addpos = bpos
