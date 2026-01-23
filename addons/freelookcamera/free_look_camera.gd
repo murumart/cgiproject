@@ -36,12 +36,7 @@ func _input(event):
 	# 		MOUSE_BUTTON_WHEEL_DOWN: # decrease fly velocity
 	# 			_velocity = clamp(_velocity / speed_scale, min_speed, max_speed)
 
-	# arrow keys to change render setting
-	if renderer:
-		if Input.is_action_just_pressed("ui_right"):
-			renderer.change_render_setting(1)
-		if Input.is_action_just_pressed("ui_left"):
-			renderer.change_render_setting(-1)
+
 
 
 func _unhandled_input(event):
@@ -53,6 +48,13 @@ func _unhandled_input(event):
 				_velocity = clamp(_velocity * speed_scale, min_speed, max_speed)
 			MOUSE_BUTTON_WHEEL_DOWN: # decrease fly velocity
 				_velocity = clamp(_velocity / speed_scale, min_speed, max_speed)
+
+	# arrow keys to change render setting
+	if renderer:
+		if Input.is_action_just_pressed("ui_right"):
+			renderer.change_render_setting(1)
+		if Input.is_action_just_pressed("ui_left"):
+			renderer.change_render_setting(-1)
 
 func _process(delta):
 	if not current:
