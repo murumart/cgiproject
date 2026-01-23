@@ -147,6 +147,7 @@ size = Vector3(100, 1, 100)
 [node name="ComputeShaderSim" type="Node" parent="Simulators"]
 editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("4_vxglm")
+simulate = true
 grid_size = 64
 compute_shader_file = ExtResource("2_qkpxi")
 aggregator_shader_file = ExtResource("3_5q0nq")
@@ -167,7 +168,6 @@ grid_size = 64
 [node name="1D Shader Sim" type="Node" parent="Simulators"]
 editor_description = "Simulates cellural automata via running a compute shader on the GPU."
 script = ExtResource("8_pibwh")
-simulate = true
 grid_size = 64
 compute_shader_file = ExtResource("9_c6pm6")
 aggregator_shader_file = ExtResource("3_5q0nq")
@@ -187,6 +187,7 @@ editor_description = "This renderer creates a mesh (culled on the inside, no gre
 script = ExtResource("14_muem4")
 instances = [NodePath("../../Meshes/MesherMesh"), NodePath("../../Meshes/MesherMesh2")]
 sim = NodePath("../../Simulators/GDSim")
+disabled = true
 
 [node name="NaiveRenderer" type="Node" parent="Renderers" node_paths=PackedStringArray("parent", "sim")]
 editor_description = "This renderer manages a bunch of MeshInstances that each are a box. It hides or shows the boxes depending on the cell data. Needs to create boxes when switching to it, very bad on higher grid sizes."
@@ -257,7 +258,7 @@ renderer_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/Sc
 renderer_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/RendererDescription")
 simulator_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationSwitch")
 simulator_description = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SimulationDesc")
-grid_size = 64
+grid_size = 128
 grid_size_switch = NodePath("VBoxContainer/Hbox/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/GridSizeSwitch")
 editor = NodePath("../../TextureEditor")
 camera = NodePath("..")

@@ -151,11 +151,11 @@ func dispatch_texture_update(value_and_location: PackedInt32Array) -> void:
 
 
 func setup_compute_pipeline() -> void:
-	# free_RID_if_valid(compute_shader_rid)
-	# free_RID_if_valid(pipeline_rid)
-	# free_RID_if_valid(compute_read_state_rid)
-	# free_RID_if_valid(compute_write_state_rid)
-	# free_RID_if_valid(kernels_rid)
+	free_RID_if_valid(compute_pipeline_uniform_set_1)
+	free_RID_if_valid(compute_pipeline_uniform_set_2)
+	free_RID_if_valid(aggregation_uniform_set_1)
+	free_RID_if_valid(aggregation_uniform_set_2)
+
 	if compute_shader_file == null:
 		push_error("Failed to load compute shader file")
 		return
@@ -163,14 +163,14 @@ func setup_compute_pipeline() -> void:
 	if shader_spirv == null:
 		push_error("Shader SPIR-V is null (compile error)")
 		return
-
-	compute_shader_rid = rd.shader_create_from_spirv(shader_spirv)
-	if compute_shader_rid == null:
+	if not compute_shader_rid.is_valid():
+		compute_shader_rid = rd.shader_create_from_spirv(shader_spirv)
+	if not compute_shader_rid.is_valid():
 		push_error("Shader is null(SPIR-V shader failed)")
 
 	# allocated_RIDs.append(compute_shader_rid)
-
-	pipeline_rid = rd.compute_pipeline_create(compute_shader_rid)
+	if not pipeline_rid.is_valid():
+		pipeline_rid = rd.compute_pipeline_create(compute_shader_rid)
 
 	# allocated_RIDs.append(pipeline_rid)
 	var size = grid_size * grid_size * grid_size
@@ -186,11 +186,13 @@ func setup_compute_pipeline() -> void:
 	if (compute_read_state_rid.is_valid() and air.size() == _buffer_elements):
 		rd.buffer_update(compute_read_state_rid, 0, air.size() * 4, air.to_byte_array())
 	else:
+		free_RID_if_valid(compute_read_state_rid)
 		compute_read_state_rid = rd.storage_buffer_create(size, air.to_byte_array())
 
 	if (compute_write_state_rid.is_valid() and air.size() == _buffer_elements):
 		rd.buffer_update(compute_write_state_rid, 0, air.size() * 4, air.to_byte_array())
 	else:
+		free_RID_if_valid(compute_write_state_rid)
 		compute_write_state_rid = rd.storage_buffer_create(size, air.to_byte_array())
 
 	load_kernels_from_file(kernel_file_path)
@@ -208,8 +210,9 @@ func setup_compute_pipeline() -> void:
 
 
 func setup_aggregation_pipeline() -> void:
-	# free_RID_if_valid(aggregation_shader_rid)
-	# free_RID_if_valid(aggregation_pipeline_rid)
+	free_RID_if_valid(aggregation_uniform_set_1)
+	free_RID_if_valid(aggregation_uniform_set_2)
+
 	### Aggregation pipeline
 	if aggregator_shader_file == null:
 		push_error("Failed to load aggregation shader file")
@@ -218,12 +221,13 @@ func setup_aggregation_pipeline() -> void:
 	if shader_spirv == null:
 		push_error("Shader SPIR-V is null (compile error)")
 		return
-
-	aggregation_shader_rid = rd.shader_create_from_spirv(shader_spirv)
+	if not aggregation_shader_rid.is_valid():
+		aggregation_shader_rid = rd.shader_create_from_spirv(shader_spirv)
 	if aggregation_shader_rid == null:
 		push_error("Shader is null(SPIR-V shader failed)")
 
-	aggregation_pipeline_rid = rd.compute_pipeline_create(aggregation_shader_rid)
+	if not aggregation_pipeline_rid.is_valid():
+		aggregation_pipeline_rid = rd.compute_pipeline_create(aggregation_shader_rid)
 
 	create_aggregation_pipeline_uniforms()
 
@@ -238,10 +242,11 @@ func setup_texture_update_pipeline() -> void:
 		return
 
 	texture_update_shader_rid = rd.shader_create_from_spirv(shader_spirv)
-	if compute_shader_rid == null:
-		push_error("Shader is null(SPIR-V shader failed)")
+	if not texture_update_shader_rid.is_valid():
+		push_error("Texture shader is null(SPIR-V shader failed)")
 
-	texture_update_pipeline_rid = rd.compute_pipeline_create(texture_update_shader_rid)
+	if not texture_update_pipeline_rid.is_valid():
+		texture_update_pipeline_rid = rd.compute_pipeline_create(texture_update_shader_rid)
 
 	# create_texture_update_uniforms() # called in create_aggregation_pipeline_uniforms
 
@@ -273,7 +278,10 @@ func get_grid_size() -> int:
 
 
 func set_grid_size(to: int) -> void:
-	if (to * to * to * typecount > _buffer_elements):
+	var new_size = to * to * to * typecount
+	if (new_size == _buffer_elements):
+		return
+	if (new_size > _buffer_elements):
 		set_grid_size_FORCE_BUFFER_RESIZE(to)
 		return
 	set_grid_size_FORCE_BUFFER_RESIZE(to)
@@ -284,7 +292,7 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 	_buffer_elements = to * to * to * typecount
 	var buffer_size = _buffer_elements * 4
 	var new_size = to * to * to
-	var old_size = grid_size * grid_size * grid_size
+	# var old_size = grid_size * grid_size * grid_size
 	grid_size = to
 
 	var air: PackedInt32Array = []
@@ -293,35 +301,46 @@ func set_grid_size_FORCE_BUFFER_RESIZE(to: int) -> void:
 	for j in range(new_size):
 			air[j] = 250
 
-	old_size *= 4
-	new_size *= 4
+	# old_size *= 4
+	# new_size *= 4
 
-	var min_size = min(new_size, old_size)
-	var tmp = rd.storage_buffer_create(buffer_size, air.to_byte_array())
+	# var min_size = min(new_size, old_size)
+	# var tmp = rd.storage_buffer_create(buffer_size, air.to_byte_array())
+	free_RID_if_valid(compute_pipeline_uniform_set_1)
+	free_RID_if_valid(compute_pipeline_uniform_set_2)
 
-	if (not uniform_flip):
-		for i in typecount:
-			rd.buffer_copy(compute_write_state_rid, tmp, old_size * i, new_size * i, min_size)
+	free_RID_if_valid(aggregation_uniform_set_1)
+	free_RID_if_valid(aggregation_uniform_set_2)
 
-		await RenderingServer.frame_post_draw
-		# free_RID_if_valid(compute_read_state_rid)
-		# free_RID_if_valid(compute_write_state_rid)
+	free_RID_if_valid(compute_read_state_rid)
+	free_RID_if_valid(compute_write_state_rid)
 
-		compute_write_state_rid = tmp
-		compute_read_state_rid = rd.storage_buffer_create(buffer_size)
-	else:
-		for i in typecount:
-			rd.buffer_copy(compute_read_state_rid, tmp, old_size * i, new_size * i, min_size)
+	compute_read_state_rid = rd.storage_buffer_create(buffer_size, air.to_byte_array())
+	compute_write_state_rid = rd.storage_buffer_create(buffer_size, air.to_byte_array())
 
-		await RenderingServer.frame_post_draw
-		# free_RID_if_valid(compute_read_state_rid)
-		# free_RID_if_valid(compute_write_state_rid)
+	# if (not uniform_flip):
+	# 	for i in typecount:
+	# 		rd.buffer_copy(compute_write_state_rid, tmp, old_size * i, new_size * i, min_size)
 
-		compute_read_state_rid = tmp
-		compute_write_state_rid = rd.storage_buffer_create(buffer_size)
+	# 	await RenderingServer.frame_post_draw
+	# 	# free_RID_if_valid(compute_read_state_rid)
+	# 	# free_RID_if_valid(compute_write_state_rid)
+
+	# 	compute_write_state_rid = tmp
+	# 	compute_read_state_rid = rd.storage_buffer_create(buffer_size)
+	# else:
+	# 	for i in typecount:
+	# 		rd.buffer_copy(compute_read_state_rid, tmp, old_size * i, new_size * i, min_size)
+
+	# 	await RenderingServer.frame_post_draw
+	# 	# free_RID_if_valid(compute_read_state_rid)
+	# 	# free_RID_if_valid(compute_write_state_rid)
+
+	# 	compute_read_state_rid = tmp
+	# 	compute_write_state_rid = rd.storage_buffer_create(buffer_size)
 
 
-	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid() or not kernels_rid.is_valid()):
+	if (not compute_read_state_rid.is_valid() or not compute_write_state_rid.is_valid()):
 		printerr("CRITICAL ERROR: Failed to create storage buffers!")
 		return
 
@@ -455,8 +474,6 @@ func create_compute_pipeline_uniforms() -> void:
 
 
 func create_aggregation_pipeline_uniforms():
-	# free_RID_if_valid(aggregation_uniform_set_1)
-	# free_RID_if_valid(aggregation_uniform_set_2)
 	# Bind SSBO with latest read_state
 	var read_uniform := RDUniform.new()
 	read_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
@@ -502,7 +519,9 @@ func load_kernels_from_packed_byte_array(kernels: PackedByteArray) -> bool:
 	var size = typecount * typecount * (kernel_size.x * kernel_size.y * kernel_size.z + 1) * 4
 	assert(kernels.size() == size, "Kernels size(%s) doesn't match grid size(%s)" % [kernels.size(), size])
 
-	# free_RID_if_valid(kernels_rid)
+	# free_RID_if_valid(compute_pipeline_uniform_set_1)
+	# free_RID_if_valid(compute_pipeline_uniform_set_2)
+	free_RID_if_valid(kernels_rid)
 
 	kernels_rid = rd.storage_buffer_create(size, kernels)
 
@@ -583,10 +602,7 @@ func load_kernels_from_file(path: String, _kernel_size: Vector3i = Vector3i(5, 5
 
 
 func free_RID_if_valid(rid: RID) -> bool:
-	if rid.is_valid():
-		var idx := allocated_RIDs.find(rid)
-		if idx != -1:
-			allocated_RIDs.remove_at(idx)
+	if rid != null and rid.is_valid():
 		rd.free_rid(rid)
 		return true
 	return false

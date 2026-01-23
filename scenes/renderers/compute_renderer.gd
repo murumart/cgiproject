@@ -74,7 +74,7 @@ func set_simulator(sim: Simulator) -> void:
 
 	brick_grid_size = Vector3i.ONE * int(ceil(float(simulator.get_grid_size()) / float(brick_size)))
 	create_brick_map_texture()
-	if (brick_uniform_set_rid == null):
+	if (brick_uniform_set_rid == null or not brick_uniform_set_rid.is_valid()):
 		brick_uniform_set_rid = create_brick_uniform_set()
 	# build_brick_map()
 	# bind_texture_to_material()
@@ -103,8 +103,10 @@ func change_render_setting(by: int) -> void:
 func setup_brick_pipeline() -> void:
 	var shader_file: RDShaderFile = load("res://shaders/util/brick_map_builder.glsl")
 	var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
-	brick_shader_rid = rd.shader_create_from_spirv(shader_spirv)
-	brick_pipeline_rid = rd.compute_pipeline_create(brick_shader_rid)
+	if not brick_shader_rid.is_valid():
+		brick_shader_rid = rd.shader_create_from_spirv(shader_spirv)
+	if not brick_pipeline_rid.is_valid():
+		brick_pipeline_rid = rd.compute_pipeline_create(brick_shader_rid)
 
 
 func create_brick_map_texture() -> void:
