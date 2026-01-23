@@ -471,6 +471,9 @@ func sim_set_running(to: bool) -> void:
 
 
 func create_compute_pipeline_uniforms() -> void:
+	if not kernels_X_rid.is_valid() or not kernels_Y_rid.is_valid() or not kernels_Z_rid.is_valid():
+		push_error("Cannot create compute pipeline uniforms: kernels not loaded!")
+		return
 	compute_pipeline_uniform_set_x1 = make_compute_uniform_set(
 		compute_read_state_rid,
 		compute_write_state_rid,
@@ -571,6 +574,12 @@ func create_texture_update_uniforms() -> void:
 
 
 func load_kernels_from_packed_byte_array(kernels: PackedByteArray, axis:int) -> bool:
+	free_RID_if_valid(compute_pipeline_uniform_set_x1)
+	free_RID_if_valid(compute_pipeline_uniform_set_x2)
+	free_RID_if_valid(compute_pipeline_uniform_set_y1)
+	free_RID_if_valid(compute_pipeline_uniform_set_y2)
+	free_RID_if_valid(compute_pipeline_uniform_set_z1)
+	free_RID_if_valid(compute_pipeline_uniform_set_z2)
 	match axis:
 		0:
 			free_RID_if_valid(kernels_X_rid)
@@ -601,7 +610,7 @@ func load_kernels_from_packed_byte_array(kernels: PackedByteArray, axis:int) -> 
 			return false
 
 	# setup_kernel_offset_array()
-
+	create_compute_pipeline_uniforms()
 	return true
 
 
@@ -699,6 +708,22 @@ func get_kernel_size() -> Vector3i:
 
 func get_typecount() -> int:
 	return typecount
+
+func set_kernel(kernels: PackedFloat32Array):
+	var arry : Array[PackedFloat32Array] = [PackedFloat32Array(), PackedFloat32Array(), PackedFloat32Array()]
+	var index := 0
+	for i in typecount * typecount:
+		for j in range(3):
+			for k in range(kernel_size.x):
+				arry[j].append(kernels[index])
+				index += 1
+	#print("values2: ", arry)
+
+	cpu_kernel = arry
+
+	var ok := true
+	for k in range(3):
+		ok = ok and load_kernels_from_packed_byte_array(arry[k].to_byte_array(), k)
 
 '''
 func setup_kernel_offset_array() -> void:

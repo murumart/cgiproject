@@ -200,9 +200,13 @@ func _on_slice_text_edit() -> void:
 	_save_kernel_slice(write_switch.get_selected_id(), read_switch.get_selected_id(), current_layer)
 
 func _save_kernel_slice(write_type: int, read_type: int, layer: int) -> void:
-	# print("save_slice to kernels")
-	var start = write_type * (kernel_size.x * kernel_size.y * kernel_size.z + 1) * type_count + read_type * (kernel_size.x * kernel_size.y * kernel_size.z + 1) + 1 + layer * kernel_size.x * kernel_size.y
-	#var end = start + 5 * 5
+	var start: int
+	if simulator is ComputeSim:
+		# print("save_slice to kernels")
+		start = write_type * (kernel_size.x * kernel_size.y * kernel_size.z + 1) * type_count + read_type * (kernel_size.x * kernel_size.y * kernel_size.z + 1) + 1 + layer * kernel_size.x * kernel_size.y
+		#var end = start + 5 * 5
+	elif simulator is D1_Kernel_Sim:
+		start = (write_type * type_count + read_type) * 3 * kernel_size.x
 
 	var string = kernel_edit_field.text
 	var lines = string.split("\n")
@@ -214,6 +218,8 @@ func _save_kernel_slice(write_type: int, read_type: int, layer: int) -> void:
 				slice.append(float(value))
 	for i in range(slice.size()):
 		kernels[start + i] = slice[i]
+
+		
 
 func _apply_kernel() -> void:
 	simulator.set_kernel(kernels)
