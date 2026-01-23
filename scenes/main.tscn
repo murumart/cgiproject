@@ -1,4 +1,4 @@
-[gd_scene load_steps=59 format=3 uid="uid://dpnrjriihffnj"]
+[gd_scene load_steps=65 format=3 uid="uid://dpnrjriihffnj"]
 
 [ext_resource type="RDShaderFile" uid="uid://d2mwckm533qi" path="res://shaders/simulators/dynamic_size_cell_automata.glsl" id="2_qkpxi"]
 [ext_resource type="RDShaderFile" uid="uid://rtb2hsjiitos" path="res://shaders/util/state_argmax.glsl" id="3_5q0nq"]
@@ -126,6 +126,35 @@ roughness = 0.57
 [sub_resource type="BoxMesh" id="BoxMesh_eb6dy"]
 material = SubResource("StandardMaterial3D_85g3d")
 size = Vector3(100, 1, 100)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_pibwh"]
+top_radius = 4.0
+height = 4.0
+radial_segments = 16
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c6pm6"]
+transparency = 4
+albedo_color = Color(1, 1, 1, 0.36078432)
+roughness = 0.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_5he1u"]
+height = 5.0
+radial_segments = 16
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5poiv"]
+transparency = 4
+albedo_color = Color(1, 1, 1, 0.36078432)
+roughness = 0.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_2cjbq"]
+bottom_radius = 2.09
+height = 1.0
+radial_segments = 16
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_chjal"]
+transparency = 4
+albedo_color = Color(1, 1, 1, 0.36078432)
+roughness = 0.0
 
 [node name="Main" type="Node3D"]
 
@@ -663,6 +692,27 @@ skeleton = NodePath("../..")
 [node name="Tree30" parent="Decor/Trees" instance=ExtResource("22_jscy8")]
 transform = Transform3D(-0.033765644, 0, -0.99942994, 0, 1, 0, 0.99942994, 0, -0.033765644, 56.329388, 2.1527896, 72.83946)
 skeleton = NodePath("../..")
+
+[node name="GlassTop" type="MeshInstance3D" parent="Decor/Trees"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -79.81735, 7.4070807, 227.52078)
+mesh = SubResource("CylinderMesh_pibwh")
+surface_material_override/0 = SubResource("StandardMaterial3D_c6pm6")
+
+[node name="GlassBottom" type="MeshInstance3D" parent="Decor/Trees/GlassTop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -4.3189473, 0)
+mesh = SubResource("CylinderMesh_5he1u")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_5poiv")
+
+[node name="GlassBottom2" type="MeshInstance3D" parent="Decor/Trees/GlassTop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.0787573, 0)
+mesh = SubResource("CylinderMesh_2cjbq")
+skeleton = NodePath("../..")
+surface_material_override/0 = SubResource("StandardMaterial3D_chjal")
+
+[node name="Tree31" parent="Decor/Trees/GlassTop" instance=ExtResource("22_jscy8")]
+transform = Transform3D(0.20275319, 0, -0.97923, -0.4422754, -0.892192, -0.09157476, -0.87366116, 0.4516563, -0.18089478, -0.20669746, 3.9174328, -1.8330307)
+skeleton = NodePath("../../..")
 
 [connection signal="grid_size_changed" from="Camera3D/Control" to="Renderers/RaytracedRender" method="_on_control_grid_size_changed"]
 
