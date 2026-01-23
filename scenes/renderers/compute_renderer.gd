@@ -9,6 +9,7 @@ var rd := RenderingServer.get_rendering_device()
 var brick_map_texture_rid: RID
 var brick_shader_rid: RID
 var brick_pipeline_rid: RID
+var brick_uniform_set_rid: RID
 
 @export var simulator: Simulator
 
@@ -48,9 +49,11 @@ func _sim_updated() -> void:
 
 
 func _sim_updated_tex(tex: RID) -> void:
-	data_texture = tex
+	if (tex != data_texture):
+		data_texture = tex
+		brick_uniform_set_rid = create_brick_uniform_set()
+		bind_texture_to_material()
 	build_brick_map()
-	bind_texture_to_material()
 
 
 func set_simulator(sim: Simulator) -> void:
@@ -71,8 +74,10 @@ func set_simulator(sim: Simulator) -> void:
 
 	brick_grid_size = Vector3i.ONE * int(ceil(float(simulator.get_grid_size()) / float(brick_size)))
 	create_brick_map_texture()
-	build_brick_map()
-	bind_texture_to_material()
+	if (brick_uniform_set_rid == null):
+		brick_uniform_set_rid = create_brick_uniform_set()
+	# build_brick_map()
+	# bind_texture_to_material()
 
 
 func _input(event: InputEvent) -> void:
@@ -124,17 +129,18 @@ func build_brick_map() -> void:
 	assert(data_texture.is_valid() and brick_map_texture_rid.is_valid())
 
 	# Create uniforms for brick map builder
-	var voxel_uniform := RDUniform.new()
-	voxel_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
-	voxel_uniform.binding = 0
-	voxel_uniform.add_id(data_texture)
+	# var voxel_uniform := RDUniform.new()
+	# voxel_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+	# voxel_uniform.binding = 0
+	# voxel_uniform.add_id(data_texture)
 
-	var brick_uniform := RDUniform.new()
-	brick_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
-	brick_uniform.binding = 1
-	brick_uniform.add_id(brick_map_texture_rid)
+	# var brick_uniform := RDUniform.new()
+	# brick_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+	# brick_uniform.binding = 1
+	# brick_uniform.add_id(brick_map_texture_rid)
 
-	var uniform_set := rd.uniform_set_create([voxel_uniform, brick_uniform], brick_shader_rid, 0)
+	# var uniform_set := rd.uniform_set_create([voxel_uniform, brick_uniform], brick_shader_rid, 0)
+	var uniform_set: RID = brick_uniform_set_rid
 
 	rd.draw_command_begin_label("BRICKMAP_PIPELINE", Color.MAGENTA)
 	var compute_list = rd.compute_list_begin()
@@ -182,3 +188,18 @@ func bind_texture_to_material() -> void:
 func _on_control_grid_size_changed(new_grid_size: int) -> void:
 	print("Grid size changed: ", new_grid_size, " brick size: ", brick_size)
 	brick_size = max(4, int(new_grid_size / 16))
+
+func create_brick_uniform_set() -> RID:
+	print("Creating new brick uniform set")
+	var voxel_uniform := RDUniform.new()
+	voxel_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+	voxel_uniform.binding = 0
+	voxel_uniform.add_id(data_texture)
+
+	var brick_uniform := RDUniform.new()
+	brick_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
+	brick_uniform.binding = 1
+	brick_uniform.add_id(brick_map_texture_rid)
+
+	var uniform_set := rd.uniform_set_create([voxel_uniform, brick_uniform], brick_shader_rid, 0)
+	return uniform_set
